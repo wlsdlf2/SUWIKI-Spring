@@ -1,27 +1,26 @@
 package usw.suwiki.domain.lecture;
 
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import usw.suwiki.domain.lecture.model.Evaluation;
-import usw.suwiki.infra.jpa.BaseTimeEntity;
+import usw.suwiki.infra.jpa.BaseEntity;
 
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 @Entity
 @Getter
+@Builder
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Lecture extends BaseTimeEntity {
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+public class Lecture extends BaseEntity {
+  private static final Pattern LECTURE_PATTERN = Pattern.compile("^(2\\d{3})-(1|2)$");
 
   @Column(name = "semester_list")
   private String semester;
@@ -38,30 +37,12 @@ public class Lecture extends BaseTimeEntity {
   private String type;
 
   @Embedded
-  private LectureEvaluationInfo lectureEvaluationInfo;
+  private LectureEvaluationInfo lectureEvaluationInfo = new LectureEvaluationInfo();
 
   @Embedded
   private LectureDetail lectureDetail;
 
   private int postsCount = 0;
-
-  @Builder
-  public Lecture(
-    String semester,
-    String professor,
-    String name,
-    String majorType,
-    String type,
-    LectureDetail lectureDetail
-  ) {
-    this.semester = semester;
-    this.professor = professor;
-    this.name = name;
-    this.majorType = majorType;
-    this.type = type;
-    this.lectureDetail = lectureDetail;
-    this.lectureEvaluationInfo = new LectureEvaluationInfo();
-  }
 
   public void evaluate(Evaluation evaluation) {
     this.lectureEvaluationInfo.apply(evaluation);
@@ -84,37 +65,32 @@ public class Lecture extends BaseTimeEntity {
     return this.semester.length() > 9;
   }
 
-  /**
-   * 이하 로직들은 Lecture가 가져야할 비지니스 로직이 아니다. 도메인 서비스로 분리할 것.
-   */
+  public boolean isEquals(String name, String professor, String majorType, String diclNo) {
+    return Objects.equals(this.name, name) &&
+           Objects.equals(this.professor, professor) &&
+           Objects.equals(this.majorType, majorType) &&
+           Objects.equals(this.lectureDetail.getDiclNo(), diclNo);
+  }
+
   public void addSemester(String singleSemester) {
     validateSingleSemester(singleSemester);
     if (this.semester.isEmpty() || this.semester.contains(singleSemester)) {
       return;
     }
 
-    this.semester = extendSemester(this.semester, singleSemester);
+    this.semester = this.semester + ", " + singleSemester;
   }
 
   public void removeSemester(String singleSemester) {
     validateSingleSemester(singleSemester);
     if (this.semester.contains(singleSemester)) {
-      this.semester = this.semester.replace(buildAddedSingleSemester(singleSemester), "");
+      this.semester = this.semester.replace(", " + singleSemester, "");
     }
   }
 
   private void validateSingleSemester(String candidate) {
-    boolean matches = Pattern.matches("^(2\\d{3})-(1|2)$", candidate); // todo: 패턴 객체는 너무 비싸서 caching해서 사용해야함.
-    if (!matches) {
+    if (!LECTURE_PATTERN.matcher(candidate).matches()) {
       throw new IllegalArgumentException("invalid semester");
     }
-  }
-
-  private static String extendSemester(String originalSemesters, String semester) {
-    return originalSemesters + buildAddedSingleSemester(semester);
-  }
-
-  private static String buildAddedSingleSemester(String semester) {
-    return ", " + semester;
   }
 }

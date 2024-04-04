@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface ExamPostRepository extends JpaRepository<ExamPost, Long> {
 
-  List<ExamPost> findAllByUserId(Long userId);
+  List<ExamPost> findAllByUserIdx(Long userId);
 
   @Query(nativeQuery = true, value =
     "SELECT * FROM exam_post WHERE lecture_id = :lectureId limit :defaultLimit offset :page"
@@ -19,6 +19,5 @@ public interface ExamPostRepository extends JpaRepository<ExamPost, Long> {
     @Param("defaultLimit") int defaultLimit
   );
 
-  // todo: must test
-  boolean existsByUserIdAndLectureId(Long userId, Long lectureId);
+  boolean existsByUserIdxAndLectureInfo_LectureId(Long userId, Long lectureId);
 }

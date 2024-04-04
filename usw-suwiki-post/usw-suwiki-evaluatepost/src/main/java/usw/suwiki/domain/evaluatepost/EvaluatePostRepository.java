@@ -6,8 +6,7 @@ import java.util.List;
 
 public interface EvaluatePostRepository extends JpaRepository<EvaluatePost, Long> {
 
-  List<EvaluatePost> findAllByUserId(Long userId);
+  List<EvaluatePost> findAllByUserIdx(Long userId);
 
-  // todo: must test
-  boolean existsByUserIdAndLectureInfoLectureId(Long userId, Long lectureId);
+  boolean existsByUserIdxAndLectureInfo_LectureId(Long userId, Long lectureId);
 }

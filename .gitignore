@@ -1,6 +1,7 @@
 .env
 *.json
 *.DS_Store
+src/main/generated/**
 
 .gradle
 build/

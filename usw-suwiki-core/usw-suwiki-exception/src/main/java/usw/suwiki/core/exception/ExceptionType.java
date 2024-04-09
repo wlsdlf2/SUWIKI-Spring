@@ -106,7 +106,7 @@ public enum ExceptionType {
    * Domain : Timetable
    */
   TIMETABLE_NOT_FOUND("TIMETABLE001", "존재하지 않는 시간표입니다.", NOT_FOUND),
-  TIMETABLE_NOT_AN_AUTHOR("TIMETABLE002", "해당 데이터의 수정 및 삭제는 작성자의 권한입니다.", FORBIDDEN),
+  NOT_AN_AUTHOR("TIMETABLE002", "해당 데이터의 수정 및 삭제는 작성자의 권한입니다.", FORBIDDEN), // todo: 수정 가능한지 확인하기
   INVALID_TIMETABLE_SEMESTER("TIMETABLE010", "유효하지 않은 학기명입니다.", BAD_REQUEST),
 
   TIMETABLE_CELL_NOT_FOUND("TIMETABLE101", "존재하지 않는 시간표 셀입니다.", NOT_FOUND),

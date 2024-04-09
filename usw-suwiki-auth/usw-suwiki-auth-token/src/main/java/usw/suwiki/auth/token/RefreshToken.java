@@ -39,7 +39,7 @@ public class RefreshToken {
 
   public void validatePayload(String payload) {
     if (!Objects.equals(this.payload, payload)) {
-      throw new AccountException(ExceptionType.TOKEN_IS_BROKEN);
+      throw new AccountException(ExceptionType.INVALID_TOKEN);
     }
   }
 }

@@ -6,6 +6,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SignatureException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -42,7 +43,7 @@ public class JwtAgent implements TokenAgent {
   @Override
   @Transactional
   public String provideRefreshTokenInLogin(Long userId) {
-    Optional<RefreshToken> wrappedRefreshToken = refreshTokenCRUDService.loadRefreshTokenFromUserIdx(userId);
+    Optional<RefreshToken> wrappedRefreshToken = refreshTokenCRUDService.loadByUserId(userId);
 
     if (wrappedRefreshToken.isEmpty()) {
       return createRefreshToken(userId);
@@ -61,7 +62,7 @@ public class JwtAgent implements TokenAgent {
   @Override
   @Transactional
   public String reissueRefreshToken(String payload) {
-    RefreshToken refreshToken = refreshTokenCRUDService.loadRefreshTokenFromPayload(payload);
+    RefreshToken refreshToken = refreshTokenCRUDService.loadByPayload(payload);
     refreshToken.validatePayload(payload);
 
     String newPayload = generateRefreshToken(new Date(new Date().getTime() + refreshTokenExpireTime));
@@ -74,10 +75,12 @@ public class JwtAgent implements TokenAgent {
       Jwts.parserBuilder()
         .setSigningKey(getSigningKey()).build()
         .parseClaimsJws(token);
-    } catch (MalformedJwtException | IllegalArgumentException ex) {
+    } catch (MalformedJwtException | IllegalArgumentException exception) {
       throw new AccountException(ExceptionType.LOGIN_REQUIRED);
     } catch (ExpiredJwtException exception) {
       throw new AccountException(ExceptionType.TOKEN_IS_EXPIRED);
+    } catch (SignatureException exception) {
+      throw new AccountException(ExceptionType.INVALID_TOKEN);
     }
   }
 
@@ -97,7 +100,7 @@ public class JwtAgent implements TokenAgent {
   @Override
   public String createRefreshToken(Long userId) {
     String refreshToken = generateRefreshToken(new Date(new Date().getTime() + refreshTokenExpireTime));
-    refreshTokenCRUDService.save(new RefreshToken(userId, refreshToken));
+    refreshTokenCRUDService.save(userId, refreshToken);
     return refreshToken;
   }
 

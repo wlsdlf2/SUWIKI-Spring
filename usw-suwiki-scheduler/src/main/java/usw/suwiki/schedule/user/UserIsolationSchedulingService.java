@@ -99,7 +99,7 @@ public class UserIsolationSchedulingService {
     for (User user : userCRUDService.loadUsersLastLoginBetweenStartEnd(startTime, endTime)) {
       Long userIdx = user.getId();
       clearViewExamService.clear(userIdx);
-      refreshTokenCRUDService.deleteFromUserIdx(userIdx);
+      refreshTokenCRUDService.deleteByUserId(userIdx);
       reportService.deleteFromUserIdx(userIdx);
       evaluatePostService.deleteAllByUserId(userIdx);
       examPostCRUDService.deleteFromUserIdx(userIdx);

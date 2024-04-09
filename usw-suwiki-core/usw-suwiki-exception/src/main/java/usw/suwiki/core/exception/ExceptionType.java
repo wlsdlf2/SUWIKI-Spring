@@ -69,7 +69,7 @@ public enum ExceptionType {
    * Domain : Token
    */
   TOKEN_IS_EXPIRED("TOKEN001", "토큰이 만료되었습니다 다시 로그인 해주세요", UNAUTHORIZED),
-  TOKEN_IS_BROKEN("TOKEN002", "토큰이 유효하지 않습니다.", BAD_REQUEST),
+  INVALID_TOKEN("TOKEN002", "토큰이 유효하지 않습니다.", BAD_REQUEST),
 
   /**
    * Domain : Lecture

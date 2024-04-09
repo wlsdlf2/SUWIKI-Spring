@@ -60,7 +60,7 @@ public class Timetable extends BaseEntity {
 
   public void validateAuthor(Long userId) {
     if (!this.userId.equals(userId)) {
-      throw new TimetableException(ExceptionType.TIMETABLE_NOT_AN_AUTHOR);
+      throw new TimetableException(ExceptionType.NOT_AN_AUTHOR);
     }
   }
 

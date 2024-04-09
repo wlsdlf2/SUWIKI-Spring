@@ -27,6 +27,7 @@ import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuild
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static usw.suwiki.core.exception.ExceptionType.INVALID_TIMETABLE_SEMESTER;
+import static usw.suwiki.core.exception.ExceptionType.INVALID_TOKEN;
 import static usw.suwiki.core.exception.ExceptionType.PARAMETER_VALIDATION_FAIL;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -157,6 +158,41 @@ class TimetableControllerTest extends WebMvcTestSupport {
       result.andDo(
         RestDocument.builder()
           .identifier("create-timetable-fail-wrong-semester")
+          .tag(Tag.TIME_TABLE)
+          .result(result)
+          .generateDocs()
+      );
+    }
+
+    @Test
+    @DisplayName("잘못된 토큰으로 시간표 생성을 요청하면 400 에러를 던진다.")
+    void create_Fail_ByInvalidToken() throws Exception {
+      // given
+      var request = new TimetableRequest.Description(2024, "first", "2024 1학기 시간표");
+      var invalidToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9" +
+                         ".eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ" +
+                         ".SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
+
+      // when
+      var result = mockMvc.perform(post(endpoint)
+        .header(AUTHORIZATION, invalidToken)
+        .content(objectMapper.writeValueAsString(request))
+        .contentType(MediaType.APPLICATION_JSON)
+        .accept(MediaType.APPLICATION_JSON)
+      );
+
+      // then
+      result.andExpectAll(
+        status().isBadRequest(),
+        jsonPath("$.code").value(INVALID_TOKEN.getCode()),
+        jsonPath("$.message").value(INVALID_TOKEN.getMessage()),
+        jsonPath("$.status").value(INVALID_TOKEN.getStatus())
+      );
+
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .identifier("create-timetable-fail-invalid-token")
           .tag(Tag.TIME_TABLE)
           .result(result)
           .generateDocs()

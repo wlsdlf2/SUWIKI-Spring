@@ -14,24 +14,25 @@ import java.util.Optional;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class RefreshTokenCRUDService {
-    private final RefreshTokenRepository refreshTokenRepository;
+  private final RefreshTokenRepository refreshTokenRepository;
 
-    @Transactional
-    public void save(RefreshToken refreshToken) {
-        refreshTokenRepository.save(refreshToken);
-    }
+  @Transactional
+  public void save(Long userId, String token) {
+    var refreshToken = new RefreshToken(userId, token);
+    refreshTokenRepository.save(refreshToken);
+  }
 
-    @Transactional
-    public void deleteFromUserIdx(Long userIdx) {
-        refreshTokenRepository.deleteByUserIdx(userIdx);
-    }
+  @Transactional
+  public void deleteByUserId(Long userId) {
+    refreshTokenRepository.deleteByUserIdx(userId);
+  }
 
-    public Optional<RefreshToken> loadRefreshTokenFromUserIdx(Long userIdx) {
-        return refreshTokenRepository.findByUserIdx(userIdx);
-    }
+  public Optional<RefreshToken> loadByUserId(Long userId) {
+    return refreshTokenRepository.findByUserIdx(userId);
+  }
 
-    public RefreshToken loadRefreshTokenFromPayload(String payload) {
-        return refreshTokenRepository.findByPayload(payload)
-            .orElseThrow(() -> new AccountException(ExceptionType.TOKEN_IS_BROKEN));
-    }
+  public RefreshToken loadByPayload(String payload) {
+    return refreshTokenRepository.findByPayload(payload)
+      .orElseThrow(() -> new AccountException(ExceptionType.INVALID_TOKEN));
+  }
 }

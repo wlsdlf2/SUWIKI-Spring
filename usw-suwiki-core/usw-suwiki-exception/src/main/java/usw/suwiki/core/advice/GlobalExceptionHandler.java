@@ -30,7 +30,7 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(Exception.class)
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
   public ErrorResponse handleException(Exception exception) {
-    log.error("[Unexpected Exception] message : {}", exception.getMessage());
+    log.error("[Unexpected Exception] exception : {}, message : {}", exception.getClass().getName(), exception.getMessage());
     // todo: webhook 추가하기
     return ErrorResponse.internal(exception.getMessage());
   }

@@ -1,7 +1,7 @@
 package usw.suwiki.api.user;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -10,11 +10,8 @@ import usw.suwiki.common.response.ResponseForm;
 import usw.suwiki.domain.user.service.UserBusinessService;
 import usw.suwiki.statistics.annotation.ApiLogger;
 
-import javax.validation.Valid;
-
 import static org.springframework.http.HttpStatus.OK;
 
-@CrossOrigin(origins = "*", allowedHeaders = "*")
 @RestController
 @RequestMapping("/v2/user/restricted-reason")
 @RequiredArgsConstructor

@@ -1,7 +1,7 @@
 package usw.suwiki.api.exam;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import usw.suwiki.auth.core.annotation.JWTVerify;
+import usw.suwiki.auth.core.annotation.JwtVerify;
 import usw.suwiki.auth.core.jwt.JwtAgent;
 import usw.suwiki.common.pagination.PageOption;
 import usw.suwiki.common.response.ResponseForm;
@@ -23,12 +23,10 @@ import usw.suwiki.domain.exampost.dto.ExamPostResponse;
 import usw.suwiki.domain.exampost.service.ExamPostService;
 import usw.suwiki.statistics.annotation.ApiLogger;
 
-import javax.validation.Valid;
 import java.util.Optional;
 
 import static org.springframework.http.HttpStatus.OK;
 
-@CrossOrigin(origins = "*", allowedHeaders = "*")
 @RestController
 @RequestMapping(value = "/exam-posts")
 @RequiredArgsConstructor
@@ -90,7 +88,7 @@ public class ExamPostsController {
     return "success";
   }
 
-  @JWTVerify
+  @JwtVerify
   @ApiLogger(option = "examPosts")
   @GetMapping("/written")
   @ResponseStatus(OK)

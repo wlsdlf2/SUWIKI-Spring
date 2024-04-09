@@ -1,7 +1,7 @@
 package usw.suwiki.api.evaluate;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,12 +22,10 @@ import usw.suwiki.domain.evaluatepost.dto.EvaluatePostResponse;
 import usw.suwiki.domain.evaluatepost.service.EvaluatePostService;
 import usw.suwiki.statistics.annotation.ApiLogger;
 
-import javax.validation.Valid;
 import java.util.Optional;
 
 import static org.springframework.http.HttpStatus.OK;
 
-@CrossOrigin(origins = "*", allowedHeaders = "*")
 @RestController
 @RequestMapping(value = "/evaluate-posts")
 @RequiredArgsConstructor

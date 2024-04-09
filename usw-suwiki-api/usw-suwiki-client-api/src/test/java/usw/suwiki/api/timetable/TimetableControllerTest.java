@@ -1,7 +1,7 @@
 package usw.suwiki.api.timetable;
 
 import io.github.hejow.restdocs.document.RestDocument;
-import jakarta.persistence.EntityManager;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -12,8 +12,8 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.transaction.annotation.Transactional;
 import usw.suwiki.comon.test.Tag;
+import usw.suwiki.comon.test.db.Table;
 import usw.suwiki.comon.test.support.WebMvcTestSupport;
 import usw.suwiki.core.secure.TokenAgent;
 import usw.suwiki.core.secure.model.Claim;
@@ -24,6 +24,8 @@ import usw.suwiki.domain.user.User;
 import usw.suwiki.domain.user.UserRepository;
 import usw.suwiki.domain.user.model.UserClaim;
 
+import java.util.Set;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
@@ -31,13 +33,15 @@ import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuild
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static usw.suwiki.comon.test.db.Table.TIMETABLE;
+import static usw.suwiki.comon.test.db.Table.TIMETABLE_CELLS;
+import static usw.suwiki.comon.test.db.Table.USERS;
 import static usw.suwiki.comon.test.extension.AssertExtension.expectExceptionJsonPath;
 import static usw.suwiki.core.exception.ExceptionType.INVALID_TIMETABLE_SEMESTER;
 import static usw.suwiki.core.exception.ExceptionType.INVALID_TOKEN;
 import static usw.suwiki.core.exception.ExceptionType.NOT_AN_AUTHOR;
 import static usw.suwiki.core.exception.ExceptionType.PARAMETER_VALIDATION_FAIL;
 
-@Transactional
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class TimetableControllerTest extends WebMvcTestSupport {
   @Autowired
@@ -46,12 +50,17 @@ class TimetableControllerTest extends WebMvcTestSupport {
   private UserRepository userRepository;
   @Autowired
   private TokenAgent tokenAgent;
-  @Autowired
-  private EntityManager entityManager;
 
-  private final String INVALID_ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9" +
-                                              ".eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ" +
-                                              ".SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
+  @Override
+  protected Set<Table> targetTables() {
+    return Set.of(USERS, TIMETABLE, TIMETABLE_CELLS);
+  }
+
+  @AfterEach
+  @Override
+  protected void clean() {
+    super.databaseCleaner.clean(targetTables());
+  }
 
   private User user;
   private Claim claim;
@@ -238,7 +247,6 @@ class TimetableControllerTest extends WebMvcTestSupport {
         jsonPath("$.data.success").value(true)
       );
 
-      entityManager.clear();
       var timetables = timetableRepository.findAllByUserId(user.getId());
       assertAll(
         () -> assertThat(timetables.get(0)).isNotNull(),

@@ -11,6 +11,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
+import usw.suwiki.comon.test.db.Table;
+
+import java.util.Set;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
@@ -26,10 +29,21 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 public abstract class WebMvcTestSupport {
   private static final String ANY_END_POINT = "/**";
 
-  protected MockMvc mockMvc;
+  protected final String INVALID_ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9" +
+                                                ".eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ" +
+                                                ".SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
 
   @Autowired
   protected ObjectMapper objectMapper;
+
+  @Autowired
+  protected DatabaseCleaner databaseCleaner;
+
+  protected MockMvc mockMvc;
+
+  protected abstract Set<Table> targetTables();
+
+  protected abstract void clean();
 
   @BeforeEach
   void setup(

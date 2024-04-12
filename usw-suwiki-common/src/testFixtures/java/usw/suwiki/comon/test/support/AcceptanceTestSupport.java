@@ -37,7 +37,7 @@ public abstract class AcceptanceTestSupport {
   public static final String ANY_END_POINT = "/**";
 
   @Autowired
-  protected static ObjectMapper objectMapper;
+  protected ObjectMapper objectMapper;
 
   @Autowired
   protected DatabaseCleaner databaseCleaner;

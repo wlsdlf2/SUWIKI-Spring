@@ -66,7 +66,6 @@ class TimetableControllerMvcTest extends AcceptanceTestSupport {
     final String endpoint = "/timetables";
 
     @Test
-    @DisplayName("시간표 생성 성공")
     void 시간표_생성_성공() throws Exception {
       // expected
       final String identifier = "create-timetable";

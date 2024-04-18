@@ -6,12 +6,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Aspect
 @Component
 @RequiredArgsConstructor
+@Profile({"prod", "dev", "local"})
 public class CacheStaticsAspect {
 
   private final HttpServletRequest httpServletRequest;

@@ -12,9 +12,11 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import usw.suwiki.comon.test.Tag;
-import usw.suwiki.comon.test.db.Table;
-import usw.suwiki.comon.test.support.WebMvcTestSupport;
+import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
+import usw.suwiki.common.test.Table;
+import usw.suwiki.common.test.Tag;
+import usw.suwiki.common.test.support.AcceptanceTestSupport;
+import usw.suwiki.common.test.support.Uri;
 import usw.suwiki.core.secure.TokenAgent;
 import usw.suwiki.core.secure.model.Claim;
 import usw.suwiki.domain.lecture.timetable.Timetable;
@@ -29,38 +31,25 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static usw.suwiki.comon.test.db.Table.TIMETABLE;
-import static usw.suwiki.comon.test.db.Table.TIMETABLE_CELLS;
-import static usw.suwiki.comon.test.db.Table.USERS;
-import static usw.suwiki.comon.test.extension.AssertExtension.expectExceptionJsonPath;
+import static usw.suwiki.common.test.Table.TIMETABLE;
+import static usw.suwiki.common.test.Table.TIMETABLE_CELLS;
+import static usw.suwiki.common.test.Table.USERS;
+import static usw.suwiki.common.test.extension.AssertExtension.expectExceptionJsonPath;
 import static usw.suwiki.core.exception.ExceptionType.INVALID_TIMETABLE_SEMESTER;
 import static usw.suwiki.core.exception.ExceptionType.INVALID_TOKEN;
 import static usw.suwiki.core.exception.ExceptionType.NOT_AN_AUTHOR;
 import static usw.suwiki.core.exception.ExceptionType.PARAMETER_VALIDATION_FAIL;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class TimetableControllerTest extends WebMvcTestSupport {
+class TimetableControllerTest extends AcceptanceTestSupport {
   @Autowired
   private TimetableRepository timetableRepository;
   @Autowired
   private UserRepository userRepository;
   @Autowired
   private TokenAgent tokenAgent;
-
-  @Override
-  protected Set<Table> targetTables() {
-    return Set.of(USERS, TIMETABLE, TIMETABLE_CELLS);
-  }
-
-  @AfterEach
-  @Override
-  protected void clean() {
-    super.databaseCleaner.clean(targetTables());
-  }
 
   private User user;
   private Claim claim;
@@ -72,6 +61,17 @@ class TimetableControllerTest extends WebMvcTestSupport {
     claim = new UserClaim(user.getLoginId(), user.getRole().name(), user.getRestricted());
 
     accessToken = tokenAgent.createAccessToken(user.getId(), claim);
+  }
+
+  @Override
+  protected Set<Table> targetTables() {
+    return Set.of(USERS, TIMETABLE, TIMETABLE_CELLS);
+  }
+
+  @AfterEach
+  @Override
+  protected void clean() {
+    super.databaseCleaner.clean(this.targetTables());
   }
 
   @Nested
@@ -86,12 +86,7 @@ class TimetableControllerTest extends WebMvcTestSupport {
       var request = new TimetableRequest.Description(2024, "first", "2024 1학기 시간표");
 
       // when
-      var result = mockMvc.perform(post(endpoint)
-        .header(AUTHORIZATION, accessToken)
-        .content(objectMapper.writeValueAsString(request))
-        .contentType(MediaType.APPLICATION_JSON)
-        .accept(MediaType.APPLICATION_JSON)
-      );
+      var result = post(Uri.of(endpoint), accessToken, request);
 
       // then
       result.andExpectAll(
@@ -130,12 +125,7 @@ class TimetableControllerTest extends WebMvcTestSupport {
       var request = new TimetableRequest.Description(year, "first", name);
 
       // when
-      var result = mockMvc.perform(post(endpoint)
-        .header(AUTHORIZATION, accessToken)
-        .content(objectMapper.writeValueAsString(request))
-        .contentType(MediaType.APPLICATION_JSON)
-        .accept(MediaType.APPLICATION_JSON)
-      );
+      var result = post(Uri.of(endpoint), accessToken, request);
 
       // then
       result.andExpectAll(
@@ -161,12 +151,7 @@ class TimetableControllerTest extends WebMvcTestSupport {
       var request = new TimetableRequest.Description(2024, semester, "시간표입니다.");
 
       // when
-      var result = mockMvc.perform(post(endpoint)
-        .header(AUTHORIZATION, accessToken)
-        .content(objectMapper.writeValueAsString(request))
-        .contentType(MediaType.APPLICATION_JSON)
-        .accept(MediaType.APPLICATION_JSON)
-      );
+      var result = post(Uri.of(endpoint), accessToken, request);
 
       // then
       result.andExpectAll(
@@ -191,12 +176,7 @@ class TimetableControllerTest extends WebMvcTestSupport {
       var request = new TimetableRequest.Description(2024, "first", "2024 1학기 시간표");
 
       // when
-      var result = mockMvc.perform(post(endpoint)
-        .header(AUTHORIZATION, INVALID_ACCESS_TOKEN)
-        .content(objectMapper.writeValueAsString(request))
-        .contentType(MediaType.APPLICATION_JSON)
-        .accept(MediaType.APPLICATION_JSON)
-      );
+      var result = post(Uri.of(endpoint), INVALID_ACCESS_TOKEN, request);
 
       // then
       result.andExpectAll(
@@ -234,12 +214,7 @@ class TimetableControllerTest extends WebMvcTestSupport {
       var request = new TimetableRequest.Description(2024, "second", "수정된 시간표");
 
       // when
-      var result = mockMvc.perform(put(endpoint, timetable.getId())
-        .header(AUTHORIZATION, accessToken)
-        .content(objectMapper.writeValueAsString(request))
-        .contentType(MediaType.APPLICATION_JSON)
-        .accept(MediaType.APPLICATION_JSON)
-      );
+      var result = put(Uri.of(endpoint, timetable.getId()), accessToken, request);
 
       // then
       result.andExpectAll(
@@ -276,7 +251,7 @@ class TimetableControllerTest extends WebMvcTestSupport {
       var anotherUserToken = tokenAgent.createAccessToken(2L, claim);
 
       // when
-      var result = mockMvc.perform(put(endpoint, timetable.getId())
+      var result = mockMvc.perform(RestDocumentationRequestBuilders.put(endpoint, timetable.getId())
         .header(AUTHORIZATION, anotherUserToken)
         .content(objectMapper.writeValueAsString(request))
         .contentType(MediaType.APPLICATION_JSON)
@@ -310,12 +285,7 @@ class TimetableControllerTest extends WebMvcTestSupport {
       var request = new TimetableRequest.Description(year, "first", name);
 
       // when
-      var result = mockMvc.perform(put(endpoint, timetable.getId())
-        .header(AUTHORIZATION, accessToken)
-        .content(objectMapper.writeValueAsString(request))
-        .contentType(MediaType.APPLICATION_JSON)
-        .accept(MediaType.APPLICATION_JSON)
-      );
+      var result = put(Uri.of(endpoint, timetable.getId()), accessToken, request);
 
       // then
       result.andExpectAll(
@@ -341,12 +311,7 @@ class TimetableControllerTest extends WebMvcTestSupport {
       var request = new TimetableRequest.Description(2024, semester, "시간표입니다.");
 
       // when
-      var result = mockMvc.perform(put(endpoint, timetable.getId())
-        .header(AUTHORIZATION, accessToken)
-        .content(objectMapper.writeValueAsString(request))
-        .contentType(MediaType.APPLICATION_JSON)
-        .accept(MediaType.APPLICATION_JSON)
-      );
+      var result = put(Uri.of(endpoint, timetable.getId()), accessToken, request);
 
       // then
       result.andExpectAll(
@@ -371,12 +336,7 @@ class TimetableControllerTest extends WebMvcTestSupport {
       var request = new TimetableRequest.Description(2024, "second", "수정된 시간표");
 
       // when
-      var result = mockMvc.perform(put(endpoint, timetable.getId())
-        .header(AUTHORIZATION, INVALID_ACCESS_TOKEN)
-        .content(objectMapper.writeValueAsString(request))
-        .contentType(MediaType.APPLICATION_JSON)
-        .accept(MediaType.APPLICATION_JSON)
-      );
+      var result = put(Uri.of(endpoint, timetable.getId()), INVALID_ACCESS_TOKEN, request);
 
       // then
       result.andExpectAll(

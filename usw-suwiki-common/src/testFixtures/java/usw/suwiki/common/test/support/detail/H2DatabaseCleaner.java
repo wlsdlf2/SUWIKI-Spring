@@ -1,10 +1,11 @@
-package usw.suwiki.comon.test.db;
+package usw.suwiki.common.test.support.detail;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import usw.suwiki.comon.test.support.DatabaseCleaner;
+import usw.suwiki.common.test.Table;
+import usw.suwiki.common.test.support.DatabaseCleaner;
 
 import java.util.Set;
 
@@ -17,8 +18,8 @@ class H2DatabaseCleaner implements DatabaseCleaner {
   @PersistenceContext
   protected EntityManager entityManager;
 
-  @Transactional
   @Override
+  @Transactional
   public void clean(Set<Table> tables) {
     entityManager.createNativeQuery(OFF_REFERENTIAL_INTEGRITY).executeUpdate();
     tables.forEach(table -> entityManager.createNativeQuery(TRUNCATE + table.toLow()));

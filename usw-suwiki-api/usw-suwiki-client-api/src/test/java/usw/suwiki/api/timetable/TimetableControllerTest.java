@@ -11,8 +11,6 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
-import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
 import usw.suwiki.common.test.Table;
 import usw.suwiki.common.test.Tag;
 import usw.suwiki.common.test.support.AcceptanceTestSupport;
@@ -30,7 +28,6 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static usw.suwiki.common.test.Table.TIMETABLE;
@@ -251,12 +248,7 @@ class TimetableControllerTest extends AcceptanceTestSupport {
       var anotherUserToken = tokenAgent.createAccessToken(2L, claim);
 
       // when
-      var result = mockMvc.perform(RestDocumentationRequestBuilders.put(endpoint, timetable.getId())
-        .header(AUTHORIZATION, anotherUserToken)
-        .content(objectMapper.writeValueAsString(request))
-        .contentType(MediaType.APPLICATION_JSON)
-        .accept(MediaType.APPLICATION_JSON)
-      );
+      var result = put(Uri.of(endpoint, timetable.getId()), anotherUserToken, request);
 
       // then
       result.andExpectAll(

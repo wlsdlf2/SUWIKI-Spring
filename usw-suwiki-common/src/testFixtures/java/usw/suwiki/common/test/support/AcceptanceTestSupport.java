@@ -41,9 +41,9 @@ public abstract class AcceptanceTestSupport {
   protected DatabaseCleaner databaseCleaner;
 
   @Autowired
-  protected ObjectMapper objectMapper;
+  private ObjectMapper objectMapper;
 
-  protected MockMvc mockMvc;
+  private MockMvc mockMvc;
 
   protected abstract Set<Table> targetTables();
 

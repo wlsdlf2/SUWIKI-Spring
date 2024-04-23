@@ -1,5 +1,9 @@
 package usw.suwiki.common.test;
 
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 public enum Table {
   // user
   USERS, USER_ISOLATION, BLACKLIST_DOMAIN, RESTRICTING_USER,
@@ -17,7 +21,11 @@ public enum Table {
   API_LOGGER, REFRESH_TOKEN, CONFIRMATION_TOKEN, CLIENT_APP_VERSION,
   ;
 
-  public String toLow() {
-    return this.name().toLowerCase();
+  public String lower() {
+    return name().toLowerCase();
+  }
+
+  public static Set<Table> toSet() {
+    return Arrays.stream(Table.values()).collect(Collectors.toSet());
   }
 }

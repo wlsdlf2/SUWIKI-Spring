@@ -1,7 +1,6 @@
 package usw.suwiki.api.timetable;
 
 import io.github.hejow.restdocs.document.RestDocument;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -10,9 +9,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import usw.suwiki.common.test.Table;
 import usw.suwiki.common.test.Tag;
+import usw.suwiki.common.test.annotation.AcceptanceTest;
 import usw.suwiki.common.test.support.AcceptanceTestSupport;
 import usw.suwiki.common.test.support.Uri;
 import usw.suwiki.core.secure.TokenAgent;
@@ -24,22 +22,17 @@ import usw.suwiki.domain.user.User;
 import usw.suwiki.domain.user.UserRepository;
 import usw.suwiki.domain.user.model.UserClaim;
 
-import java.util.Set;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static usw.suwiki.common.test.Table.TIMETABLE;
-import static usw.suwiki.common.test.Table.TIMETABLE_CELLS;
-import static usw.suwiki.common.test.Table.USERS;
 import static usw.suwiki.common.test.extension.AssertExtension.expectExceptionJsonPath;
 import static usw.suwiki.core.exception.ExceptionType.INVALID_TIMETABLE_SEMESTER;
 import static usw.suwiki.core.exception.ExceptionType.INVALID_TOKEN;
 import static usw.suwiki.core.exception.ExceptionType.NOT_AN_AUTHOR;
 import static usw.suwiki.core.exception.ExceptionType.PARAMETER_VALIDATION_FAIL;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@AcceptanceTest
 class TimetableControllerTest extends AcceptanceTestSupport {
   @Autowired
   private TimetableRepository timetableRepository;
@@ -58,17 +51,6 @@ class TimetableControllerTest extends AcceptanceTestSupport {
     claim = new UserClaim(user.getLoginId(), user.getRole().name(), user.getRestricted());
 
     accessToken = tokenAgent.createAccessToken(user.getId(), claim);
-  }
-
-  @Override
-  protected Set<Table> targetTables() {
-    return Set.of(USERS, TIMETABLE, TIMETABLE_CELLS);
-  }
-
-  @AfterEach
-  @Override
-  protected void clean() {
-    super.databaseCleaner.clean(this.targetTables());
   }
 
   @Nested

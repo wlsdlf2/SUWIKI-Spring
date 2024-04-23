@@ -1,15 +1,16 @@
 package usw.suwiki.api.user;
 
 import io.github.hejow.restdocs.document.RestDocument;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.util.Pair;
-import org.springframework.test.context.ActiveProfiles;
 import usw.suwiki.auth.token.ConfirmationToken;
 import usw.suwiki.auth.token.ConfirmationTokenRepository;
 import usw.suwiki.auth.token.response.ConfirmResponse;
-import usw.suwiki.common.test.Table;
+import usw.suwiki.common.test.annotation.AcceptanceTest;
 import usw.suwiki.common.test.support.AcceptanceTestSupport;
 import usw.suwiki.common.test.support.ResponseValidator;
 import usw.suwiki.common.test.support.Uri;
@@ -19,7 +20,12 @@ import usw.suwiki.core.secure.TokenAgent;
 import usw.suwiki.core.secure.model.Claim;
 import usw.suwiki.domain.user.User;
 import usw.suwiki.domain.user.UserRepository;
-import usw.suwiki.domain.user.dto.UserRequestDto.*;
+import usw.suwiki.domain.user.dto.UserRequestDto.CheckEmailForm;
+import usw.suwiki.domain.user.dto.UserRequestDto.CheckLoginIdForm;
+import usw.suwiki.domain.user.dto.UserRequestDto.EditMyPasswordForm;
+import usw.suwiki.domain.user.dto.UserRequestDto.FindIdForm;
+import usw.suwiki.domain.user.dto.UserRequestDto.FindPasswordForm;
+import usw.suwiki.domain.user.dto.UserRequestDto.JoinForm;
 import usw.suwiki.domain.user.model.UserClaim;
 
 import java.lang.reflect.Constructor;
@@ -28,17 +34,14 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static usw.suwiki.common.test.Table.USERS;
 import static usw.suwiki.common.test.Tag.USER_TABLE;
 
-@ActiveProfiles("mysql")
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@AcceptanceTest(testDatabase = AcceptanceTest.TestDatabase.MYSQL)
 class UserControllerAcceptanceTest extends AcceptanceTestSupport {
 
   @Autowired
@@ -58,17 +61,6 @@ class UserControllerAcceptanceTest extends AcceptanceTestSupport {
   private final String loginId = "suwiki";
   private final String password = "p@sSw0rc1!!";
   private final String email = "suwiki@suwon.ac.kr";
-
-  @Override
-  protected Set<Table> targetTables() {
-    return Set.of(USERS);
-  }
-
-  @Override
-  @AfterEach
-  protected void clean() {
-    super.databaseCleaner.clean(targetTables());
-  }
 
   @BeforeEach
   public void setup() {
@@ -106,12 +98,12 @@ class UserControllerAcceptanceTest extends AcceptanceTestSupport {
 
       // docs
       result.andDo(RestDocument.builder()
-          .identifier(identifier)
-          .summary(summary)
-          .description(description)
-          .tag(tag)
-          .result(result)
-          .generateDocs()
+        .identifier(identifier)
+        .summary(summary)
+        .description(description)
+        .tag(tag)
+        .result(result)
+        .generateDocs()
       );
     }
 
@@ -137,12 +129,12 @@ class UserControllerAcceptanceTest extends AcceptanceTestSupport {
 
       // docs
       result.andDo(RestDocument.builder()
-          .identifier(identifier)
-          .summary(summary)
-          .description(description)
-          .tag(tag)
-          .result(result)
-          .generateDocs()
+        .identifier(identifier)
+        .summary(summary)
+        .description(description)
+        .tag(tag)
+        .result(result)
+        .generateDocs()
       );
     }
 
@@ -187,12 +179,12 @@ class UserControllerAcceptanceTest extends AcceptanceTestSupport {
 
       // docs
       result.andDo(RestDocument.builder()
-          .identifier(identifier)
-          .summary(summary)
-          .description(description)
-          .tag(tag)
-          .result(result)
-          .generateDocs()
+        .identifier(identifier)
+        .summary(summary)
+        .description(description)
+        .tag(tag)
+        .result(result)
+        .generateDocs()
       );
     }
 
@@ -218,12 +210,12 @@ class UserControllerAcceptanceTest extends AcceptanceTestSupport {
 
       // docs
       result.andDo(RestDocument.builder()
-          .identifier(identifier)
-          .summary(summary)
-          .description(description)
-          .tag(tag)
-          .result(result)
-          .generateDocs()
+        .identifier(identifier)
+        .summary(summary)
+        .description(description)
+        .tag(tag)
+        .result(result)
+        .generateDocs()
       );
     }
 
@@ -270,19 +262,19 @@ class UserControllerAcceptanceTest extends AcceptanceTestSupport {
       Optional<User> diger = userRepository.findByLoginId("diger");
 
       assertAll(
-          () -> assertThat(diger.get()).isNotNull(),
-          () -> assertThat(diger.get().getEmail()).isEqualTo(requestBody.email()),
-          () -> assertTrue(passwordEncoder.matches(requestBody.password(), diger.get().getPassword()))
+        () -> assertThat(diger.get()).isNotNull(),
+        () -> assertThat(diger.get().getEmail()).isEqualTo(requestBody.email()),
+        () -> assertTrue(passwordEncoder.matches(requestBody.password(), diger.get().getPassword()))
       );
 
       // docs
       result.andDo(RestDocument.builder()
-          .identifier(identifier)
-          .summary(summary)
-          .description(description)
-          .tag(tag)
-          .result(result)
-          .generateDocs()
+        .identifier(identifier)
+        .summary(summary)
+        .description(description)
+        .tag(tag)
+        .result(result)
+        .generateDocs()
       );
     }
 
@@ -365,8 +357,8 @@ class UserControllerAcceptanceTest extends AcceptanceTestSupport {
       Optional<ConfirmationToken> confirmationToken = confirmationTokenRepository.findByToken(emailVerificationToken);
 
       assertAll(
-          () -> assertThat(confirmationToken.get()).isNotNull(),
-          () -> assertTrue(confirmationToken.get().isVerified())
+        () -> assertThat(confirmationToken.get()).isNotNull(),
+        () -> assertTrue(confirmationToken.get().isVerified())
       );
 
       // Non DOCS
@@ -448,12 +440,12 @@ class UserControllerAcceptanceTest extends AcceptanceTestSupport {
 
       // docs
       result.andDo(RestDocument.builder()
-          .identifier(identifier)
-          .summary(summary)
-          .description(description)
-          .tag(tag)
-          .result(result)
-          .generateDocs()
+        .identifier(identifier)
+        .summary(summary)
+        .description(description)
+        .tag(tag)
+        .result(result)
+        .generateDocs()
       );
     }
   }
@@ -488,12 +480,12 @@ class UserControllerAcceptanceTest extends AcceptanceTestSupport {
 
       // docs
       result.andDo(RestDocument.builder()
-          .identifier(identifier)
-          .summary(summary)
-          .description(description)
-          .tag(tag)
-          .result(result)
-          .generateDocs()
+        .identifier(identifier)
+        .summary(summary)
+        .description(description)
+        .tag(tag)
+        .result(result)
+        .generateDocs()
       );
     }
   }
@@ -529,18 +521,18 @@ class UserControllerAcceptanceTest extends AcceptanceTestSupport {
       Optional<User> diger = userRepository.findByLoginId(loginId);
 
       assertAll(
-          () -> assertThat(diger.get()).isNotNull(),
-          () -> assertTrue(passwordEncoder.matches(newPassword, diger.get().getPassword()))
+        () -> assertThat(diger.get()).isNotNull(),
+        () -> assertTrue(passwordEncoder.matches(newPassword, diger.get().getPassword()))
       );
 
       // docs
       result.andDo(RestDocument.builder()
-          .identifier(identifier)
-          .summary(summary)
-          .description(description)
-          .tag(tag)
-          .result(result)
-          .generateDocs()
+        .identifier(identifier)
+        .summary(summary)
+        .description(description)
+        .tag(tag)
+        .result(result)
+        .generateDocs()
       );
     }
   }

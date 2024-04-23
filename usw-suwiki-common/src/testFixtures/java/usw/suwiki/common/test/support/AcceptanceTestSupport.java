@@ -19,10 +19,8 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
 import usw.suwiki.common.test.HttpMethod;
-import usw.suwiki.common.test.Table;
 
 import java.util.List;
-import java.util.Set;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
@@ -30,24 +28,17 @@ import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.docu
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 
-@ExtendWith(RestDocumentationExtension.class)
 @AutoConfigureMockMvc
+@ExtendWith(RestDocumentationExtension.class)
 public abstract class AcceptanceTestSupport {
   protected final String INVALID_ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9" +
                                                 ".eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ" +
                                                 ".SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
 
   @Autowired
-  protected DatabaseCleaner databaseCleaner;
-
-  @Autowired
   private ObjectMapper objectMapper;
 
   private MockMvc mockMvc;
-
-  protected abstract Set<Table> targetTables();
-
-  protected abstract void clean();
 
   @BeforeEach
   public void setUp(WebApplicationContext webApplicationContext, RestDocumentationContextProvider restDocumentation) {
@@ -125,7 +116,7 @@ public abstract class AcceptanceTestSupport {
     parameters.forEach(parameter -> queryParams.add(parameter.getFirst(), parameter.getSecond()));
 
     var request = toRequestBuilderNonJsonRequest(uri, HttpMethod.GET)
-        .queryParams(queryParams);
+      .queryParams(queryParams);
 
     return perform(request, accessToken);
   }
@@ -175,7 +166,7 @@ public abstract class AcceptanceTestSupport {
     };
 
     return request.accept(MediaType.TEXT_HTML_VALUE)
-        .contentType(MediaType.TEXT_HTML_VALUE)
-        .requestAttr("org.springframework.restdocs.urlTemplate", uri.urlTemplate); // rest-docs pathvariable 설정
+      .contentType(MediaType.TEXT_HTML_VALUE)
+      .requestAttr("org.springframework.restdocs.urlTemplate", uri.urlTemplate); // rest-docs pathvariable 설정
   }
 }

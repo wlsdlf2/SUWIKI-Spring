@@ -104,15 +104,16 @@ public class TimetableController {
     return ApiResponse.success();
   }
 
-  @PutMapping("/{timetableId}/cells")
+  @PutMapping("/{timetableId}/cells/{cellIdx}")
   @ResponseStatus(HttpStatus.OK)
   public ApiResponse<?> updateCell(
     @RequestHeader String authorization,
     @PathVariable Long timetableId,
+    @PathVariable int cellIdx,
     @Valid @RequestBody TimetableRequest.UpdateCell request
   ) {
     Long userId = jwtAgent.parseId(authorization);
-    timetableService.updateCell(userId, timetableId, request);
+    timetableService.updateCell(userId, timetableId, cellIdx, request);
     return ApiResponse.success();
   }
 

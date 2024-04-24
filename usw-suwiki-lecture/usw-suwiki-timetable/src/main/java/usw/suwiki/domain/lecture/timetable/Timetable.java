@@ -39,7 +39,7 @@ public class Timetable extends BaseEntity {
   @ElementCollection
   @CollectionTable(name = "timetable_cells", joinColumns = @JoinColumn(name = "timetable_id"))
   @OrderColumn(name = "cell_idx")
-  private final List<TimetableCell> cells = new ArrayList<>(); // todo: 반드시 테스트할 것
+  private final List<TimetableCell> cells = new ArrayList<>();
 
   public Timetable(Long userId, String name, Integer year, String semester) {
     this.userId = userId;
@@ -79,7 +79,7 @@ public class Timetable extends BaseEntity {
   }
 
   private void validateOverlap(TimetableCell cell) {
-    if (cells.stream().anyMatch(cell::isOverlapped)) {
+    if (cells.stream().anyMatch(cell::isOverlap)) {
       throw new TimetableException(ExceptionType.OVERLAPPED_TIMETABLE_CELL_SCHEDULE);
     }
   }

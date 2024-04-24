@@ -69,12 +69,12 @@ public class TimetableService {
     timetable.addCell(cell);
   }
 
-  public void updateCell(Long userId, Long timetableId, TimetableRequest.UpdateCell request) {
+  public void updateCell(Long userId, Long timetableId, int cellIdx, TimetableRequest.UpdateCell request) {
     Timetable timetable = loadById(timetableId);
     timetable.validateAuthor(userId);
 
     TimetableCell cell = TimetableMapper.toCell(request);
-    timetable.updateCell(request.getCellIdx(), cell);
+    timetable.updateCell(cellIdx, cell);
   }
 
   public void deleteCell(Long userId, Long timetableId, int cellIdx) {

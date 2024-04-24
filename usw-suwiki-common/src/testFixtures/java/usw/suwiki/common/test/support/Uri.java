@@ -14,8 +14,8 @@ public final class Uri implements Serializable {
     this.resource = resource;
   }
 
-  public static Uri of(String url, Object... vars) {
-    String uriString = url.isEmpty() ? "/" : url;
-    return new Uri(url, UriComponentsBuilder.fromUriString(uriString).buildAndExpand(vars).encode().toUri());
+  public static Uri of(String urlTemplate, Object... vars) {
+    String uriString = urlTemplate.isEmpty() ? "/" : urlTemplate;
+    return new Uri(urlTemplate, UriComponentsBuilder.fromUriString(uriString).buildAndExpand(vars).encode().toUri());
   }
 }

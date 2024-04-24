@@ -39,20 +39,20 @@ public class TimetableCell {
     this.lectureName = lecture;
     this.professorName = professor;
     this.location = location;
+    validatePeriod(startPeriod, endPeriod);
     this.startPeriod = startPeriod;
     this.endPeriod = endPeriod;
     this.day = TimetableDay.from(day);
     this.color = TimetableCellColor.from(color);
-    validatePeriod();
   }
 
-  private void validatePeriod() {
-    if (this.startPeriod > this.endPeriod) {
+  private void validatePeriod(Integer startPeriod, Integer endPeriod) {
+    if (startPeriod > endPeriod) {
       throw new TimetableException(ExceptionType.INVALID_TIMETABLE_CELL_SCHEDULE);
     }
   }
 
-  public boolean isOverlapped(TimetableCell cell) {
+  public boolean isOverlap(TimetableCell cell) {
     return this.day.isEquals(cell.day) &&
            Math.max(this.startPeriod, cell.startPeriod) <= Math.min(this.endPeriod, cell.getEndPeriod());
   }

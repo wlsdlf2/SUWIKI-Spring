@@ -13,6 +13,16 @@ import java.util.stream.IntStream;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 class TimetableMapper {
 
+  public static Timetable toTimetable(Long userId, TimetableRequest.Bulk request) {
+    var description = request.getDescription();
+    
+    var cells = request.getCells().stream()
+      .map(TimetableMapper::toCell)
+      .toList();
+
+    return new Timetable(userId, description.getName(), description.getYear(), description.getSemester(), cells);
+  }
+
   public static TimetableCell toCell(TimetableRequest.Cell request) {
     return new TimetableCell(
       request.getLecture(),

@@ -2,6 +2,8 @@ package usw.suwiki.common.test.support;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayNameGeneration;
+import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -30,6 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 
 @AutoConfigureMockMvc
 @ExtendWith(RestDocumentationExtension.class)
+@DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 public abstract class AcceptanceTestSupport {
   protected final String INVALID_ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9" +
                                                 ".eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ" +
@@ -52,6 +55,10 @@ public abstract class AcceptanceTestSupport {
       .defaultRequest(RestDocumentationRequestBuilders.patch("/**").with(csrf().asHeader()))
       .defaultRequest(RestDocumentationRequestBuilders.delete("/**").with(csrf().asHeader()))
       .build();
+  }
+
+  public ResultActions get(Uri uri, String accessToken) throws Exception {
+    return perform(uri, accessToken, null);
   }
 
   public ResultActions get(Uri uri, List<Pair<String, String>> parameters) throws Exception {
@@ -90,8 +97,8 @@ public abstract class AcceptanceTestSupport {
     return perform(uri, HttpMethod.PATCH, accessToken, requestBody);
   }
 
-  public ResultActions delete(Uri uri, Object requestBody) throws Exception {
-    return perform(uri, HttpMethod.DELETE, null, requestBody);
+  public ResultActions delete(Uri uri, String accessToken) throws Exception {
+    return perform(uri, HttpMethod.DELETE, accessToken, null);
   }
 
   public ResultActions delete(Uri uri, String accessToken, Object requestBody) throws Exception {
@@ -102,31 +109,42 @@ public abstract class AcceptanceTestSupport {
    * query 전용 acceptance test template
    */
   private ResultActions perform(Uri uri, String accessToken, List<Pair<String, String>> parameters) throws Exception {
-    MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
-    parameters.forEach(parameter -> queryParams.add(parameter.getFirst(), parameter.getSecond()));
+    var request = toRequestBuilder(uri, HttpMethod.GET);
 
-    var request = toRequestBuilder(uri, HttpMethod.GET)
-      .queryParams(queryParams);
+    if (parameters != null) {
+      request.queryParams(toParams(parameters));
+    }
 
     return perform(request, accessToken);
   }
 
   private ResultActions performNonJson(Uri uri, String accessToken, List<Pair<String, String>> parameters) throws Exception {
-    MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
-    parameters.forEach(parameter -> queryParams.add(parameter.getFirst(), parameter.getSecond()));
+    var request = toRequestBuilderNonJsonRequest(uri, HttpMethod.GET);
 
-    var request = toRequestBuilderNonJsonRequest(uri, HttpMethod.GET)
-      .queryParams(queryParams);
+    if (parameters != null) {
+      request.queryParams(toParams(parameters));
+    }
 
     return perform(request, accessToken);
+  }
+
+  private MultiValueMap<String, String> toParams(List<Pair<String, String>> parameters) {
+    return parameters.stream().collect(
+      LinkedMultiValueMap::new,
+      (map, pair) -> map.add(pair.getFirst(), pair.getSecond()),
+      LinkedMultiValueMap::addAll
+    );
   }
 
   /**
    * command 전용 acceptance test template
    */
   private ResultActions perform(Uri uri, HttpMethod httpMethod, String accessToken, Object requestBody) throws Exception {
-    var request = toRequestBuilder(uri, httpMethod)
-      .content(objectMapper.writeValueAsString(requestBody));
+    var request = toRequestBuilder(uri, httpMethod);
+
+    if (requestBody != null) {
+      request.content(objectMapper.writeValueAsString(requestBody));
+    }
 
     return perform(request, accessToken);
   }

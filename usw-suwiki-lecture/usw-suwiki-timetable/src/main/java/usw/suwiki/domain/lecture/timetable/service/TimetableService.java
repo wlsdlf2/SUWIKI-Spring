@@ -1,6 +1,7 @@
 package usw.suwiki.domain.lecture.timetable.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import usw.suwiki.core.exception.ExceptionType;
@@ -43,16 +44,13 @@ public class TimetableService {
     timetable.update(request.getName(), request.getYear(), request.getSemester());
   }
 
-  public void bulkCreate(Long userId, List<TimetableRequest.Bulk> requests) { // todo: 쿼리 개선하기
-    timetableRepository.saveAll(requests.stream()
-      .map(req -> {
-        TimetableRequest.Description description = req.getDescription();
-        Timetable timetable = new Timetable(userId, description.getName(), description.getYear(), description.getSemester());
-        req.getCells().forEach(cell -> timetable.addCell(TimetableMapper.toCell(cell)));
-        return timetable;
-      })
-      .toList()
-    );
+  @Async
+  public void bulkInsert(Long userId, List<TimetableRequest.Bulk> requests) {
+    var timetables = requests.stream()
+      .map(request -> TimetableMapper.toTimetable(userId, request))
+      .toList();
+    
+    timetableRepository.saveAll(timetables);
   }
 
   public void delete(Long userId, Long timetableId) {

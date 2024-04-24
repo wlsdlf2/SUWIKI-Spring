@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import usw.suwiki.auth.core.jwt.JwtAgent;
-import usw.suwiki.common.request.BulkRequest;
 import usw.suwiki.common.response.ApiResponse;
 import usw.suwiki.domain.lecture.timetable.dto.TimetableRequest;
 import usw.suwiki.domain.lecture.timetable.dto.TimetableResponse;
@@ -41,12 +40,13 @@ public class TimetableController {
   }
 
   @PostMapping("/bulk")
-  public ApiResponse<?> bulkCreateTimetables(
+  @ResponseStatus(HttpStatus.OK)
+  public ApiResponse<?> bulkInsert(
     @RequestHeader String authorization,
-    @Valid @RequestBody BulkRequest<TimetableRequest.Bulk> request
+    @RequestBody List<TimetableRequest.Bulk> requests
   ) {
     Long userId = jwtAgent.parseId(authorization);
-    timetableService.bulkCreate(userId, request.getBulk());
+    timetableService.bulkInsert(userId, requests);
     return ApiResponse.success();
   }
 

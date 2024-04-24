@@ -48,6 +48,11 @@ public class Timetable extends BaseEntity {
     this.semester = Semester.from(semester);
   }
 
+  public Timetable(Long userId, String name, Integer year, String semester, List<TimetableCell> cells) {
+    this(userId, name, year, semester);
+    this.cells.addAll(cells);
+  }
+
   public void update(String name, Integer year, String semester) {
     this.name = name;
     this.year = year;

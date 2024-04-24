@@ -28,6 +28,7 @@ import usw.suwiki.domain.user.UserRepository;
 import usw.suwiki.domain.user.model.UserClaim;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -740,6 +741,51 @@ class TimetableAcceptanceTest extends AcceptanceTestSupport {
       result.andDo(
         RestDocument.builder()
           .identifier("delete-timetable-cell-fail-not-author")
+          .tag(Tag.TIME_TABLE)
+          .result(result)
+          .generateDocs()
+      );
+    }
+  }
+
+  @Nested
+  class 시간표_동기화_테스트 {
+    @Transactional
+    @Test
+    void 시간표_동기화_성공() throws Exception {
+      // given
+      var cells = List.of(
+        new TimetableRequest.Cell("강의", "교수", "ORANGE", "강의실", "MON", 1, 3),
+        new TimetableRequest.Cell("강의2", "교수2", "ORANGE", "강의실2", "TUE", 1, 3)
+      );
+
+      var request = List.of(
+        new TimetableRequest.Bulk(new TimetableRequest.Description(2024, "first", "시간표"), cells),
+        new TimetableRequest.Bulk(new TimetableRequest.Description(2024, "second", "시간표2"), cells)
+      );
+
+      // when
+      var result = post(Uri.of("/timetables/bulk"), accessToken, request);
+
+      // then
+      result.andExpectAll(
+        status().isOk(),
+        jsonPath("$.data.success").value(true)
+      );
+
+      var timetables = timetableRepository.findAll();
+      assertAll(
+        () -> assertThat(timetables).isNotEmpty().hasSize(2),
+        () -> assertThat(timetables.get(0).getCells()).isNotEmpty().hasSize(2),
+        () -> assertThat(timetables.get(1).getCells()).isNotEmpty().hasSize(2)
+      );
+
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .identifier("timetable-bulk-insert-success")
+          .summary("[토큰 필요] 시간표 벌크 인서트 API")
+          .description("시간표 벌크 인서트 API 입니다.")
           .tag(Tag.TIME_TABLE)
           .result(result)
           .generateDocs()

@@ -11,13 +11,13 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import usw.suwiki.common.response.ResponseForm;
 import usw.suwiki.domain.user.service.UserBusinessService;
-import usw.suwiki.statistics.annotation.Monitoring;
+import usw.suwiki.statistics.annotation.Statistics;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.springframework.http.HttpStatus.OK;
-import static usw.suwiki.statistics.log.MonitorOption.USER;
+import static usw.suwiki.statistics.log.MonitorTarget.USER;
 
 @RestController
 @RequestMapping("/v2/refreshtoken")
@@ -25,7 +25,7 @@ import static usw.suwiki.statistics.log.MonitorOption.USER;
 public class RefreshTokenControllerV2 {
   private final UserBusinessService userBusinessService;
 
-  @Monitoring(option = USER)
+  @Statistics(target = USER)
   @PostMapping("/web-client/refresh")
   @ResponseStatus(OK)
   public ResponseForm clientTokenRefresh(
@@ -45,7 +45,7 @@ public class RefreshTokenControllerV2 {
     }});
   }
 
-  @Monitoring(option = USER)
+  @Statistics(target = USER)
   @PostMapping("/mobile-client/refresh")
   @ResponseStatus(OK)
   public ResponseForm tokenRefresh(@RequestHeader String Authorization) {

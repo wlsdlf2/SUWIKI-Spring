@@ -26,7 +26,7 @@ class CustomUserDetailsService implements UserDetailsService {
   private UserDetails toDetails(UserAdapter userAdapter) {
     return new User(
       String.valueOf(userAdapter.id()),
-      null,
+      "",
       List.of(new SimpleGrantedAuthority(userAdapter.role().name()))
     );
   }

@@ -80,6 +80,10 @@ public class Timetable extends BaseEntity {
   }
 
   public void removeCell(int cellIdx) {
+    if (cells.isEmpty()) {
+      return;
+    }
+    
     this.cells.remove(cellIdx);
   }
 

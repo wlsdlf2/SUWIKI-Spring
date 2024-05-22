@@ -1,14 +1,6 @@
 package usw.suwiki.domain.viewexam;
 
-import java.util.List;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface ViewExamRepository {
-
-  void save(ViewExam viewExam);
-
-  List<ViewExam> findByUserId(Long userIdx);
-
-  void delete(ViewExam viewExam);
-
-  boolean validateIsExists(Long userId, Long lectureId);
+public interface ViewExamRepository extends JpaRepository<ViewExam, Long>, CustomViewExamRepository {
 }

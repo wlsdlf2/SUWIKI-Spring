@@ -13,7 +13,7 @@ public class ViewExamCRUDService {
   private final ViewExamRepository viewExamRepository;
 
   public boolean isExist(Long userId, Long lectureId) {
-    return viewExamRepository.validateIsExists(userId, lectureId);
+    return viewExamRepository.isExists(userId, lectureId);
   }
 
   @Transactional

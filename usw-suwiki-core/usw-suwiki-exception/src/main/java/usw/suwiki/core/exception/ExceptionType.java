@@ -48,9 +48,9 @@ public enum ExceptionType {
   /**
    * Domain : ExamPost
    */
-  POSTS_WRITE_OVERLAP("POSTS001", "이미 작성한 정보입니다.", BAD_REQUEST),
   EXAM_POST_NOT_FOUND("EXAM_POST001", "해당 시험정보를 찾을 수 없습니다.", NOT_FOUND),
   EXAM_POST_ALREADY_PURCHASE("EXAM_POST002", "이미 구매한 시험정보 입니다.", BAD_REQUEST),
+  ALREADY_WROTE_EXAM_POST("EXAM_POST003", "이미 작성한 강의 평가입니다.", BAD_REQUEST),
 
   /**
    * Domain : EvaluatePost

@@ -11,20 +11,16 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
-import usw.suwiki.api.user.UserFixture;
 import usw.suwiki.common.test.Tag;
 import usw.suwiki.common.test.annotation.AcceptanceTest;
 import usw.suwiki.common.test.support.AcceptanceTestSupport;
 import usw.suwiki.common.test.support.Uri;
-import usw.suwiki.core.secure.TokenAgent;
-import usw.suwiki.domain.lecture.timetable.Timetable;
-import usw.suwiki.domain.lecture.timetable.TimetableCell;
 import usw.suwiki.domain.lecture.timetable.TimetableCellColor;
 import usw.suwiki.domain.lecture.timetable.TimetableDay;
 import usw.suwiki.domain.lecture.timetable.TimetableRepository;
 import usw.suwiki.domain.lecture.timetable.dto.TimetableRequest;
 import usw.suwiki.domain.user.User;
-import usw.suwiki.domain.user.UserRepository;
+import usw.suwiki.test.fixture.Fixtures;
 
 import java.util.Arrays;
 import java.util.List;
@@ -45,18 +41,17 @@ import static usw.suwiki.core.exception.ExceptionType.PARAMETER_VALIDATION_FAIL;
 class TimetableAcceptanceTest extends AcceptanceTestSupport {
   @Autowired
   private TimetableRepository timetableRepository;
+
   @Autowired
-  private UserRepository userRepository;
-  @Autowired
-  private TokenAgent tokenAgent;
+  private Fixtures fixtures;
 
   private User user;
   private String accessToken;
 
   @BeforeEach
   void setup() {
-    user = userRepository.save(UserFixture.one());
-    accessToken = tokenAgent.createAccessToken(user.getId(), user.toClaim());
+    user = fixtures.유저_생성();
+    accessToken = fixtures.토큰_생성(user);
   }
 
   @Nested
@@ -182,7 +177,7 @@ class TimetableAcceptanceTest extends AcceptanceTestSupport {
     @Test
     void 시간표_수정_성공() throws Exception {
       // given
-      var timetable = 시간표_생성();
+      var timetable = fixtures.시간표_생성(user.getId());
       var request = new TimetableRequest.Description(2024, "second", "수정된 시간표");
 
       // when
@@ -217,8 +212,8 @@ class TimetableAcceptanceTest extends AcceptanceTestSupport {
     @Test
     void 시간표_수정_실패_다른_작성자() throws Exception {
       // given
-      var timetable = 시간표_생성();
-      var anotherUserToken = 다른_사용자_토큰_생성();
+      var timetable = fixtures.시간표_생성(user.getId());
+      var anotherUserToken = fixtures.다른_사용자_토큰_생성();
 
       var request = new TimetableRequest.Description(2024, "second", "수정된 시간표");
 
@@ -248,7 +243,7 @@ class TimetableAcceptanceTest extends AcceptanceTestSupport {
     })
     void 시간표_수정_실패_잘못된_연도_긴_이름(int year, String name) throws Exception {
       // given
-      var timetable = 시간표_생성();
+      var timetable = fixtures.시간표_생성(user.getId());
       var request = new TimetableRequest.Description(year, "first", name);
 
       // when
@@ -274,7 +269,7 @@ class TimetableAcceptanceTest extends AcceptanceTestSupport {
     @ValueSource(strings = {"one", "third", "spring", "hello"})
     void 시간표_수정_실패_잘못된_학기(String semester) throws Exception {
       // given
-      var timetable = 시간표_생성();
+      var timetable = fixtures.시간표_생성(user.getId());
       var request = new TimetableRequest.Description(2024, semester, "시간표입니다.");
 
       // when
@@ -299,7 +294,7 @@ class TimetableAcceptanceTest extends AcceptanceTestSupport {
     @Test
     void 시간표_수정_실패_잘못된_토큰() throws Exception {
       // given
-      var timetable = 시간표_생성();
+      var timetable = fixtures.시간표_생성(user.getId());
       var request = new TimetableRequest.Description(2024, "second", "수정된 시간표");
 
       // when
@@ -329,7 +324,7 @@ class TimetableAcceptanceTest extends AcceptanceTestSupport {
     @Test
     void 시간표_삭제_성공() throws Exception {
       // given
-      var timetable = 시간표_생성();
+      var timetable = fixtures.시간표_생성(user.getId());
 
       // when
       var result = delete(Uri.of(endpoint, timetable.getId()), accessToken);
@@ -357,8 +352,8 @@ class TimetableAcceptanceTest extends AcceptanceTestSupport {
     @Test
     void 시간표_삭제_실패_작성자가_아님() throws Exception {
       // given
-      var timetable = 시간표_생성();
-      var anotherUserToken = 다른_사용자_토큰_생성();
+      var timetable = fixtures.시간표_생성(user.getId());
+      var anotherUserToken = fixtures.다른_사용자_토큰_생성();
 
       // when
       var result = delete(Uri.of(endpoint, timetable.getId()), anotherUserToken);
@@ -385,8 +380,8 @@ class TimetableAcceptanceTest extends AcceptanceTestSupport {
     @Test
     void 시간표_모두_불러오기_성공() throws Exception {
       // given
-      var timetable = 시간표_생성();
-      시간표_생성2();
+      var timetable = fixtures.시간표_생성(user.getId());
+      fixtures.다른_시간표_생성(user.getId());
 
       // when
       var result = get(Uri.of("/timetables"), accessToken);
@@ -415,9 +410,9 @@ class TimetableAcceptanceTest extends AcceptanceTestSupport {
     @Test
     void 시간표_단건_불러오기_성공() throws Exception {
       // given
-      var timetable = 시간표_생성();
-      var timetableCell = 시간표_셀_생성("MON", 2, 4);
-      var timetableCell2 = 시간표_셀_생성("TUE", 1, 3);
+      var timetable = fixtures.시간표_생성(user.getId());
+      var timetableCell = fixtures.시간표_셀_생성("MON", 2, 4);
+      var timetableCell2 = fixtures.시간표_셀_생성("TUE", 1, 3);
 
       timetable.addCell(timetableCell);
       timetable.addCell(timetableCell2);
@@ -465,7 +460,7 @@ class TimetableAcceptanceTest extends AcceptanceTestSupport {
     @MethodSource("cellEnumInputs")
     void 시간표_셀_추가_성공(TimetableDay day, TimetableCellColor color) throws Exception {
       // given
-      var timetable = 시간표_생성();
+      var timetable = fixtures.시간표_생성(user.getId());
 
       var request = new TimetableRequest.Cell("강의", "교수님", color.name(), "강의실", day.name(), 1, 3);
 
@@ -514,10 +509,10 @@ class TimetableAcceptanceTest extends AcceptanceTestSupport {
     @Test
     void 시간표_셀_추가_실패_작성자_아님() throws Exception {
       // given
-      var timetable = 시간표_생성();
+      var timetable = fixtures.시간표_생성(user.getId());
 
       var request = new TimetableRequest.Cell("강의", "교수님", "ORANGE", "강의실", "MON", 1, 3);
-      var anotherToken = 다른_사용자_토큰_생성();
+      var anotherToken = fixtures.다른_사용자_토큰_생성();
 
       // when
       var result = post(Uri.of(endpoint, timetable.getId()), anotherToken, request);
@@ -541,8 +536,8 @@ class TimetableAcceptanceTest extends AcceptanceTestSupport {
     @Test
     void 시간표_셀_추가_실패_중복된_셀() throws Exception {
       // given
-      var timetable = 시간표_생성();
-      timetable.addCell(시간표_셀_생성("MON", 1, 3));
+      var timetable = fixtures.시간표_생성(user.getId());
+      timetable.addCell(fixtures.시간표_셀_생성("MON", 1, 3));
       timetableRepository.save(timetable);
 
       var request = new TimetableRequest.Cell("강의", "교수님", "ORANGE", "강의실", "MON", 2, 4);
@@ -575,9 +570,9 @@ class TimetableAcceptanceTest extends AcceptanceTestSupport {
     @Test
     void 시간표_셀_수정_성공() throws Exception {
       // given
-      var timetable = 시간표_생성();
-      var timetableCell = 시간표_셀_생성("MON", 1, 3);
-      var timetableCell2 = 시간표_셀_생성("TUE", 1, 3);
+      var timetable = fixtures.시간표_생성(user.getId());
+      var timetableCell = fixtures.시간표_셀_생성("MON", 1, 3);
+      var timetableCell2 = fixtures.시간표_셀_생성("TUE", 1, 3);
 
       timetable.addCell(timetableCell);
       timetable.addCell(timetableCell2);
@@ -625,8 +620,8 @@ class TimetableAcceptanceTest extends AcceptanceTestSupport {
     @Test
     void 시간표_셀_수정_실패_작성자가_아님() throws Exception {
       // given
-      var timetable = 시간표_생성();
-      var anotherToken = 다른_사용자_토큰_생성();
+      var timetable = fixtures.시간표_생성(user.getId());
+      var anotherToken = fixtures.다른_사용자_토큰_생성();
 
       var request = new TimetableRequest.UpdateCell("강의2", "교수님2", "GRAY", "강의실2", "FRI", 3, 5);
 
@@ -652,9 +647,9 @@ class TimetableAcceptanceTest extends AcceptanceTestSupport {
     @Test
     void 시간표_셀_수정_실패_중복된_셀() throws Exception {
       // given
-      var timetable = 시간표_생성();
-      timetable.addCell(시간표_셀_생성("MON", 1, 3));
-      timetable.addCell(시간표_셀_생성("TUE", 1, 3));
+      var timetable = fixtures.시간표_생성(user.getId());
+      timetable.addCell(fixtures.시간표_셀_생성("MON", 1, 3));
+      timetable.addCell(fixtures.시간표_셀_생성("TUE", 1, 3));
 
       timetableRepository.save(timetable);
 
@@ -687,9 +682,9 @@ class TimetableAcceptanceTest extends AcceptanceTestSupport {
     @Test
     void 시간표_셀_삭제_성공() throws Exception {
       // given
-      var timetable = 시간표_생성();
-      var timetableCell = 시간표_셀_생성("mon", 1, 3);
-      var timetableCell2 = 시간표_셀_생성("fri", 1, 3);
+      var timetable = fixtures.시간표_생성(user.getId());
+      var timetableCell = fixtures.시간표_셀_생성("mon", 1, 3);
+      var timetableCell2 = fixtures.시간표_셀_생성("fri", 1, 3);
 
       timetable.addCell(timetableCell);
       timetable.addCell(timetableCell2);
@@ -721,8 +716,8 @@ class TimetableAcceptanceTest extends AcceptanceTestSupport {
     @Test
     void 시간표_셀_삭제_실패_작성자가_아님() throws Exception {
       // given
-      var timetable = 시간표_생성();
-      var anotherToken = 다른_사용자_토큰_생성();
+      var timetable = fixtures.시간표_생성(user.getId());
+      var anotherToken = fixtures.다른_사용자_토큰_생성();
 
       // when
       var result = delete(Uri.of(endpoint, timetable.getId(), 0), anotherToken);
@@ -787,22 +782,5 @@ class TimetableAcceptanceTest extends AcceptanceTestSupport {
           .generateDocs()
       );
     }
-  }
-
-  private Timetable 시간표_생성() {
-    return timetableRepository.save(new Timetable(user.getId(), "시간표", 2023, "first"));
-  }
-
-  private Timetable 시간표_생성2() {
-    return timetableRepository.save(new Timetable(user.getId(), "시간표", 2024, "second"));
-  }
-
-  private TimetableCell 시간표_셀_생성(String day, int start, int end) {
-    return new TimetableCell("강의", "교수님", "강의실", start, end, day, "ORANGE");
-  }
-
-  private String 다른_사용자_토큰_생성() {
-    var anotherUser = userRepository.save(UserFixture.another());
-    return tokenAgent.createAccessToken(anotherUser.getId(), anotherUser.toClaim());
   }
 }

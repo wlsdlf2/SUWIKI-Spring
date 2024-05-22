@@ -4,20 +4,11 @@ import io.github.hejow.restdocs.document.RestDocument;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import usw.suwiki.api.user.UserFixture;
 import usw.suwiki.common.test.Tag;
 import usw.suwiki.common.test.annotation.AcceptanceTest;
 import usw.suwiki.common.test.support.AcceptanceTestSupport;
 import usw.suwiki.common.test.support.Uri;
-import usw.suwiki.core.secure.TokenAgent;
-import usw.suwiki.domain.lecture.Lecture;
-import usw.suwiki.domain.lecture.LectureRepository;
-import usw.suwiki.domain.lecture.schedule.LectureSchedule;
-import usw.suwiki.domain.lecture.schedule.LectureScheduleRepository;
-import usw.suwiki.domain.user.UserRepository;
-import usw.suwiki.domain.user.model.UserClaim;
-
-import java.util.List;
+import usw.suwiki.test.fixture.Fixtures;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -28,13 +19,7 @@ import static usw.suwiki.core.exception.ExceptionType.USER_RESTRICTED;
 @AcceptanceTest
 class LectureAcceptanceTest extends AcceptanceTestSupport {
   @Autowired
-  private UserRepository userRepository;
-  @Autowired
-  private LectureRepository lectureRepository;
-  @Autowired
-  private LectureScheduleRepository lectureScheduleRepository;
-  @Autowired
-  private TokenAgent tokenAgent;
+  private Fixtures fixtures;
 
   @Nested
   class 강의_검색_테스트 {
@@ -46,7 +31,7 @@ class LectureAcceptanceTest extends AcceptanceTestSupport {
       var size = DEFAULT_SIZE * 2;
       var index = size - 1;
 
-      var lectures = 강의_생성(size);
+      var lectures = fixtures.강의_여러개_생성(size);
 
       // when
       var result = get(Uri.of("/lecture/search"),
@@ -98,7 +83,7 @@ class LectureAcceptanceTest extends AcceptanceTestSupport {
       var size = DEFAULT_SIZE * page;
       var index = size - 1 - DEFAULT_SIZE * (page - 1);
 
-      var lectures = 강의_생성(size);
+      var lectures = fixtures.강의_여러개_생성(size);
 
       // when
       var result = get(Uri.of("/lecture/search"),
@@ -141,7 +126,7 @@ class LectureAcceptanceTest extends AcceptanceTestSupport {
     var size = 10;
     var index = size - 1;
 
-    var lectures = 강의_생성(size);
+    var lectures = fixtures.강의_여러개_생성(size);
 
     // when
     var result = get(Uri.of("/lecture/all"),
@@ -192,10 +177,9 @@ class LectureAcceptanceTest extends AcceptanceTestSupport {
     @Test
     void 강의_상세조회_성공() throws Exception {
       // given
-      var user = userRepository.save(UserFixture.one());
-      var accessToken = tokenAgent.createAccessToken(user.getId(), user.toClaim());
+      var accessToken = fixtures.토큰_생성();
 
-      var lecture = 강의_생성();
+      var lecture = fixtures.강의_생성();
 
       // when
       var result = get(Uri.of(endpoint), accessToken, parameter("lectureId", lecture.getId()));
@@ -233,9 +217,9 @@ class LectureAcceptanceTest extends AcceptanceTestSupport {
     @Test
     void 강의_상세조회_실패_제한된_유저() throws Exception {
       // given
-      var accessToken = tokenAgent.createAccessToken(1L, new UserClaim("loginId", "USER", true));
+      var accessToken = fixtures.제한된_사용자_토큰_생성();
 
-      var lecture = 강의_생성();
+      var lecture = fixtures.강의_생성();
 
       // when
       var result = get(Uri.of(endpoint), accessToken, parameter("lectureId", lecture.getId()));
@@ -260,8 +244,8 @@ class LectureAcceptanceTest extends AcceptanceTestSupport {
   @Test
   void 시간표_전용_강의_조회_성공() throws Exception {
     // given
-    var lecture = 강의_생성();
-    var lectureSchedule = 강의_일정_생성(lecture.getId());
+    var lecture = fixtures.강의_생성();
+    var lectureSchedule = fixtures.강의_일정_생성(lecture.getId());
 
     // when
     var result = get(Uri.of("/lecture/current/cells/search"));
@@ -295,17 +279,5 @@ class LectureAcceptanceTest extends AcceptanceTestSupport {
         .result(result)
         .generateDocs()
     );
-  }
-
-  private Lecture 강의_생성() {
-    return lectureRepository.save(LectureFixture.one());
-  }
-
-  private List<Lecture> 강의_생성(int size) {
-    return lectureRepository.saveAll(LectureFixture.list(size));
-  }
-
-  private LectureSchedule 강의_일정_생성(Long lectureId) {
-    return lectureScheduleRepository.save(LectureScheduleFixture.one(lectureId));
   }
 }

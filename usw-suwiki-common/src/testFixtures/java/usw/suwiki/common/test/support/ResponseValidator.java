@@ -6,45 +6,37 @@ import org.springframework.test.web.servlet.ResultMatcher;
 import usw.suwiki.common.test.extension.AssertExtension;
 import usw.suwiki.core.exception.ExceptionType;
 
-import java.util.List;
+import java.util.Arrays;
+import java.util.stream.Stream;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
-public final class ResponseValidator {
+public class ResponseValidator {
 
-  public static void validate(
-      ResultActions result,
-      ResultMatcher expectedStatus,
-      List<Pair<String, Object>> expects
-  ) throws Exception {
-    for (Pair<String, Object> expect : expects) {
-      result.andExpectAll(
-          expectedStatus,
-          jsonPath(expect.getFirst()).value(expect.getSecond())
-      );
-    }
+  private ResponseValidator() {
   }
 
-  public static void validate(
-      ResultActions result,
-      ResultMatcher expectedStatus,
-      ExceptionType expectedException
-  ) throws Exception {
+  public static void validate(ResultActions result, ResultMatcher expectedStatus, Pair<String, Object>... expects) throws Exception {
     result.andExpectAll(
-        expectedStatus,
-        AssertExtension.expectExceptionJsonPath(result, expectedException)
+      Stream.concat(
+        Stream.of(expectedStatus),
+        Arrays.stream(expects).map(expect -> jsonPath(expect.getFirst()).value(expect.getSecond()))
+      ).toArray(ResultMatcher[]::new)
     );
   }
 
-  public static void validateNonJSONResponse(
-      ResultActions result,
-      ResultMatcher expectedStatus,
-      Object expectedResult
-  ) throws Exception {
+  public static void validate(ResultActions result, ResultMatcher expectedStatus, ExceptionType expectedException) throws Exception {
     result.andExpectAll(
-        expectedStatus,
-        content().string(expectedResult.toString())
+      expectedStatus,
+      AssertExtension.expectExceptionJsonPath(result, expectedException)
+    );
+  }
+
+  public static void validateHtml(ResultActions result, ResultMatcher expectedStatus, Object expected) throws Exception {
+    result.andExpectAll(
+      expectedStatus,
+      content().string(expected.toString())
     );
   }
 }

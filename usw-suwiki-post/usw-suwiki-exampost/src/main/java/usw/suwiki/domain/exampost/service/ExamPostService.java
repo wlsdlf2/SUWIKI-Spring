@@ -22,9 +22,9 @@ import usw.suwiki.domain.viewexam.service.ViewExamCRUDService;
 
 import java.util.List;
 
+import static usw.suwiki.core.exception.ExceptionType.ALREADY_WROTE_EXAM_POST;
 import static usw.suwiki.core.exception.ExceptionType.EXAM_POST_ALREADY_PURCHASE;
 import static usw.suwiki.core.exception.ExceptionType.EXAM_POST_NOT_FOUND;
-import static usw.suwiki.core.exception.ExceptionType.POSTS_WRITE_OVERLAP;
 import static usw.suwiki.domain.exampost.dto.ExamPostResponse.Detail;
 import static usw.suwiki.domain.exampost.dto.ExamPostResponse.Details;
 import static usw.suwiki.domain.exampost.dto.ExamPostResponse.MyPost;
@@ -88,7 +88,7 @@ public class ExamPostService {
   @Transactional
   public void write(Long userId, Long lectureId, ExamPostRequest.Create request) {
     if (isAlreadyWritten(userId, lectureId)) {
-      throw new AccountException(POSTS_WRITE_OVERLAP);
+      throw new AccountException(ALREADY_WROTE_EXAM_POST);
     }
 
     lectureService.findLectureById(lectureId);

@@ -16,50 +16,43 @@ import java.util.List;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class NoticeService {
-    private final NoticeRepository noticeRepository;
+  private final NoticeRepository noticeRepository;
 
-    @Transactional
-    public void write(String title, String content) {
-        Notice notice = new Notice(title, content);
-        noticeRepository.save(notice);
-    }
+  @Transactional
+  public void write(String title, String content) {
+    noticeRepository.save(new Notice(title, content));
+  }
 
-    public List<NoticeResponse.Simple> getAllNotices(PageOption option) {
-        return noticeRepository.findByNoticeList(option).stream()
-          .map(notice -> new NoticeResponse.Simple(notice.getId(), notice.getTitle(), notice.getModifiedDate()))
-          .toList();
-    }
+  public List<NoticeResponse.Simple> getAllNotices(PageOption option) {
+    return noticeRepository.findByNoticeList(option).stream()
+      .map(notice -> new NoticeResponse.Simple(notice.getId(), notice.getTitle(), notice.getModifiedDate()))
+      .toList();
+  }
 
-    public NoticeResponse.Detail getNotice(Long noticeId) {
-        Notice notice = findNoticeById(noticeId);
+  public NoticeResponse.Detail getNotice(Long noticeId) {
+    Notice notice = findNoticeById(noticeId);
 
-        return new NoticeResponse.Detail(
-          notice.getId(),
-          notice.getTitle(),
-          notice.getContent(),
-          notice.getModifiedDate()
-        );
-    }
+    return new NoticeResponse.Detail(
+      notice.getId(),
+      notice.getTitle(),
+      notice.getContent(),
+      notice.getModifiedDate()
+    );
+  }
 
-    @Transactional
-    public void update(Long noticeId, String title, String content) {
-        Notice notice = findNoticeById(noticeId);
-        notice.update(title, content);
-    }
+  @Transactional
+  public void update(Long noticeId, String title, String content) {
+    Notice notice = findNoticeById(noticeId);
+    notice.update(title, content);
+  }
 
-    @Transactional
-    public void delete(Long noticeId) {
-        Notice notice = findNoticeById(noticeId);
-        noticeRepository.delete(notice);
-    }
+  @Transactional
+  public void delete(Long noticeId) {
+    noticeRepository.deleteById(noticeId);
+  }
 
-    private Notice findNoticeById(Long noticeId) {
-        Notice notice = noticeRepository.findById(noticeId);
-
-        if (notice == null) {
-            throw new NoticeException(ExceptionType.NOTICE_NOT_FOUND);
-        }
-
-        return notice;
-    }
+  private Notice findNoticeById(Long noticeId) {
+    return noticeRepository.findById(noticeId)
+      .orElseThrow(() -> new NoticeException(ExceptionType.NOTICE_NOT_FOUND));
+  }
 }

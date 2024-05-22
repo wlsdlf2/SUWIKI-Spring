@@ -54,7 +54,7 @@ public class EvaluatePostService {
 
   public void write(Long userId, Long lectureId, EvaluatePostRequest.Create request) {
     if (isAlreadyWritten(userId, lectureId)) {
-      throw new EvaluatePostException(ExceptionType.POSTS_WRITE_OVERLAP);
+      throw new EvaluatePostException(ExceptionType.ALREADY_WROTE_EXAM_POST);
     }
 
     EvaluatePost evaluatePost = EvaluatePostMapper.toEntity(userId, lectureId, request);

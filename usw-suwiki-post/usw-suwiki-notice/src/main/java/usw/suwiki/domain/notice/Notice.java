@@ -13,7 +13,7 @@ import usw.suwiki.infra.jpa.BaseEntity;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Notice extends BaseEntity {
-  @Column(columnDefinition = "text")
+  @Column(columnDefinition = "text") // todo: 칼럼 도메인 수정
   private String title;
 
   @Column(columnDefinition = "text")

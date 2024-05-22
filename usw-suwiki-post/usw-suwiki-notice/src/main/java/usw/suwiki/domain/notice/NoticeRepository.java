@@ -1,16 +1,6 @@
 package usw.suwiki.domain.notice;
 
-import usw.suwiki.common.pagination.PageOption;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.List;
-
-public interface NoticeRepository {
-
-    void save(Notice notice);
-
-    Notice findById(Long id);
-
-    List<Notice> findByNoticeList(PageOption page);
-
-    void delete(Notice notice);
+public interface NoticeRepository extends JpaRepository<Notice, Long>, CustomNoticeRepository {
 }

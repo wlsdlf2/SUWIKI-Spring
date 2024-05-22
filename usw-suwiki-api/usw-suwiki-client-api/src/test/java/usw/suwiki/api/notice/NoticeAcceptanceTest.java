@@ -1,29 +1,21 @@
 package usw.suwiki.api.notice;
 
 import io.github.hejow.restdocs.document.RestDocument;
-import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import usw.suwiki.api.user.UserPersister;
 import usw.suwiki.common.pagination.PageOption;
 import usw.suwiki.common.test.annotation.AcceptanceTest;
 import usw.suwiki.common.test.support.AcceptanceTestSupport;
 import usw.suwiki.common.test.support.ResponseValidator;
 import usw.suwiki.common.test.support.Uri;
-import usw.suwiki.core.secure.TokenAgent;
-import usw.suwiki.core.secure.model.Claim;
-import usw.suwiki.domain.notice.Notice;
 import usw.suwiki.domain.notice.NoticeRepository;
 import usw.suwiki.domain.notice.dto.NoticeRequest;
-import usw.suwiki.domain.user.Role;
 import usw.suwiki.domain.user.User;
-import usw.suwiki.domain.user.model.UserClaim;
+import usw.suwiki.test.fixture.Fixtures;
 
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,26 +29,20 @@ import static usw.suwiki.core.exception.ExceptionType.NOTICE_NOT_FOUND;
 import static usw.suwiki.core.exception.ExceptionType.USER_RESTRICTED;
 
 @AcceptanceTest
-@Transactional
 public class NoticeAcceptanceTest extends AcceptanceTestSupport {
-  @Autowired
-  private TokenAgent tokenAgent;
-  @Autowired
-  private UserPersister userPersister;
-  @Autowired
-  private NoticePersister noticePersister;
   @Autowired
   private NoticeRepository noticeRepository;
 
-  private User user;
-  private Claim claim;
+  @Autowired
+  private Fixtures fixtures;
+
+  private User admin;
   private String accessToken;
 
   @BeforeEach
   public void setup() {
-    user = userPersister.builder().save();
-    claim = new UserClaim("loginId", Role.ADMIN.name(), user.getRestricted());  //Admin 설정
-    accessToken = tokenAgent.createAccessToken(user.getId(), claim);
+    admin = fixtures.관리자_생성();
+    accessToken = fixtures.토큰_생성(admin);
   }
 
   @Nested
@@ -79,15 +65,15 @@ public class NoticeAcceptanceTest extends AcceptanceTestSupport {
       var result = post(Uri.of(endpoint), accessToken, request);
 
       // then
-      var evaluatePosts = noticeRepository.findByNoticeList(new PageOption(Optional.of(1)));
+      var notices = noticeRepository.findByNoticeList(new PageOption(Optional.of(1)));
       assertAll(
-        () -> assertThat(evaluatePosts.get(0)).isNotNull(),
-        () -> assertThat(evaluatePosts.get(0).getTitle()).isEqualTo(request.getTitle()),
-        () -> assertThat(evaluatePosts.get(0).getContent()).isEqualTo(request.getContent())
+        () -> assertThat(notices.get(0)).isNotNull(),
+        () -> assertThat(notices.get(0).getTitle()).isEqualTo(request.getTitle()),
+        () -> assertThat(notices.get(0).getContent()).isEqualTo(request.getContent())
       );
 
       // result validation
-      ResponseValidator.validateNonJSONResponse(result, status().isOk(), expectedResults);
+      ResponseValidator.validateHtml(result, status().isOk(), expectedResults);
 
       // Non DOCS
     }
@@ -95,12 +81,11 @@ public class NoticeAcceptanceTest extends AcceptanceTestSupport {
     @Test
     void 공지_생성_실패_권한_없음() throws Exception {
       // given
-      var userClaim = new UserClaim("loginId", Role.USER.name(), user.getRestricted());  //Admin 설정
-      var userAccessToken = tokenAgent.createAccessToken(user.getId(), userClaim);
+      var userToken = fixtures.토큰_생성();
       var request = new NoticeRequest.Create("공지사항 제목", "공지사항 내용");
 
       // when
-      var result = post(Uri.of(endpoint), userAccessToken, request);
+      var result = post(Uri.of(endpoint), userToken, request);
 
       // then
       result.andExpectAll(
@@ -130,11 +115,10 @@ public class NoticeAcceptanceTest extends AcceptanceTestSupport {
       var identifier = "update-notice";
       var summary = "[Admin 토큰 필요] 공지 수정 API";
       var description = "공지를 생성하는 API 입니다."; // todo
-      var tag = NOTICE;
       var expectedResults = "success";
 
       // given
-      var notice = noticePersister.builder().save();
+      var notice = fixtures.공지사항_생성();
       var request = new NoticeRequest.Update("수정된 공지사항 제목", "수정된 공지사항 내용");
 
       // when
@@ -149,7 +133,7 @@ public class NoticeAcceptanceTest extends AcceptanceTestSupport {
       );
 
       // result validation
-      ResponseValidator.validateNonJSONResponse(result, status().isOk(), expectedResults);
+      ResponseValidator.validateHtml(result, status().isOk(), expectedResults);
 
       // Non DOCS
     }
@@ -157,9 +141,9 @@ public class NoticeAcceptanceTest extends AcceptanceTestSupport {
     @Test
     void 공지_수정_실패_권한_없음() throws Exception {
       // given
-      var userClaim = new UserClaim("loginId", Role.USER.name(), user.getRestricted());  //Admin 설정
-      var userAccessToken = tokenAgent.createAccessToken(user.getId(), userClaim);
-      var notice = noticePersister.builder().save();
+      var notice = fixtures.공지사항_생성();
+      var userAccessToken = fixtures.토큰_생성();
+
       var request = new NoticeRequest.Update("수정된 공지사항 제목", "수정된 공지사항 내용");
 
       // when
@@ -184,11 +168,10 @@ public class NoticeAcceptanceTest extends AcceptanceTestSupport {
     @Test
     void 공지_수정_실패_잘못된_파라미터() throws Exception {
       // given
-      var noticeId = 0L;
       var request = new NoticeRequest.Update("수정된 공지사항 제목", "수정된 공지사항 내용");
 
       // when
-      var result = put(Uri.of(endpoint), accessToken, request, parameter(paramKey, noticeId));
+      var result = put(Uri.of(endpoint), accessToken, request, parameter(paramKey, -1L));
 
       // then
       result.andExpectAll(
@@ -218,21 +201,20 @@ public class NoticeAcceptanceTest extends AcceptanceTestSupport {
       var identifier = "delete-notice";
       var summary = "[Admin 토큰 필요] 공지 삭제 API";
       var description = "공지를 삭제하는 API 입니다."; // todo
-      var tag = NOTICE;
       var expectedResults = "success";
 
       // given
-      var notice = noticePersister.builder().save();
+      var notice = fixtures.공지사항_생성();
 
       // when´
       var result = delete(Uri.of(endpoint), accessToken, null, parameter(paramKey, notice.getId()));
 
       // then
-      var evaluatePosts = noticeRepository.findByNoticeList(new PageOption(Optional.of(1)));
-      assertThat(evaluatePosts.size()).isEqualTo(0);
+      var notices = noticeRepository.findByNoticeList(new PageOption(Optional.of(1)));
+      assertThat(notices).isEmpty();
 
       // result validation
-      ResponseValidator.validateNonJSONResponse(result, status().isOk(), expectedResults);
+      ResponseValidator.validateHtml(result, status().isOk(), expectedResults);
 
       // Non DOCS
     }
@@ -240,10 +222,9 @@ public class NoticeAcceptanceTest extends AcceptanceTestSupport {
     @Test
     void 공지_삭제_실패_잘못된_파라미터() throws Exception {
       // given
-      var noticeId = 0L;
 
       // when
-      var result = delete(Uri.of(endpoint), accessToken, null, parameter(paramKey, noticeId));
+      var result = delete(Uri.of(endpoint), accessToken, null, parameter(paramKey, -1L));
 
       // then
       result.andExpectAll(
@@ -264,9 +245,8 @@ public class NoticeAcceptanceTest extends AcceptanceTestSupport {
     @Test
     void 공지_삭젝_실패_권한_없음() throws Exception {
       // given
-      var userClaim = new UserClaim("loginId", Role.USER.name(), user.getRestricted());  //Admin 설정
-      var userAccessToken = tokenAgent.createAccessToken(user.getId(), userClaim);
-      var notice = noticePersister.builder().save();
+      var notice = fixtures.공지사항_생성();
+      var userAccessToken = fixtures.토큰_생성();
 
       // when´
       var result = delete(Uri.of(endpoint), userAccessToken, null, parameter(paramKey, notice.getId()));
@@ -302,7 +282,7 @@ public class NoticeAcceptanceTest extends AcceptanceTestSupport {
       var tag = NOTICE;
 
       // given
-      var notice = noticePersister.builder().save();
+      var notice = fixtures.공지사항_생성();
 
       // when
       var result = get(Uri.of(endpoint), accessToken, parameter(paramKey, notice.getId()));
@@ -313,8 +293,8 @@ public class NoticeAcceptanceTest extends AcceptanceTestSupport {
         jsonPath("$.data.id").value(notice.getId()),
         jsonPath("$.data.title").value(notice.getTitle()),
         jsonPath("$.data.content").value(notice.getContent()),
-        jsonPath("$.data.modifiedDate").value(notice.getModifiedDate()
-                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"))));
+        jsonPath("$.data.modifiedDate").value(notice.getModifiedDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")))
+      );
 
       // docs
 //      result.andDo(
@@ -331,10 +311,9 @@ public class NoticeAcceptanceTest extends AcceptanceTestSupport {
     @Test
     void 공지_조회_실패_잘못된_파라미터() throws Exception {
       // given
-      var noticeId = 0L;
 
       // when
-      var result = get(Uri.of(endpoint), accessToken, parameter(paramKey, noticeId));
+      var result = get(Uri.of(endpoint), accessToken, parameter(paramKey, -1L));
 
       // then
       result.andExpectAll(
@@ -366,11 +345,8 @@ public class NoticeAcceptanceTest extends AcceptanceTestSupport {
       var totalPage = 3;
       var requestPage = 1;
       var size = DEFAULT_SIZE * totalPage;
-      List<Notice> notices = new ArrayList<>();
-      for (int cnt = 0; cnt < size; cnt++) {
-        var notice = noticePersister.builder().setTitle("제목" + cnt).setContent("내용" + cnt).save();
-        notices.add(notice);  // persister에 saveAll 수정 필요
-      }
+
+      var notices = fixtures.공지사항_여러개_생성(size);
 
       // when
       var result = get(Uri.of(endpoint), accessToken, parameter(paramKey, requestPage));

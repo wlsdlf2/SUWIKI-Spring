@@ -68,7 +68,7 @@ public abstract class AcceptanceTestSupport {
     return perform(uri, accessToken, parameters);
   }
 
-  public ResultActions getNonJson(Uri uri, Pair... parameters) throws Exception {
+  public ResultActions getHtml(Uri uri, Pair... parameters) throws Exception {
     return performNonJson(uri, null, parameters);
   }
 
@@ -80,6 +80,7 @@ public abstract class AcceptanceTestSupport {
     return perform(uri, HttpMethod.POST, accessToken, requestBody);
   }
 
+  // todo: post query string이 어색하므로 삭제 예정
   public ResultActions post(Uri uri, String accessToken, Object requestBody, Pair... parameters) throws Exception {
     return perform(uri, HttpMethod.POST, accessToken, requestBody, parameters);
   }
@@ -112,6 +113,7 @@ public abstract class AcceptanceTestSupport {
     return perform(uri, HttpMethod.DELETE, accessToken, requestBody);
   }
 
+  // todo: null 유도로 삭제 예정
   public ResultActions delete(Uri uri, String accessToken, Object requestBody, Pair... parameters) throws Exception {
     return perform(uri, HttpMethod.DELETE, accessToken, requestBody, parameters);
   }
@@ -120,23 +122,15 @@ public abstract class AcceptanceTestSupport {
    * query 전용 acceptance test template
    */
   private ResultActions perform(Uri uri, String accessToken, Pair... parameters) throws Exception {
-    var request = toRequestBuilder(uri, HttpMethod.GET);
+    var request = toRequestBuilder(uri, HttpMethod.GET, false);
 
-    if (parameters != null) {
-      request.queryParams(toParams(parameters));
-    }
-
-    return perform(request, accessToken);
+    return perform(parameters != null ? request.queryParams(toParams(parameters)) : request, accessToken);
   }
 
   private ResultActions performNonJson(Uri uri, String accessToken, Pair... parameters) throws Exception {
-    var request = toRequestBuilderNonJsonRequest(uri, HttpMethod.GET);
+    var request = toRequestBuilder(uri, HttpMethod.GET, true);
 
-    if (parameters != null) {
-      request.queryParams(toParams(parameters));
-    }
-
-    return perform(request, accessToken);
+    return perform(parameters != null ? request.queryParams(toParams(parameters)) : request, accessToken);
   }
 
   private MultiValueMap<String, String> toParams(Pair... parameters) {
@@ -151,65 +145,39 @@ public abstract class AcceptanceTestSupport {
    * command 전용 acceptance test template
    */
   private ResultActions perform(Uri uri, HttpMethod httpMethod, String accessToken, Object requestBody) throws Exception {
-    var request = toRequestBuilder(uri, httpMethod);
+    var request = toRequestBuilder(uri, httpMethod, false);
 
-    if (requestBody != null) {
-      request.content(objectMapper.writeValueAsString(requestBody));
-    }
-
-    return perform(request, accessToken);
+    return perform(requestBody != null ? request.content(objectMapper.writeValueAsString(requestBody)) : request, accessToken);
   }
 
   private ResultActions perform(Uri uri, HttpMethod httpMethod, String accessToken, Object requestBody, Pair... parameters) throws Exception {
-    var request = toRequestBuilder(uri, httpMethod);
+    var request = toRequestBuilder(uri, httpMethod, false);
 
     if (requestBody != null) {
       request.content(objectMapper.writeValueAsString(requestBody));
     }
 
-    if (parameters != null) {
-      request.queryParams(toParams(parameters));
-    }
+    return perform(parameters != null ? request.queryParams(toParams(parameters)) : request, accessToken);
+  }
 
-    return perform(request, accessToken);
+  private MockHttpServletRequestBuilder toRequestBuilder(Uri uri, HttpMethod httpMethod, boolean html) {
+    var request = switch (httpMethod) {
+      case GET -> RestDocumentationRequestBuilders.get(uri.resource);
+      case POST -> RestDocumentationRequestBuilders.post(uri.resource);
+      case PUT -> RestDocumentationRequestBuilders.put(uri.resource);
+      case PATCH -> RestDocumentationRequestBuilders.patch(uri.resource);
+      case DELETE -> RestDocumentationRequestBuilders.delete(uri.resource);
+    };
+
+    return request.accept(html ? MediaType.TEXT_HTML : MediaType.APPLICATION_JSON)
+      .contentType(html ? MediaType.TEXT_HTML : MediaType.APPLICATION_JSON)
+      .requestAttr("org.springframework.restdocs.urlTemplate", uri.urlTemplate); // rest-docs path variable 설정
   }
 
   /**
    * 결과적으로 요청을 호출하는 method
    */
   private ResultActions perform(MockHttpServletRequestBuilder request, String accessToken) throws Exception {
-    if (accessToken != null) {
-      request.header(AUTHORIZATION, accessToken);
-    }
-
-    return mockMvc.perform(request);
-  }
-
-  private MockHttpServletRequestBuilder toRequestBuilder(Uri uri, HttpMethod httpMethod) {
-    var request = switch (httpMethod) {
-      case GET -> RestDocumentationRequestBuilders.get(uri.resource);
-      case POST -> RestDocumentationRequestBuilders.post(uri.resource);
-      case PUT -> RestDocumentationRequestBuilders.put(uri.resource);
-      case PATCH -> RestDocumentationRequestBuilders.patch(uri.resource);
-      case DELETE -> RestDocumentationRequestBuilders.delete(uri.resource);
-    };
-
-    return request.accept(MediaType.APPLICATION_JSON)
-      .contentType(MediaType.APPLICATION_JSON)
-      .requestAttr("org.springframework.restdocs.urlTemplate", uri.urlTemplate); // rest-docs pathvariable 설정
-  }
-
-  private MockHttpServletRequestBuilder toRequestBuilderNonJsonRequest(Uri uri, HttpMethod httpMethod) {
-    var request = switch (httpMethod) {
-      case GET -> RestDocumentationRequestBuilders.get(uri.resource);
-      case POST -> RestDocumentationRequestBuilders.post(uri.resource);
-      case PUT -> RestDocumentationRequestBuilders.put(uri.resource);
-      case PATCH -> RestDocumentationRequestBuilders.patch(uri.resource);
-      case DELETE -> RestDocumentationRequestBuilders.delete(uri.resource);
-    };
-
-    return request.accept(MediaType.TEXT_HTML_VALUE)
-      .contentType(MediaType.TEXT_HTML_VALUE)
-      .requestAttr("org.springframework.restdocs.urlTemplate", uri.urlTemplate); // rest-docs pathvariable 설정
+    return mockMvc.perform(accessToken != null ? request.header(AUTHORIZATION, accessToken) : request);
   }
 }

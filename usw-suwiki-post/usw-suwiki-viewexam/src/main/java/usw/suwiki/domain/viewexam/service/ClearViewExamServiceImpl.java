@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import usw.suwiki.domain.user.service.ClearViewExamService;
-import usw.suwiki.domain.viewexam.ViewExam;
 import usw.suwiki.domain.viewexam.ViewExamRepository;
 
 @Service
@@ -15,8 +14,7 @@ class ClearViewExamServiceImpl implements ClearViewExamService {
 
   @Override
   public void clear(Long userId) {
-    for (ViewExam viewExam : viewExamRepository.findByUserId(userId)) {
-      viewExamRepository.delete(viewExam);
-    }
+    var viewExams = viewExamRepository.findByUserId(userId);
+    viewExamRepository.deleteAllInBatch(viewExams);
   }
 }

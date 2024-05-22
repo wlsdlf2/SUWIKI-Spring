@@ -34,10 +34,6 @@ public class ExamPost extends BaseEntity {
     this.examDetail = examDetail;
   }
 
-  public Long getLectureId() {
-    return lectureInfo.getLectureId();
-  }
-
   public String getLectureName() {
     return lectureInfo.getLectureName();
   }

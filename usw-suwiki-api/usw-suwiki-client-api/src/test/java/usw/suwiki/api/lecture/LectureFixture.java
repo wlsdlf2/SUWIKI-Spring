@@ -1,13 +1,17 @@
 package usw.suwiki.api.lecture;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import usw.suwiki.domain.lecture.Lecture;
 import usw.suwiki.domain.lecture.LectureDetail;
+import usw.suwiki.domain.lecture.schedule.LectureSchedule;
 
 import java.util.List;
 import java.util.Random;
 import java.util.stream.IntStream;
 
-public final class LectureFixture {
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public class LectureFixture {
   private static final Random RANDOM = new Random();
   private static final List<String> semesters = List.of("2021-2", "2022-1", "2022-2", "2023-1", "2023-2", "2024-1");
 
@@ -29,10 +33,14 @@ public final class LectureFixture {
       .build();
   }
 
-  public static List<Lecture> list(int size) {
+  public static List<Lecture> many(int size) {
     return IntStream.range(0, size)
       .mapToObj(i -> one())
       .toList();
+  }
+
+  public static LectureSchedule schedule(Long lectureId) {
+    return new LectureSchedule(lectureId, "미래103(월7,8),미래B102(월5,6)", "2024-1");
   }
 
   private static String randomSemesters() {

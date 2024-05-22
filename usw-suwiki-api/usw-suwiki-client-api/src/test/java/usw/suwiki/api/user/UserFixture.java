@@ -1,8 +1,12 @@
 package usw.suwiki.api.user;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import usw.suwiki.domain.user.Role;
 import usw.suwiki.domain.user.User;
 
-public final class UserFixture {
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public class UserFixture {
 
   public static User unconfirmed() {
     return User.init("loginId", "password", "test@suwiki.kr");
@@ -18,5 +22,15 @@ public final class UserFixture {
 
   public static User another() {
     return anotherUnconfirmed().activate();
+  }
+
+  public static User admin() {
+    return User.builder()
+      .loginId("admin")
+      .password("password")
+      .email("admin@suwiki.kr")
+      .role(Role.ADMIN)
+      .restricted(false)
+      .build();
   }
 }

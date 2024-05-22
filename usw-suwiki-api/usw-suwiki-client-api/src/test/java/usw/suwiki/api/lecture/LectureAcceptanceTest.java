@@ -4,6 +4,7 @@ import io.github.hejow.restdocs.document.RestDocument;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import usw.suwiki.api.user.UserFixture;
 import usw.suwiki.common.test.Tag;
 import usw.suwiki.common.test.annotation.AcceptanceTest;
 import usw.suwiki.common.test.support.AcceptanceTestSupport;
@@ -13,6 +14,7 @@ import usw.suwiki.domain.lecture.Lecture;
 import usw.suwiki.domain.lecture.LectureRepository;
 import usw.suwiki.domain.lecture.schedule.LectureSchedule;
 import usw.suwiki.domain.lecture.schedule.LectureScheduleRepository;
+import usw.suwiki.domain.user.UserRepository;
 import usw.suwiki.domain.user.model.UserClaim;
 
 import java.util.List;
@@ -25,6 +27,8 @@ import static usw.suwiki.core.exception.ExceptionType.USER_RESTRICTED;
 
 @AcceptanceTest
 class LectureAcceptanceTest extends AcceptanceTestSupport {
+  @Autowired
+  private UserRepository userRepository;
   @Autowired
   private LectureRepository lectureRepository;
   @Autowired
@@ -188,7 +192,8 @@ class LectureAcceptanceTest extends AcceptanceTestSupport {
     @Test
     void 강의_상세조회_성공() throws Exception {
       // given
-      var accessToken = tokenAgent.createAccessToken(1L, new UserClaim("loginId", "USER", false));
+      var user = userRepository.save(UserFixture.one());
+      var accessToken = tokenAgent.createAccessToken(user.getId(), user.toClaim());
 
       var lecture = 강의_생성();
 

@@ -36,6 +36,6 @@ public final class LectureFixture {
   }
 
   private static String randomSemesters() {
-    return String.join(", ", semesters.subList(0, RANDOM.nextInt(semesters.size()) + 1));
+    return String.join(", ", semesters.subList(RANDOM.nextInt(semesters.size()), semesters.size()));
   }
 }

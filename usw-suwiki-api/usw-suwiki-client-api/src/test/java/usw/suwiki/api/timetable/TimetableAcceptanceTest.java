@@ -11,12 +11,12 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
+import usw.suwiki.api.user.UserFixture;
 import usw.suwiki.common.test.Tag;
 import usw.suwiki.common.test.annotation.AcceptanceTest;
 import usw.suwiki.common.test.support.AcceptanceTestSupport;
 import usw.suwiki.common.test.support.Uri;
 import usw.suwiki.core.secure.TokenAgent;
-import usw.suwiki.core.secure.model.Claim;
 import usw.suwiki.domain.lecture.timetable.Timetable;
 import usw.suwiki.domain.lecture.timetable.TimetableCell;
 import usw.suwiki.domain.lecture.timetable.TimetableCellColor;
@@ -25,7 +25,6 @@ import usw.suwiki.domain.lecture.timetable.TimetableRepository;
 import usw.suwiki.domain.lecture.timetable.dto.TimetableRequest;
 import usw.suwiki.domain.user.User;
 import usw.suwiki.domain.user.UserRepository;
-import usw.suwiki.domain.user.model.UserClaim;
 
 import java.util.Arrays;
 import java.util.List;
@@ -52,15 +51,12 @@ class TimetableAcceptanceTest extends AcceptanceTestSupport {
   private TokenAgent tokenAgent;
 
   private User user;
-  private Claim claim;
   private String accessToken;
 
   @BeforeEach
   void setup() {
-    user = userRepository.save(User.init("loginId", "password", "test@suwiki.kr"));
-    claim = new UserClaim("loginId", "USER", false);
-
-    accessToken = tokenAgent.createAccessToken(user.getId(), claim);
+    user = userRepository.save(UserFixture.one());
+    accessToken = tokenAgent.createAccessToken(user.getId(), user.toClaim());
   }
 
   @Nested
@@ -806,6 +802,7 @@ class TimetableAcceptanceTest extends AcceptanceTestSupport {
   }
 
   private String 다른_사용자_토큰_생성() {
-    return tokenAgent.createAccessToken(0L, claim);
+    var anotherUser = userRepository.save(UserFixture.another());
+    return tokenAgent.createAccessToken(anotherUser.getId(), anotherUser.toClaim());
   }
 }

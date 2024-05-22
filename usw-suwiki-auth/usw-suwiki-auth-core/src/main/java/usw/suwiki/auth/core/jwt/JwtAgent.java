@@ -82,7 +82,7 @@ public class JwtAgent implements TokenAgent { // todo: public 이지만 외부�
   @Override
   public String createAccessToken(Long userId, Claim claim) {
     Claims claims = Jwts.claims().setSubject(claim.loginId());
-    claims.putAll(Map.of("id", userId, "loginId", claim.loginId(), "role", claim.role(), "restricted", claim.restricted()));
+    claims.putAll(Map.of(Content.ID.name(), userId, Content.LOGIN_ID.name(), claim.loginId(), Content.ROLE.name(), claim.role(), Content.RESTRICTED.name(), claim.restricted()));
 
     return Jwts.builder()
       .signWith(jwtSecretProvider.key())

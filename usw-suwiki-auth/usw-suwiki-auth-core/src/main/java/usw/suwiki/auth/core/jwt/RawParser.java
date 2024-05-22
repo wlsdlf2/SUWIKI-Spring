@@ -42,7 +42,7 @@ class RawParser {
 
   <T> T parse(String jwt, Content content, Class<T> type) {
     return validate(jwt).getBody()
-      .get(content.name().toLowerCase(), type);
+      .get(content.name(), type);
   }
 
   boolean isExpired(String jwt) {

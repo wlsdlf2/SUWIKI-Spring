@@ -7,7 +7,6 @@ import usw.suwiki.core.exception.AccountException;
 import usw.suwiki.core.exception.ExceptionType;
 import usw.suwiki.core.secure.PasswordEncoder;
 import usw.suwiki.core.secure.TokenAgent;
-import usw.suwiki.core.secure.model.Claim;
 import usw.suwiki.domain.evaluatepost.EvaluatePost;
 import usw.suwiki.domain.evaluatepost.service.EvaluatePostService;
 import usw.suwiki.domain.exampost.ExamPost;
@@ -16,7 +15,6 @@ import usw.suwiki.domain.report.EvaluatePostReport;
 import usw.suwiki.domain.report.ExamPostReport;
 import usw.suwiki.domain.report.service.ReportService;
 import usw.suwiki.domain.user.User;
-import usw.suwiki.domain.user.model.UserClaim;
 
 import java.util.List;
 import java.util.Map;
@@ -52,12 +50,12 @@ public class AdminBusinessService {
 
   public Map<String, String> adminLogin(LoginForm loginForm) {
     User user = userCRUDService.loadUserFromLoginId(loginForm.loginId());
-    if (user.validatePassword(passwordEncoder, loginForm.password())) {
+    if (user.isPasswordEquals(passwordEncoder, loginForm.password())) {
       if (user.isAdmin()) {
         final long userCount = userCRUDService.countAllUsers();
         final long userIsolationCount = userIsolationCRUDService.countAllIsolatedUsers();
         final long totalUserCount = userCount + userIsolationCount;
-        Claim claim = new UserClaim(user.getLoginId(), user.getRole().name(), user.getRestricted());
+        var claim = user.toClaim();
 
         return adminLoginResponseForm(tokenAgent.createAccessToken(user.getId(), claim), String.valueOf(totalUserCount));
       }

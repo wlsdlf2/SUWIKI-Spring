@@ -83,7 +83,7 @@ public class UserCRUDService implements UserAdapterService {
   @Override
   public UserAdapter findByUsername(String username) {
     return userRepository.findByLoginId(username)
-      .map(UserAdapter::from)
+      .map(User::toAdapter)
       .orElseThrow(() -> new AccountException(ExceptionType.USER_NOT_FOUND));
   }
 }

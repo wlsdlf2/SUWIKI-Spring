@@ -13,10 +13,8 @@ import usw.suwiki.core.exception.ExceptionType;
 import usw.suwiki.core.mail.EmailSender;
 import usw.suwiki.core.secure.PasswordEncoder;
 import usw.suwiki.core.secure.TokenAgent;
-import usw.suwiki.core.secure.model.Claim;
 import usw.suwiki.domain.user.User;
 import usw.suwiki.domain.user.dto.FavoriteSaveDto;
-import usw.suwiki.domain.user.model.UserClaim;
 
 import java.util.HashMap;
 import java.util.List;
@@ -26,6 +24,7 @@ import java.util.Optional;
 import static usw.suwiki.common.response.ApiResponseFactory.overlapFalseFlag;
 import static usw.suwiki.common.response.ApiResponseFactory.overlapTrueFlag;
 import static usw.suwiki.common.response.ApiResponseFactory.successFlag;
+import static usw.suwiki.core.exception.ExceptionType.EMAIL_NOT_AUTHED;
 import static usw.suwiki.core.mail.MailType.EMAIL_AUTH;
 import static usw.suwiki.core.mail.MailType.FIND_ID;
 import static usw.suwiki.core.mail.MailType.FIND_PASSWORD;
@@ -144,7 +143,7 @@ public class UserBusinessService {
 
     if (userByLoginId.equals(userByEmail)) {
       User user = userByLoginId.get();
-      emailSender.send(email, FIND_PASSWORD, user.updateRandomPassword(passwordEncoder));
+      emailSender.send(email, FIND_PASSWORD, user.resetPassword(passwordEncoder));
       return successFlag();
     } else if (userIsolationCRUDService.isRetrievedUserEquals(email, loginId)) {
       String newPassword = userIsolationCRUDService.updateIsolatedUserPassword(passwordEncoder, email);
@@ -157,8 +156,18 @@ public class UserBusinessService {
   public Map<String, String> login(String loginId, String inputPassword) {
     if (userCRUDService.loadWrappedUserFromLoginId(loginId).isPresent()) {
       User user = userCRUDService.loadUserFromLoginId(loginId);
-      user.isUserEmailAuthed(confirmationTokenCRUDService.loadConfirmationTokenFromUserIdx(user.getId()));
-      if (user.validatePassword(passwordEncoder, inputPassword)) {
+
+      var optionalConfirmationToken = confirmationTokenCRUDService.loadConfirmationTokenFromUserIdx(user.getId());
+
+      if (optionalConfirmationToken.isEmpty()) {
+        throw new AccountException(EMAIL_NOT_AUTHED);
+      }
+
+      if (!optionalConfirmationToken.get().isVerified()) {
+        throw new AccountException(EMAIL_NOT_AUTHED);
+      }
+
+      if (user.isPasswordEquals(passwordEncoder, inputPassword)) {
         user.login();
         return generateJwt(user);
       }
@@ -178,7 +187,7 @@ public class UserBusinessService {
     } else if (prePassword.equals(newPassword)) {
       throw new AccountException(ExceptionType.PASSWORD_NOT_CHANGED);
     }
-    user.updatePassword(passwordEncoder, newPassword);
+    user.changePassword(passwordEncoder, newPassword);
     return successFlag();
   }
 
@@ -203,7 +212,7 @@ public class UserBusinessService {
   public Map<String, Boolean> quit(Long userId, String inputPassword) {
     User user = userCRUDService.loadUserFromUserIdx(userId);
 
-    if (!user.validatePassword(passwordEncoder, inputPassword)) {
+    if (!user.isPasswordEquals(passwordEncoder, inputPassword)) {
       throw new AccountException(ExceptionType.PASSWORD_ERROR);
     }
 
@@ -245,19 +254,15 @@ public class UserBusinessService {
   }
 
   private Map<String, String> generateJwt(User user) {
-    Claim userClaim = new UserClaim(user.getLoginId(), user.getRole().name(), user.getRestricted());
-
     return new HashMap<>() {{
-      put("AccessToken", tokenAgent.createAccessToken(user.getId(), userClaim));
+      put("AccessToken", tokenAgent.createAccessToken(user.getId(), user.toClaim()));
       put("RefreshToken", tokenAgent.login(user.getId()));
     }};
   }
 
   private Map<String, String> refreshJwt(User user, String refreshTokenPayload) {
-    Claim userClaim = new UserClaim(user.getLoginId(), user.getRole().name(), user.getRestricted());
-
     return new HashMap<>() {{
-      put("AccessToken", tokenAgent.createAccessToken(user.getId(), userClaim));
+      put("AccessToken", tokenAgent.createAccessToken(user.getId(), user.toClaim()));
       put("RefreshToken", tokenAgent.reissue(refreshTokenPayload));
     }};
   }

@@ -19,18 +19,18 @@ public class ConfirmationTokenBusinessService {
   public String confirmToken(String token) {
     return confirmationTokenCRUDService.loadConfirmationTokenFromPayload(token)
       .map(this::confirm)
-      .orElseGet(ERROR::getContent);
+      .orElse(ERROR.getContent());
   }
 
   private String confirm(ConfirmationToken token) {
-    if (token.isTokenExpired()) {
+    if (token.isExpired()) {
       confirmationTokenCRUDService.deleteFromId(token.getId());
       confirmUserService.delete(token.getUserIdx());
       return EXPIRED.getContent();
     }
 
-    token.confirmed();
-    confirmUserService.activated(token.getUserIdx());
+    token.confirm();
+    confirmUserService.activate(token.getUserIdx());
     return SUCCESS.getContent();
   }
 }

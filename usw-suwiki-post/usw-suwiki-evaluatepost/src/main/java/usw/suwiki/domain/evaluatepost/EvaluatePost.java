@@ -3,8 +3,15 @@ package usw.suwiki.domain.evaluatepost;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import usw.suwiki.core.exception.EvaluatePostException;
 import usw.suwiki.infra.jpa.BaseEntity;
+
+import static usw.suwiki.core.exception.ExceptionType.NOT_AN_AUTHOR;
 
 @Getter
 @Entity
@@ -32,7 +39,7 @@ public class EvaluatePost extends BaseEntity {
 
   public void validateAuthor(Long userId) {
     if (!this.userIdx.equals(userId)) {
-      throw new IllegalArgumentException("not an author"); // todo: 알맞는 예외 던지기
+      throw new EvaluatePostException(NOT_AN_AUTHOR);
     }
   }
 

@@ -197,12 +197,6 @@ public class NoticeAcceptanceTest extends AcceptanceTestSupport {
 
     @Test
     void 공자_삭제_성공() throws Exception {
-      // expected
-      var identifier = "delete-notice";
-      var summary = "[Admin 토큰 필요] 공지 삭제 API";
-      var description = "공지를 삭제하는 API 입니다."; // todo
-      var expectedResults = "success";
-
       // given
       var notice = fixtures.공지사항_생성();
 
@@ -210,13 +204,21 @@ public class NoticeAcceptanceTest extends AcceptanceTestSupport {
       var result = delete(Uri.of(endpoint), accessToken, null, parameter(paramKey, notice.getId()));
 
       // then
+      result.andExpect(status().isOk());
+
       var notices = noticeRepository.findByNoticeList(new PageOption(Optional.of(1)));
       assertThat(notices).isEmpty();
 
-      // result validation
-      ResponseValidator.validateHtml(result, status().isOk(), expectedResults);
-
-      // Non DOCS
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .identifier("delete-notice")
+          .summary("[Admin 토큰 필요] 공지 삭제 API")
+          .description("공지를 삭제하는 API 입니다.")
+          .tag(NOTICE)
+          .result(result)
+          .generateDocs()
+      );
     }
 
     @Test
@@ -243,7 +245,7 @@ public class NoticeAcceptanceTest extends AcceptanceTestSupport {
     }
 
     @Test
-    void 공지_삭젝_실패_권한_없음() throws Exception {
+    void 공지_삭제_실패_권한_없음() throws Exception {
       // given
       var notice = fixtures.공지사항_생성();
       var userAccessToken = fixtures.토큰_생성();
@@ -275,12 +277,6 @@ public class NoticeAcceptanceTest extends AcceptanceTestSupport {
 
     @Test
     void 공지_조회_성공() throws Exception {
-      // expected
-      var identifier = "get-notice";
-      var summary = "[토큰 필요] 공지 조회 API";
-      var description = "공지를 조회하는 API 입니다.";
-      var tag = NOTICE;
-
       // given
       var notice = fixtures.공지사항_생성();
 
@@ -297,15 +293,15 @@ public class NoticeAcceptanceTest extends AcceptanceTestSupport {
       );
 
       // docs
-//      result.andDo(
-//              RestDocument.builder()
-//                      .identifier(identifier)
-//                      .summary(summary)
-//                      .description(description)
-//                      .tag(NOTICE)
-//                      .result(result)
-//                      .generateDocs()
-//      );
+      result.andDo(
+        RestDocument.builder()
+          .identifier("get-notice")
+          .summary("[토큰 필요] 공지 조회 API")
+          .description("공지를 조회하는 API 입니다.")
+          .tag(NOTICE)
+          .result(result)
+          .generateDocs()
+      );
     }
 
     @Test
@@ -332,46 +328,38 @@ public class NoticeAcceptanceTest extends AcceptanceTestSupport {
     }
   }
 
-  @Nested
-  class 공지_리스트_조회_테스트 {
-    private final int DEFAULT_SIZE = 10;
+  @Test
+  void 공지_리스트_조회_성공() throws Exception {
+    // given
+    final int DEFAULT_SIZE = 10;
 
-    private final String endpoint = "/notice/all";
-    private final String paramKey = "page";
+    var totalPage = 3;
+    var requestPage = 1;
+    var size = DEFAULT_SIZE * totalPage;
 
-    @Test
-    void 공지_리스트_조회_성공() throws Exception {
-      // given
-      var totalPage = 3;
-      var requestPage = 1;
-      var size = DEFAULT_SIZE * totalPage;
+    var notices = fixtures.공지사항_여러개_생성(size);
 
-      var notices = fixtures.공지사항_여러개_생성(size);
+    // when
+    var result = get(Uri.of("/notice/all"), accessToken, parameter("page", requestPage));
 
-      // when
-      var result = get(Uri.of(endpoint), accessToken, parameter(paramKey, requestPage));
+    // then
+    result.andExpectAll(
+      status().isOk(),
+      jsonPath("$.data.length()").value(DEFAULT_SIZE),
+      jsonPath("$.data.[0].id").value(notices.get(notices.size() - 1).getId()),
+      jsonPath("$.data.[0].title").value(notices.get(notices.size() - 1).getTitle()),
+      jsonPath("$.data.[0].modifiedDate").value(notices.get(notices.size() - 1).getModifiedDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")))
+    );
 
-      // then
-      result.andExpectAll(
-        status().isOk(),
-        jsonPath("$.data.length()").value(10),
-        jsonPath("$.data.[0].id").value(notices.get(notices.size() - 1).getId()),
-        jsonPath("$.data.[0].title").value(notices.get(notices.size() - 1).getTitle()),
-        jsonPath("$.data.[0].modifiedDate").value(notices.get(notices.size() - 1).getModifiedDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")))
-      );
-
-      // docs
-//      result.andDo(
-//              RestDocument.builder()
-//                      .identifier("get-notice-list-success")
-//                      .summary("공지 리스트 조회 API")
-//                      .description("""
-//          공지 리스트 조회 API 입니다.
-//          """)
-//                      .tag(NOTICE)
-//                      .result(result)
-//                      .generateDocs()
-//      );
-    }
+    // docs
+    result.andDo(
+      RestDocument.builder()
+        .identifier("get-notice-list-success")
+        .summary("공지 리스트 조회 API")
+        .description("공지 리스트 조회 API 입니다.")
+        .tag(NOTICE)
+        .result(result)
+        .generateDocs()
+    );
   }
 }

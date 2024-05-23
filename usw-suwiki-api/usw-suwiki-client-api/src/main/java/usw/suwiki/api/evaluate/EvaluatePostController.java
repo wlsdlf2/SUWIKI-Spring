@@ -35,7 +35,7 @@ public class EvaluatePostController {
   @Statistics(target = EVALUATE_POSTS)
   @GetMapping
   @ResponseStatus(OK)
-  public EvaluatePostResponse.Details readEvaluatePostsByLectureApi(
+  public EvaluatePostResponse.Details getAllOfLecture(
     @Authenticated Long userId,
     @RequestParam Long lectureId,
     @RequestParam(required = false) Optional<Integer> page
@@ -47,35 +47,31 @@ public class EvaluatePostController {
   @Statistics(target = EVALUATE_POSTS)
   @PostMapping
   @ResponseStatus(OK)
-  public String writeEvaluation(
+  public void writeEvaluation(
     @Authenticated Long userId,
     @RequestParam Long lectureId,
     @Valid @RequestBody EvaluatePostRequest.Create request
   ) {
     evaluatePostService.write(userId, lectureId, request);
-    return "success";
   }
 
   @Authorize
   @Statistics(target = EVALUATE_POSTS)
   @PutMapping
   @ResponseStatus(OK)
-  public String updateEvaluation(
+  public void updateEvaluation(
+    @Authenticated Long userId,
     @RequestParam Long evaluateIdx,
     @Valid @RequestBody EvaluatePostRequest.Update request
   ) {
-    evaluatePostService.update(evaluateIdx, request); // todo: writer에 대한 검증
-    return "success";
+    evaluatePostService.update(userId, evaluateIdx, request);
   }
 
   @Authorize
   @Statistics(target = EVALUATE_POSTS)
   @GetMapping("/written")
   @ResponseStatus(OK)
-  public ResponseForm findByUser(
-    @Authenticated Long userId,
-    @RequestParam(required = false) Optional<Integer> page
-  ) {
+  public ResponseForm findByUser(@Authenticated Long userId, @RequestParam(required = false) Optional<Integer> page) {
     var response = evaluatePostService.loadAllEvaluatePostsByUserId(new PageOption(page), userId);
     return new ResponseForm(response);
   }
@@ -84,8 +80,7 @@ public class EvaluatePostController {
   @Statistics(target = EVALUATE_POSTS)
   @DeleteMapping
   @ResponseStatus(OK)
-  public String deleteEvaluation(@Authenticated Long userId, @RequestParam Long evaluateIdx) {
-    evaluatePostService.deleteEvaluatePost(evaluateIdx, userId);
-    return "success";
+  public void deleteEvaluation(@Authenticated Long userId, @RequestParam Long evaluateIdx) {
+    evaluatePostService.erase(userId, evaluateIdx);
   }
 }

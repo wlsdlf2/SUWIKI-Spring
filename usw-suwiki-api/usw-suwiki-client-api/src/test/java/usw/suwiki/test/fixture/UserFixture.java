@@ -1,4 +1,4 @@
-package usw.suwiki.api.user;
+package usw.suwiki.test.fixture;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;

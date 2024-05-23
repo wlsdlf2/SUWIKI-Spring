@@ -182,7 +182,7 @@ CREATE TABLE IF NOT EXISTS evaluate_post
     create_date       datetime     null,
     modified_date     datetime     null,
     foreign key (lecture_id) references lecture (id) on update cascade on delete cascade,
-    foreign key (user_idx) references user (id)
+    foreign key (user_idx) references users (id)
 );
 
 create index lecture_id on evaluate_post (lecture_id);
@@ -204,7 +204,7 @@ CREATE TABLE IF NOT EXISTS exam_post
     user_idx          bigint       null,
     lecture_id        bigint       null,
     foreign key (lecture_id) references lecture (id) on update cascade on delete cascade,
-    foreign key (user_idx) references user (id)
+    foreign key (user_idx) references users (id)
 );
 
 create index lecture_id on exam_post (lecture_id);
@@ -216,7 +216,7 @@ CREATE TABLE IF NOT EXISTS favorite_major
     id         bigint auto_increment primary key,
     user_idx   bigint       null,
     major_type varchar(100) null,
-    foreign key (user_idx) references user (id)
+    foreign key (user_idx) references users (id)
 );
 
 create index user_idx on favorite_major (user_idx);
@@ -230,7 +230,7 @@ CREATE TABLE IF NOT EXISTS timetable
     semester      varchar(255) not null,
     year          int          not null,
     user_id       bigint       not null,
-    foreign key (user_id) references user (id)
+    foreign key (user_id) references users (id)
 );
 
 CREATE TABLE IF NOT EXISTS timetable_cells
@@ -266,7 +266,7 @@ CREATE TABLE IF NOT EXISTS view_exam
     lecture_id    bigint      null,
     create_date   datetime    null,
     modified_date datetime(6) null,
-    foreign key (user_idx) references user (id),
+    foreign key (user_idx) references users (id),
     foreign key (lecture_id) references lecture (id) on update cascade on delete cascade
 );
 

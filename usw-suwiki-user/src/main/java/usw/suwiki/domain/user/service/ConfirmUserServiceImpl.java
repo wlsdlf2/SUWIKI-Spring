@@ -21,7 +21,7 @@ public class ConfirmUserServiceImpl implements ConfirmUserService {
   }
 
   @Override
-  public void activated(Long userId) {
+  public void activate(Long userId) {
     userRepository.findById(userId)
       .orElseThrow(() -> new AccountException(USER_NOT_FOUND))
       .activate();

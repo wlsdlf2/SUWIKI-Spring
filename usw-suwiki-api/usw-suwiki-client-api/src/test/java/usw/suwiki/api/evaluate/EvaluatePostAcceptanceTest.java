@@ -7,10 +7,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import usw.suwiki.common.test.Tag;
 import usw.suwiki.common.test.annotation.AcceptanceTest;
 import usw.suwiki.common.test.support.AcceptanceTestSupport;
-import usw.suwiki.common.test.support.ResponseValidator;
 import usw.suwiki.common.test.support.Uri;
 import usw.suwiki.domain.evaluatepost.EvaluatePostRepository;
 import usw.suwiki.domain.evaluatepost.dto.EvaluatePostRequest;
@@ -28,6 +26,7 @@ import static usw.suwiki.common.test.support.Pair.parameter;
 import static usw.suwiki.core.exception.ExceptionType.ALREADY_WROTE_EXAM_POST;
 import static usw.suwiki.core.exception.ExceptionType.EVALUATE_POST_NOT_FOUND;
 import static usw.suwiki.core.exception.ExceptionType.LECTURE_NOT_FOUND;
+import static usw.suwiki.core.exception.ExceptionType.NOT_AN_AUTHOR;
 import static usw.suwiki.core.exception.ExceptionType.PARAMETER_VALIDATION_FAIL;
 import static usw.suwiki.core.exception.ExceptionType.USER_POINT_LACK;
 
@@ -52,24 +51,20 @@ public class EvaluatePostAcceptanceTest extends AcceptanceTestSupport {
 
   @Nested
   class 강의_평가_생성_테스트 {
-    private final String endpoint = "/evaluate-posts";
+    private final String urlTemplate = "/evaluate-posts";
     private final String paramKey = "lectureId";
 
     @Test
     void 강의_평가_생성_성공() throws Exception {
-      // expected
-      var identifier = "create-evaluate-post";
-      var summary = "[토큰 필요] 강의 평가 생성 API";
-      var description = "강의 평가를 생성하는 API 입니다. Body에는 String 타입을 입력해야하며 Blank 제약조건이 있습니다."; // todo
-      var expectedResults = "success";
-
       // given
       var request = new EvaluatePostRequest.Create("강의 평가 내용", "강의명", "2021-1", "교수명", 1, 1, 1, 1, 1, 1);
 
       // when
-      var result = post(Uri.of(endpoint), accessToken, request, parameter(paramKey, lecture.getId()));
+      var result = post(Uri.of(urlTemplate), accessToken, request, parameter(paramKey, lecture.getId()));
 
       // then
+      result.andExpect(status().isOk());
+
       var evaluatePosts = evaluatePostRepository.findAllByUserIdx(user.getId());
       assertAll(
         () -> assertThat(evaluatePosts.get(0)).isNotNull(),
@@ -85,10 +80,16 @@ public class EvaluatePostAcceptanceTest extends AcceptanceTestSupport {
         () -> assertThat(evaluatePosts.get(0).getLectureRating().getHomework()).isEqualTo(request.getHomework())
       );
 
-      // result validation
-      ResponseValidator.validateHtml(result, status().isOk(), expectedResults);
-
-      // Non DOCS
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .identifier("create-evaluate-post")
+          .summary("[토큰 필요] 강의 평가 생성 API")
+          .description("강의 평가를 생성하는 API 입니다. Body에는 String 타입을 입력해야하며 Blank 제약조건이 있습니다.")
+          .tag(EVALUATE_POST)
+          .result(result)
+          .generateDocs()
+      );
     }
 
     @ParameterizedTest
@@ -98,7 +99,7 @@ public class EvaluatePostAcceptanceTest extends AcceptanceTestSupport {
       var request = new EvaluatePostRequest.Create("강의 평가 내용", "강의명", "2021-1", "교수명", negative, 1, 1, 1, 1, 1);
 
       // when
-      var result = post(Uri.of(endpoint), accessToken, request, parameter(paramKey, lecture.getId()));
+      var result = post(Uri.of(urlTemplate), accessToken, request, parameter(paramKey, lecture.getId()));
 
       // then
       result.andExpectAll(
@@ -110,7 +111,7 @@ public class EvaluatePostAcceptanceTest extends AcceptanceTestSupport {
       result.andDo(
         RestDocument.builder()
           .identifier("create-evaluate-post-fail-wrong-satisfaction-value")
-          .tag(Tag.EVALUATE_POST)
+          .tag(EVALUATE_POST)
           .result(result)
           .generateDocs()
       );
@@ -123,7 +124,7 @@ public class EvaluatePostAcceptanceTest extends AcceptanceTestSupport {
       var request = new EvaluatePostRequest.Create("강의 평가 내용", "강의명", "2021-1", "교수명", 1, negative, 1, 1, 1, 1);
 
       // when
-      var result = post(Uri.of(endpoint), accessToken, request, parameter(paramKey, lecture.getId()));
+      var result = post(Uri.of(urlTemplate), accessToken, request, parameter(paramKey, lecture.getId()));
 
       // then
       result.andExpectAll(
@@ -135,7 +136,7 @@ public class EvaluatePostAcceptanceTest extends AcceptanceTestSupport {
       result.andDo(
         RestDocument.builder()
           .identifier("create-evaluate-post-fail-wrong-learning-value")
-          .tag(Tag.EVALUATE_POST)
+          .tag(EVALUATE_POST)
           .result(result)
           .generateDocs()
       );
@@ -148,7 +149,7 @@ public class EvaluatePostAcceptanceTest extends AcceptanceTestSupport {
       var request = new EvaluatePostRequest.Create("강의 평가 내용", "강의명", "2021-1", "교수명", 1, 1, negative, 1, 1, 1);
 
       // when
-      var result = post(Uri.of(endpoint), accessToken, request, parameter(paramKey, lecture.getId()));
+      var result = post(Uri.of(urlTemplate), accessToken, request, parameter(paramKey, lecture.getId()));
 
       // then
       result.andExpectAll(
@@ -160,7 +161,7 @@ public class EvaluatePostAcceptanceTest extends AcceptanceTestSupport {
       result.andDo(
         RestDocument.builder()
           .identifier("create-evaluate-post-fail-wrong-honey-value")
-          .tag(Tag.EVALUATE_POST)
+          .tag(EVALUATE_POST)
           .result(result)
           .generateDocs()
       );
@@ -176,7 +177,7 @@ public class EvaluatePostAcceptanceTest extends AcceptanceTestSupport {
       );
 
       // when
-      var result = post(Uri.of(endpoint), accessToken, request, parameter(paramKey, lecture.getId()));
+      var result = post(Uri.of(urlTemplate), accessToken, request, parameter(paramKey, lecture.getId()));
 
       // then
       result.andExpectAll(
@@ -188,7 +189,7 @@ public class EvaluatePostAcceptanceTest extends AcceptanceTestSupport {
       result.andDo(
         RestDocument.builder()
           .identifier("create-evaluate-post-fail-wrong-team-value")
-          .tag(Tag.EVALUATE_POST)
+          .tag(EVALUATE_POST)
           .result(result)
           .generateDocs()
       );
@@ -201,7 +202,7 @@ public class EvaluatePostAcceptanceTest extends AcceptanceTestSupport {
       var request = new EvaluatePostRequest.Create("강의 평가 내용", "강의명", "2021-1", "교수명", 1, 1, 1, 1, negative, 1);
 
       // when
-      var result = post(Uri.of(endpoint), accessToken, request, parameter(paramKey, lecture.getId()));
+      var result = post(Uri.of(urlTemplate), accessToken, request, parameter(paramKey, lecture.getId()));
 
       // then
       result.andExpectAll(
@@ -213,7 +214,7 @@ public class EvaluatePostAcceptanceTest extends AcceptanceTestSupport {
       result.andDo(
         RestDocument.builder()
           .identifier("create-evaluate-post-fail-wrong-difficult-value")
-          .tag(Tag.EVALUATE_POST)
+          .tag(EVALUATE_POST)
           .result(result)
           .generateDocs()
       );
@@ -226,7 +227,7 @@ public class EvaluatePostAcceptanceTest extends AcceptanceTestSupport {
       var request = new EvaluatePostRequest.Create("강의 평가 내용", "강의명", "2021-1", "교수명", 1, 1, 1, 1, 1, negative);
 
       // when
-      var result = post(Uri.of(endpoint), accessToken, request, parameter("lectureId", lecture.getId()));
+      var result = post(Uri.of(urlTemplate), accessToken, request, parameter("lectureId", lecture.getId()));
 
       // then
       result.andExpectAll(
@@ -238,7 +239,7 @@ public class EvaluatePostAcceptanceTest extends AcceptanceTestSupport {
       result.andDo(
         RestDocument.builder()
           .identifier("create-evaluate-post-fail-wrong-homework-value")
-          .tag(Tag.EVALUATE_POST)
+          .tag(EVALUATE_POST)
           .result(result)
           .generateDocs()
       );
@@ -250,7 +251,7 @@ public class EvaluatePostAcceptanceTest extends AcceptanceTestSupport {
       var request = new EvaluatePostRequest.Create("강의 평가 내용", "강의명", "2021-1", "교수명", 1, 1, 1, 1, 1, 1);
 
       // when
-      var result = post(Uri.of(endpoint), accessToken, request, parameter(paramKey, -1L));
+      var result = post(Uri.of(urlTemplate), accessToken, request, parameter(paramKey, -1L));
 
       // then
       result.andExpectAll(
@@ -262,7 +263,7 @@ public class EvaluatePostAcceptanceTest extends AcceptanceTestSupport {
       result.andDo(
         RestDocument.builder()
           .identifier("create-evaluate-post-fail-wrong-parameter-lecture-id")
-          .tag(Tag.EVALUATE_POST)
+          .tag(EVALUATE_POST)
           .result(result)
           .generateDocs()
       );
@@ -276,7 +277,7 @@ public class EvaluatePostAcceptanceTest extends AcceptanceTestSupport {
       var request = new EvaluatePostRequest.Create("강의 평가 내용", "강의명", "2021-1", "교수명", 1, 1, 1, 1, 1, 1);
 
       // when
-      var result = post(Uri.of(endpoint), accessToken, request, parameter(paramKey, evaluatePost.getLectureId()));
+      var result = post(Uri.of(urlTemplate), accessToken, request, parameter(paramKey, evaluatePost.getLectureId()));
 
       // then
       result.andExpectAll(
@@ -288,7 +289,7 @@ public class EvaluatePostAcceptanceTest extends AcceptanceTestSupport {
       result.andDo(
         RestDocument.builder()
           .identifier("create-evaluate-post-fail-already-write-evaluate-post")
-          .tag(Tag.EVALUATE_POST)
+          .tag(EVALUATE_POST)
           .result(result)
           .generateDocs()
       );
@@ -297,26 +298,22 @@ public class EvaluatePostAcceptanceTest extends AcceptanceTestSupport {
 
   @Nested
   class 강의_평가_수정_테스트 {
-    private final String endpoint = "/evaluate-posts";
+    private final String urlTemplate = "/evaluate-posts";
     private final String paramKey = "evaluateIdx";
 
     @Test
     void 강의_평가_수정_성공() throws Exception {
-      // expected
-      var identifier = "update-evaluate-post";
-      var summary = "[토큰 필요] 강의 평가 수정 API";
-      var description = "강의 평가를 수정하는 API 입니다";
-      var expectedResults = "success";
-
       // given
       var evaluatePost = fixtures.강의평가_생성(user.getId(), lecture);
 
       var request = new EvaluatePostRequest.Update("바뀐 강의 평가 내용", "2021-2", 2, 2, 2, 2, 2, 2);
 
       // when
-      var result = put(Uri.of(endpoint), accessToken, request, parameter(paramKey, evaluatePost.getId()));
+      var result = put(Uri.of(urlTemplate), accessToken, request, parameter(paramKey, evaluatePost.getId()));
 
       // then
+      result.andExpect(status().isOk());
+
       var evaluatePosts = evaluatePostRepository.findAllByUserIdx(user.getId());
       assertAll(
         () -> assertThat(evaluatePosts.get(0)).isNotNull(),
@@ -330,10 +327,16 @@ public class EvaluatePostAcceptanceTest extends AcceptanceTestSupport {
         () -> assertThat(evaluatePosts.get(0).getLectureRating().getHomework()).isEqualTo(request.getHomework())
       );
 
-      // result validation
-      ResponseValidator.validateHtml(result, status().isOk(), expectedResults);
-
-      //Non DOCS
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .identifier("update-evaluate-post")
+          .summary("[토큰 필요] 강의 평가 수정 API")
+          .description("강의 평가를 수정하는 API 입니다")
+          .tag(EVALUATE_POST)
+          .result(result)
+          .generateDocs()
+      );
     }
 
     @Test
@@ -342,7 +345,7 @@ public class EvaluatePostAcceptanceTest extends AcceptanceTestSupport {
       var request = new EvaluatePostRequest.Update("바뀐 강의 평가 내용", "2021-2", 2, 2, 2, 2, 2, 2);
 
       // when
-      var result = put(Uri.of(endpoint), accessToken, request, parameter(paramKey, -1L));
+      var result = put(Uri.of(urlTemplate), accessToken, request, parameter(paramKey, -1L));
 
       // then
       result.andExpectAll(
@@ -354,7 +357,34 @@ public class EvaluatePostAcceptanceTest extends AcceptanceTestSupport {
       result.andDo(
         RestDocument.builder()
           .identifier("update-evaluate-post-fail-wrong-parameter-evaluate-id")
-          .tag(Tag.EVALUATE_POST)
+          .tag(EVALUATE_POST)
+          .result(result)
+          .generateDocs()
+      );
+    }
+
+    @Test
+    void 강의_평가_수정_실패_작성자가_아님() throws Exception {
+      // given
+      var evaluatePost = fixtures.강의평가_생성(user.getId(), lecture);
+      var anotherUser = fixtures.다른_사용자_토큰_생성();
+
+      var request = new EvaluatePostRequest.Update("바뀐 강의 평가 내용", "2021-2", 2, 2, 2, 2, 2, 2);
+
+      // when
+      var result = put(Uri.of(urlTemplate), anotherUser, request, parameter(paramKey, evaluatePost.getId()));
+
+      // then
+      result.andExpectAll(
+        status().is4xxClientError(),
+        expectExceptionJsonPath(result, NOT_AN_AUTHOR)
+      );
+
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .identifier("update-evaluate-post-fail-not-author")
+          .tag(EVALUATE_POST)
           .result(result)
           .generateDocs()
       );
@@ -368,28 +398,30 @@ public class EvaluatePostAcceptanceTest extends AcceptanceTestSupport {
 
     @Test
     void 강의_평가_삭제_성공() throws Exception {
-      // expected
-      var identifier = "delete-evaluate-post";
-      var summary = "[토큰 필요] 강의 평가 삭제 API";
-      var description = "강의 평가를 삭제하는 API 입니다";
-      var expectedResults = "success";
-
       // given
       var evaluatePost = fixtures.강의평가_생성(user.getId(), lecture);
 
-      for (int cnt = 0; cnt < 10; cnt++) { // 삭제 시 필요한 포인트 30 포인트 차감. 한번 작성 시 10포인트 증가
-        user.writeEvaluatePost();
-      }
+      fixtures.포인트_충전(user.getId());
 
       // when
       var result = delete(Uri.of(endpoint), accessToken, null, parameter(paramKey, evaluatePost.getId()));
 
       // then
+      result.andExpect(status().isOk());
+
       var evaluatePosts = evaluatePostRepository.findAllByUserIdx(user.getId());
       assertThat(evaluatePosts).isEmpty();
 
-      // result validation
-      ResponseValidator.validateHtml(result, status().isOk(), expectedResults);
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .identifier("delete-evaluate-post")
+          .summary("[토큰 필요] 강의 평가 삭제 API")
+          .description("강의 평가를 삭제하는 API 입니다")
+          .tag(EVALUATE_POST)
+          .result(result)
+          .generateDocs()
+      );
     }
 
     @Test
@@ -410,7 +442,32 @@ public class EvaluatePostAcceptanceTest extends AcceptanceTestSupport {
       result.andDo(
         RestDocument.builder()
           .identifier("delete-evaluate-post-fail-lack-user-point")
-          .tag(Tag.EVALUATE_POST)
+          .tag(EVALUATE_POST)
+          .result(result)
+          .generateDocs()
+      );
+    }
+
+    @Test
+    void 강의_평가_삭제_실패_작성자가_아님() throws Exception {
+      // given
+      var evaluatePost = fixtures.강의평가_생성(user.getId(), lecture);
+      var anotherUser = fixtures.다른_사용자_토큰_생성();
+
+      // when
+      var result = delete(Uri.of(endpoint), anotherUser, null, parameter(paramKey, evaluatePost.getId()));
+
+      // then
+      result.andExpectAll(
+        status().is4xxClientError(),
+        expectExceptionJsonPath(result, NOT_AN_AUTHOR)
+      );
+
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .identifier("delete-evaluate-post-fail-not-author")
+          .tag(EVALUATE_POST)
           .result(result)
           .generateDocs()
       );
@@ -425,17 +482,57 @@ public class EvaluatePostAcceptanceTest extends AcceptanceTestSupport {
     private final int requestPage = 1;
     private final int size = DEFAULT_SIZE * totalPage;
 
-    private final String endpoint = "/evaluate-posts";
+    private final String urlTemplate = "/evaluate-posts";
     private final String pageParam = "page";
     private final String lectureIdParam = "lectureId";
 
     @Test
-    void 강의_평가_리스트_조회_성공() throws Exception {
+    void 강의_평가_리스트_조회_성공_작성_이력_존재() throws Exception {
       // given
       var evaluatePosts = fixtures.강의평가_여러개_생성(user.getId(), lecture, size);
 
       // when
-      var result = get(Uri.of(endpoint), accessToken,
+      var result = get(Uri.of(urlTemplate), accessToken,
+        parameter(pageParam, requestPage),
+        parameter(lectureIdParam, lecture.getId())
+      );
+
+      // then
+      result.andExpectAll(
+        status().isOk(),
+        jsonPath("$.data.size()").value(DEFAULT_SIZE),
+        jsonPath("$.data.[0].id").value(evaluatePosts.get(0).getId()),
+        jsonPath("$.data.[0].content").value(evaluatePosts.get(0).getContent()),
+        jsonPath("$.data.[0].selectedSemester").value(evaluatePosts.get(0).getSelectedSemester()),
+        jsonPath("$.data.[0].totalAvg").value(evaluatePosts.get(0).getTotalAvg()),
+        jsonPath("$.data.[0].satisfaction").value(evaluatePosts.get(0).getSatisfaction()),
+        jsonPath("$.data.[0].learning").value(evaluatePosts.get(0).getLearning()),
+        jsonPath("$.data.[0].honey").value(evaluatePosts.get(0).getHoney()),
+        jsonPath("$.data.[0].team").value(evaluatePosts.get(0).getTeam()),
+        jsonPath("$.data.[0].difficulty").value(evaluatePosts.get(0).getDifficulty()),
+        jsonPath("$.data.[0].homework").value(evaluatePosts.get(0).getHomework()),
+        jsonPath("$.written").value(true)
+      );
+
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .identifier("get-evaluate-posts-success-with-post-history")
+          .summary("[토큰 필요] 강의 평가 리스트 조회 API")
+          .description("강의 평가 조회 API입니다.")
+          .tag(EVALUATE_POST)
+          .result(result)
+          .generateDocs()
+      );
+    }
+
+    @Test
+    void 강의_평가_리스트_조회_성공_작성_이력_미존재() throws Exception {
+      // given
+      var evaluatePosts = fixtures.강의평가_여러개_생성_유저_제외(user.getId(), lecture, size);
+
+      // when
+      var result = get(Uri.of(urlTemplate), accessToken,
         parameter(pageParam, requestPage),
         parameter(lectureIdParam, lecture.getId())
       );
@@ -460,9 +557,7 @@ public class EvaluatePostAcceptanceTest extends AcceptanceTestSupport {
       // docs
       result.andDo(
         RestDocument.builder()
-          .identifier("get-evaluate-posts-success")
-          .summary("[토큰 필요] 강의 평가 리스트 조회 API")
-          .description("강의 평가 조회 API입니다.")
+          .identifier("get-evaluate-posts-success-without-post-history")
           .tag(EVALUATE_POST)
           .result(result)
           .generateDocs()

@@ -8,6 +8,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import usw.suwiki.core.exception.ExamPostException;
+import usw.suwiki.core.exception.ExceptionType;
 import usw.suwiki.infra.jpa.BaseEntity;
 
 @Getter
@@ -27,6 +29,12 @@ public class ExamPost extends BaseEntity {
 
   @Embedded
   private ExamDetail examDetail;
+
+  public void validateAuthor(Long userId) {
+    if (!userIdx.equals(userId)) {
+      throw new ExamPostException(ExceptionType.NOT_AN_AUTHOR);
+    }
+  }
 
   public void update(String content, String selectedSemester, ExamDetail examDetail) {
     this.content = content;

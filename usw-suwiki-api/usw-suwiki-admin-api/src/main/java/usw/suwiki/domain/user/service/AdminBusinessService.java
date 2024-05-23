@@ -144,26 +144,25 @@ public class AdminBusinessService {
     return successCapitalFlag();
   }
 
-  private void deleteReportedEvaluatePostFromEvaluateIdx(Long evaluateIdx) {
-    EvaluatePost evaluatePost = evaluatePostService.loadEvaluatePostById(evaluateIdx);
-    reportService.deleteByEvaluateIdx(evaluateIdx);
+  private void deleteReportedEvaluatePostFromEvaluateIdx(Long evaluateId) {
+    EvaluatePost evaluatePost = evaluatePostService.loadEvaluatePostById(evaluateId);
+    reportService.deleteByEvaluateIdx(evaluateId);
     evaluatePostService.delete(evaluatePost);
   }
 
-  private void deleteReportedExamPostFromEvaluateIdx(Long examPostIdx) {
-    ExamPost examPost = examPostCRUDService.loadExamPostFromExamPostIdx(examPostIdx);
-    reportService.deleteByEvaluateIdx(examPostIdx);
+  private void deleteReportedExamPostFromEvaluateIdx(Long examPostId) {
+    ExamPost examPost = examPostCRUDService.loadExamPostFromExamPostIdx(examPostId);
+    reportService.deleteByEvaluateIdx(examPostId);
     examPostCRUDService.delete(examPost);
   }
 
-  private void plusRestrictCount(Long userIdx) {
-    User user = userCRUDService.loadUserFromUserIdx(userIdx);
-    user.increaseRestrictedCountByReportedPost();
-    user.restrict();
+  private void plusRestrictCount(Long userId) {
+    User user = userCRUDService.loadUserFromUserIdx(userId);
+    user.reported();
   }
 
-  private void plusReportingUserPoint(Long reportingUserIdx) {
-    User user = userCRUDService.loadUserFromUserIdx(reportingUserIdx);
-    user.increasePointByReporting();
+  private void plusReportingUserPoint(Long reportingUserId) {
+    User user = userCRUDService.loadUserFromUserIdx(reportingUserId);
+    user.report();
   }
 }

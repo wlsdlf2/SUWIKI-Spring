@@ -33,7 +33,8 @@ import static usw.suwiki.core.exception.ExceptionType.USER_POINT_LACK;
 public class User extends BaseEntity {
   private static final int DELETE_POINT_LIMIT = 30;
   private static final int PURCHASE_POINT_LIMIT = 20;
-  private static final int WROTE_EVALUATION_BONUS = 10;
+  private static final int WRITE_EXAM_POST_POINT = 20;
+  private static final int WRITE_EVALUATION_POINT = 10;
   private static final int ARREST_LIMIT = 2;
 
   // todo: 로그인 아이디와 이메일은 고유값임에도 불구하고 db에 unique가 빠져있다.
@@ -158,31 +159,31 @@ public class User extends BaseEntity {
   }
 
   public void writeEvaluatePost() {
-    this.point += WROTE_EVALUATION_BONUS;
-    this.writtenEvaluation += 1;
+    this.point += WRITE_EVALUATION_POINT;
+    this.writtenEvaluation++;
   }
 
   public void deleteEvaluatePost() {
     validatePointLimit(PURCHASE_POINT_LIMIT);
     this.point -= DELETE_POINT_LIMIT;
-    this.writtenEvaluation -= 1;
+    this.writtenEvaluation--;
   }
 
   public void writeExamPost() {
-    this.point += 20;
-    this.writtenExam += 1;
+    this.point += WRITE_EXAM_POST_POINT;
+    this.writtenExam++;
   }
 
   public void purchaseExamPost() {
     validatePointLimit(PURCHASE_POINT_LIMIT);
     this.point -= PURCHASE_POINT_LIMIT;
-    this.viewExamCount += 1;
+    this.viewExamCount++;
   }
 
-  public void deleteExamPost() {
+  public void eraseExamPost() {
     validatePointLimit(DELETE_POINT_LIMIT);
     this.point -= DELETE_POINT_LIMIT;
-    this.writtenExam -= 1;
+    this.writtenExam--;
   }
 
   private void validatePointLimit(int required) {
@@ -191,12 +192,13 @@ public class User extends BaseEntity {
     }
   }
 
-  public void increaseRestrictedCountByReportedPost() {
-    this.restrictedCount += 1;
+  public void reported() {
+    this.restrictedCount++;
+    restrict();
   }
 
-  public void increasePointByReporting() {
-    this.point += 1;
+  public void report() {
+    this.point++;
   }
 
   public boolean isCloseToArrest() {

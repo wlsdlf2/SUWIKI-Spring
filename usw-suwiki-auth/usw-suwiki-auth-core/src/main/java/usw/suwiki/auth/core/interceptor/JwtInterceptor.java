@@ -25,7 +25,7 @@ public class JwtInterceptor implements HandlerInterceptor {
 
     if (authorize != null) {
       String token = request.getHeader(HttpHeaders.AUTHORIZATION);
-      validateAccessIfAdmin(authorize.role(), token);
+      validateAccessIfAdmin(authorize.value(), token);
       setAuthentication(token);
     }
 

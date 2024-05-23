@@ -69,9 +69,10 @@ public class Timetable extends BaseEntity {
     }
   }
 
-  public void addCell(TimetableCell cell) {
+  public Timetable addCell(TimetableCell cell) {
     validateOverlap(cell);
     this.cells.add(cell);
+    return this;
   }
 
   public void updateCell(int cellIdx, TimetableCell cell) {
@@ -83,7 +84,7 @@ public class Timetable extends BaseEntity {
     if (cells.isEmpty()) {
       return;
     }
-    
+
     this.cells.remove(cellIdx);
   }
 

@@ -9,7 +9,7 @@ public enum Role {
     return this.equals(ADMIN);
   }
 
-  public boolean isAdmin(String key) {
+  public static boolean isAdmin(String key) {
     return ADMIN.name().equals(key.toUpperCase());
   }
 }

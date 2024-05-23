@@ -69,9 +69,11 @@ public class EvaluatePostService {
     return evaluatePostRepository.existsByUserIdxAndLectureInfo_LectureId(userId, lectureId);
   }
 
-  public void update(Long evaluateId, EvaluatePostRequest.Update request) {
-    EvaluatePost evaluatePost = loadEvaluatePostById(evaluateId);
-    Evaluation currentEvaluation = EvaluatePostMapper.toEvaluatedData(evaluatePost.getLectureRating());
+  public void update(Long userId, Long evaluateId, EvaluatePostRequest.Update request) {
+    var evaluatePost = loadEvaluatePostById(evaluateId);
+    evaluatePost.validateAuthor(userId);
+
+    var currentEvaluation = EvaluatePostMapper.toEvaluatedData(evaluatePost.getLectureRating());
 
     evaluatePost.update(
       request.getContent(),
@@ -81,16 +83,16 @@ public class EvaluatePostService {
       EvaluatePostMapper.toRating(request)
     );
 
-    Evaluation updatedEvaluation = EvaluatePostMapper.toEvaluatedData(evaluatePost.getLectureRating());
+    var updatedEvaluation = EvaluatePostMapper.toEvaluatedData(evaluatePost.getLectureRating());
     lectureService.updateEvaluation(evaluatePost.getLectureId(), currentEvaluation, updatedEvaluation);
   }
 
-  public void deleteEvaluatePost(Long evaluateId, Long userId) {
-    EvaluatePost evaluatePost = loadEvaluatePostById(evaluateId);
+  public void erase(Long userId, Long evaluateId) {
+    var evaluatePost = loadEvaluatePostById(evaluateId);
     evaluatePost.validateAuthor(userId);
 
     delete(evaluatePost);
-    userBusinessService.deleteEvaluation(userId);
+    userBusinessService.eraseEvaluation(userId);
   }
 
   public void delete(EvaluatePost evaluatePost) {

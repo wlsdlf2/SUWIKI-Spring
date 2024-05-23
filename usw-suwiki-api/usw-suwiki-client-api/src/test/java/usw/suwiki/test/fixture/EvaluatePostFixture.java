@@ -1,4 +1,4 @@
-package usw.suwiki.api.evaluate;
+package usw.suwiki.test.fixture;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -9,8 +9,6 @@ import usw.suwiki.domain.lecture.Lecture;
 
 import java.util.List;
 import java.util.Random;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class EvaluatePostFixture {
@@ -21,19 +19,19 @@ public class EvaluatePostFixture {
   }
 
   public static List<EvaluatePost> many(Long userId, Lecture lecture, int size) {
-    var randomIds = IntStream.range(0, size)
-      .mapToObj(it -> RANDOM.nextLong(1000000L))
-      .collect(Collectors.toSet());
-
+    var randomIds = FixtureUtils.randomIds(userId, size, true);
     randomIds.add(userId);
+    return FixtureUtils.generate(randomIds, id -> one(id, lecture));
+  }
 
-    return randomIds.stream()
-      .map(id -> one(id, lecture))
-      .toList();
+  public static List<EvaluatePost> manyWithoutUser(Long userId, Lecture lecture, int size) {
+    var randomIds = FixtureUtils.randomIds(userId, size, false);
+    return FixtureUtils.generate(randomIds, id -> one(id, lecture));
   }
 
   private static LectureInfo lectureInfo(Lecture lecture) {
-    return new LectureInfo(lecture.getId(), lecture.getName(), lecture.getSemester(), lecture.getProfessor());
+    var semester = lecture.getSemester().split(",")[0];
+    return new LectureInfo(lecture.getId(), lecture.getName(), semester, lecture.getProfessor());
   }
 
   private static LectureRating lectureRating() {

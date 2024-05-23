@@ -17,7 +17,7 @@ public class ViewExamCRUDService {
   }
 
   @Transactional
-  public void save(ViewExam viewExam) {
-    viewExamRepository.save(viewExam);
+  public void save(Long userId, Long lectureId) {
+    viewExamRepository.save(new ViewExam(userId, lectureId));
   }
 }

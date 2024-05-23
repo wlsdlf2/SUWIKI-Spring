@@ -42,11 +42,11 @@ public class ConfirmationToken {
     this.expiresAt = LocalDateTime.now().plusMinutes(15);
   }
 
-  public void confirmed() {
+  public void confirm() {
     this.confirmedAt = LocalDateTime.now();
   }
 
-  public boolean isTokenExpired() {
+  public boolean isExpired() {
     return this.expiresAt.isBefore(LocalDateTime.now());
   }
 

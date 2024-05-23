@@ -2,10 +2,7 @@ package usw.suwiki.test.fixture;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import usw.suwiki.api.evaluate.EvaluatePostFixture;
-import usw.suwiki.api.exam.ExamPostFixture;
-import usw.suwiki.api.lecture.LectureFixture;
-import usw.suwiki.api.user.UserFixture;
+import usw.suwiki.auth.token.ConfirmationToken;
 import usw.suwiki.auth.token.ConfirmationTokenRepository;
 import usw.suwiki.auth.token.RefreshTokenRepository;
 import usw.suwiki.core.secure.TokenAgent;
@@ -86,7 +83,7 @@ public final class Fixtures {
   }
 
   public String 다른_사용자_토큰_생성() {
-    var another = userRepository.save(UserFixture.another());
+    var another = 다른_유저_생성();
     return tokenAgent.createAccessToken(another.getId(), another.toClaim());
   }
 
@@ -103,11 +100,15 @@ public final class Fixtures {
   }
 
   public Timetable 시간표_생성(Long userId) {
-    return timetableRepository.save(new Timetable(userId, "시간표", 2023, "first"));
+    return timetableRepository.save(TimetableFixture.one(userId));
   }
 
   public Timetable 다른_시간표_생성(Long userId) {
-    return timetableRepository.save(new Timetable(userId, "시간표2", 2024, "second"));
+    return timetableRepository.save(TimetableFixture.another(userId));
+  }
+
+  public TimetableCell 시간표_셀_생성(String day, int start, int end) {
+    return TimetableFixture.cell(day, start, end);
   }
 
   public Lecture 강의_생성() {
@@ -120,10 +121,6 @@ public final class Fixtures {
 
   public LectureSchedule 강의_일정_생성(Long lectureId) {
     return lectureScheduleRepository.save(LectureFixture.schedule(lectureId));
-  }
-
-  public TimetableCell 시간표_셀_생성(String day, int start, int end) {
-    return new TimetableCell("강의", "교수님", "강의실", start, end, day, "ORANGE");
   }
 
   public Notice 공지사항_생성() {
@@ -144,6 +141,10 @@ public final class Fixtures {
     return examPostRepository.saveAll(ExamPostFixture.many(userId, lecture, size));
   }
 
+  public List<ExamPost> 시험평가_여러개_생성_유저_제외(Long userId, Lecture lecture, int size) {
+    return examPostRepository.saveAll(ExamPostFixture.manyWithoutUser(userId, lecture, size));
+  }
+
   public EvaluatePost 강의평가_생성(Long userId, Lecture lecture) {
     return evaluatePostRepository.save(EvaluatePostFixture.one(userId, lecture));
   }
@@ -152,7 +153,26 @@ public final class Fixtures {
     return evaluatePostRepository.saveAll(EvaluatePostFixture.many(userId, lecture, size));
   }
 
+  public List<EvaluatePost> 강의평가_여러개_생성_유저_제외(Long userId, Lecture lecture, int size) {
+    return evaluatePostRepository.saveAll(EvaluatePostFixture.manyWithoutUser(userId, lecture, size));
+  }
+
   public ViewExam 시험평가_구매이력_생성(Long userId, Long lectureId) {
     return viewExamRepository.save(new ViewExam(userId, lectureId));
+  }
+
+  public void 포인트_충전(Long userId) {
+    var user = userRepository.findById(userId).orElseThrow();
+
+    for (int i = 0; i < 10; i++) {
+      user.writeEvaluatePost();
+      user.writeExamPost();
+    }
+
+    userRepository.save(user);
+  }
+
+  public ConfirmationToken 가입_인증_토큰_생성(Long userId) {
+    return confirmationTokenRepository.save(new ConfirmationToken(userId));
   }
 }

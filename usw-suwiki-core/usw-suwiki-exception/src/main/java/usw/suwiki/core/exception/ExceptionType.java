@@ -106,7 +106,6 @@ public enum ExceptionType {
    * Domain : Timetable
    */
   TIMETABLE_NOT_FOUND("TIMETABLE001", "존재하지 않는 시간표입니다.", NOT_FOUND),
-  NOT_AN_AUTHOR("TIMETABLE002", "해당 데이터의 수정 및 삭제는 작성자의 권한입니다.", FORBIDDEN), // todo: 수정 가능한지 확인하기
   INVALID_TIMETABLE_SEMESTER("TIMETABLE010", "유효하지 않은 학기명입니다.", BAD_REQUEST),
 
   TIMETABLE_CELL_NOT_FOUND("TIMETABLE101", "존재하지 않는 시간표 셀입니다.", NOT_FOUND),
@@ -132,7 +131,7 @@ public enum ExceptionType {
   INVALID_REQUEST_BODY("CLIENT003", "요청 바디가 유효하지 않습니다.", BAD_REQUEST),
   INVALID_REQUEST_PARAM("CLIENT004", "요청 파라미터가 유효하지 않습니다.", BAD_REQUEST),
   AUTHORIZATION_NOT_PROCESSED("CLIENT005", "인증을 진행하지 않았습니다.", BAD_REQUEST),
-
+  NOT_AN_AUTHOR("CLIENT006", "해당 데이터의 수정 및 삭제는 작성자의 권한입니다.", FORBIDDEN), // todo: 수정 가능한지 확인하기
   ;
 
   private final String code;

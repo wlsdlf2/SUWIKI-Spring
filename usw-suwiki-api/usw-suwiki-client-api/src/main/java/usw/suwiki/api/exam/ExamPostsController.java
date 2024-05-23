@@ -35,7 +35,7 @@ public class ExamPostsController {
   @Statistics(target = EXAM_POSTS)
   @GetMapping
   @ResponseStatus(OK)
-  public ExamPostResponse.Details readAllExamPosts(
+  public ExamPostResponse.Details getAllExamPosts(
     @Authenticated Long userId,
     @RequestParam Long lectureId,
     @RequestParam(required = false) Optional<Integer> page
@@ -45,43 +45,18 @@ public class ExamPostsController {
 
   @Authorize
   @Statistics(target = EXAM_POSTS)
-  @PostMapping("/purchase")
+  @GetMapping("/purchase")
   @ResponseStatus(OK)
-  public String purchaseExamPost(@Authenticated Long userId, @RequestParam Long lectureId) {
-    examPostService.purchaseExamPost(userId, lectureId);
-    return "success";
-  }
-
-  @Authorize
-  @Statistics(target = EXAM_POSTS)
-  @PostMapping
-  @ResponseStatus(OK)
-  public String writeExamPost(
-    @Authenticated Long userId,
-    @RequestParam Long lectureId,
-    @Valid @RequestBody ExamPostRequest.Create request
-  ) {
-    examPostService.write(userId, lectureId, request);
-    return "success";
-  }
-
-  @Authorize
-  @Statistics(target = EXAM_POSTS)
-  @PutMapping
-  @ResponseStatus(OK)
-  public String updateExamPost(
-    @RequestParam Long examIdx,
-    @Valid @RequestBody ExamPostRequest.Update request
-  ) {
-    examPostService.update(examIdx, request); // todo: writer에 대한 검증
-    return "success";
+  public ResponseForm getPurchaseHistories(@Authenticated Long userId) {
+    var response = examPostService.loadPurchasedHistories(userId);
+    return new ResponseForm(response);
   }
 
   @Authorize
   @Statistics(target = EXAM_POSTS)
   @GetMapping("/written")
   @ResponseStatus(OK)
-  public ResponseForm findExamPostsByUserApi(
+  public ResponseForm getWroteExamPosts(
     @Authenticated Long userId,
     @RequestParam(required = false) Optional<Integer> page
   ) {
@@ -91,19 +66,41 @@ public class ExamPostsController {
 
   @Authorize
   @Statistics(target = EXAM_POSTS)
-  @DeleteMapping
+  @PostMapping("/purchase")
   @ResponseStatus(OK)
-  public String deleteExamPosts(@Authenticated Long userId, @RequestParam Long examIdx) {
-    examPostService.deleteExamPost(userId, examIdx);
-    return "success";
+  public void purchaseExamPost(@Authenticated Long userId, @RequestParam Long lectureId) {
+    examPostService.purchaseExamPost(userId, lectureId);
   }
 
   @Authorize
   @Statistics(target = EXAM_POSTS)
-  @GetMapping("/purchase")
+  @PostMapping
   @ResponseStatus(OK)
-  public ResponseForm readPurchaseHistoryApi(@Authenticated Long userId) {
-    var response = examPostService.loadPurchasedHistories(userId);
-    return new ResponseForm(response);
+  public void writeExamPost(
+    @Authenticated Long userId,
+    @RequestParam Long lectureId,
+    @Valid @RequestBody ExamPostRequest.Create request
+  ) {
+    examPostService.write(userId, lectureId, request);
+  }
+
+  @Authorize
+  @Statistics(target = EXAM_POSTS)
+  @PutMapping
+  @ResponseStatus(OK)
+  public void updateExamPost(
+    @Authenticated Long userId,
+    @RequestParam Long examIdx,
+    @Valid @RequestBody ExamPostRequest.Update request
+  ) {
+    examPostService.update(userId, examIdx, request);
+  }
+
+  @Authorize
+  @Statistics(target = EXAM_POSTS)
+  @DeleteMapping
+  @ResponseStatus(OK)
+  public void deleteExamPosts(@Authenticated Long userId, @RequestParam Long examIdx) {
+    examPostService.deleteExamPost(userId, examIdx);
   }
 }

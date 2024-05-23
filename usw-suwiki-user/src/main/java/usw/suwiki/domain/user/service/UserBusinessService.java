@@ -84,9 +84,24 @@ public class UserBusinessService {
     user.writeEvaluatePost();
   }
 
-  public void deleteEvaluation(Long userId) {
+  public void eraseEvaluation(Long userId) {
     User user = userCRUDService.loadUserById(userId);
     user.deleteEvaluatePost();
+  }
+
+  public void writeExamPost(Long userId) {
+    var user = userCRUDService.loadUserById(userId);
+    user.writeExamPost();
+  }
+
+  public void purchaseExamPost(Long userId) {
+    var user = userCRUDService.loadUserById(userId);
+    user.purchaseExamPost();
+  }
+
+  public void eraseExamPost(Long userId) {
+    var user = userCRUDService.loadUserById(userId);
+    user.eraseExamPost();
   }
 
   public Map<String, Boolean> executeJoin(String loginId, String password, String email) {

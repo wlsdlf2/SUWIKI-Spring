@@ -70,9 +70,8 @@ public class NoticeController {
   @Statistics(target = NOTICE)
   @DeleteMapping("/")
   @ResponseStatus(OK)
-  public String deleteNotice(@RequestParam Long noticeId) {
+  public void deleteNotice(@RequestParam Long noticeId) {
     noticeService.delete(noticeId);
-    return "success";
   }
 }
 

@@ -48,7 +48,8 @@ public class NoticeService {
 
   @Transactional
   public void delete(Long noticeId) {
-    noticeRepository.deleteById(noticeId);
+    var notice = findNoticeById(noticeId);
+    noticeRepository.delete(notice);
   }
 
   private Notice findNoticeById(Long noticeId) {

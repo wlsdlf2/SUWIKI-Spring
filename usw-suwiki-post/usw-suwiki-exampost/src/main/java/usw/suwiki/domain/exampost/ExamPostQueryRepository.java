@@ -37,6 +37,7 @@ public class ExamPostQueryRepository {
       .join(lecture).on(examPost.lectureInfo.lectureId.eq(lecture.id))
       .limit(LIMIT_PAGE_SIZE)
       .offset(page)
+      .orderBy(examPost.createDate.desc())
       .fetch();
   }
 }

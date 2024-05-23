@@ -84,7 +84,7 @@ public class TimetableController {
   @Authorize
   @PostMapping("/{timetableId}/cells")
   @ResponseStatus(CREATED)
-  public ApiResponse<?> insertCell(
+  public ApiResponse<?> addCell(
     @Authenticated Long userId,
     @PathVariable Long timetableId,
     @Valid @RequestBody TimetableRequest.Cell request

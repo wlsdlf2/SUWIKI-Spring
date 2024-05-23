@@ -14,13 +14,13 @@ import usw.suwiki.core.exception.AccountException;
 import usw.suwiki.core.exception.ExceptionType;
 import usw.suwiki.core.secure.TokenAgent;
 import usw.suwiki.core.secure.model.Claim;
+import usw.suwiki.domain.user.Role;
 
 import java.util.Map;
 import java.util.Optional;
 
 import static java.lang.Boolean.TRUE;
 import static usw.suwiki.auth.core.jwt.RawParser.Content;
-import static usw.suwiki.domain.user.Role.ADMIN;
 
 @Component
 @RequiredArgsConstructor
@@ -97,6 +97,6 @@ public class JwtAgent implements TokenAgent { // todo: public 이지만 외부�
   }
 
   public boolean isNotAdmin(String token) {
-    return token != null && ADMIN.isAdmin(parseRole(token));
+    return token != null && !Role.isAdmin(parseRole(token));
   }
 }

@@ -5,6 +5,7 @@ import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import usw.suwiki.core.exception.ExceptionType;
@@ -12,6 +13,7 @@ import usw.suwiki.core.exception.TimetableException;
 
 @Getter
 @Embeddable
+@EqualsAndHashCode
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class TimetableCell {
   @Column
@@ -53,8 +55,7 @@ public class TimetableCell {
   }
 
   public boolean isOverlap(TimetableCell cell) {
-    return this.day.isEquals(cell.day) &&
-           Math.max(this.startPeriod, cell.startPeriod) <= Math.min(this.endPeriod, cell.getEndPeriod());
+    return this.day.isEquals(cell.day) && Math.max(this.startPeriod, cell.startPeriod) <= Math.min(this.endPeriod, cell.getEndPeriod());
   }
 
   public String getColor() {

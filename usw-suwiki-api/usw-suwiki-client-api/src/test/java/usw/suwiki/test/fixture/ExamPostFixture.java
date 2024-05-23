@@ -1,4 +1,4 @@
-package usw.suwiki.api.exam;
+package usw.suwiki.test.fixture;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -9,8 +9,9 @@ import usw.suwiki.domain.lecture.Lecture;
 
 import java.util.List;
 import java.util.Random;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
+
+import static usw.suwiki.test.fixture.FixtureUtils.generate;
+import static usw.suwiki.test.fixture.FixtureUtils.randomIds;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ExamPostFixture {
@@ -21,19 +22,19 @@ public class ExamPostFixture {
   }
 
   public static List<ExamPost> many(Long userId, Lecture lecture, int size) {
-    var randomIds = IntStream.range(0, size)
-      .mapToObj(it -> RANDOM.nextLong(1000000L))
-      .collect(Collectors.toSet());
-
+    var randomIds = randomIds(userId, size, true);
     randomIds.add(userId);
+    return generate(randomIds, id -> one(id, lecture));
+  }
 
-    return randomIds.stream()
-      .map(id -> one(id, lecture))
-      .toList();
+  public static List<ExamPost> manyWithoutUser(Long userId, Lecture lecture, int size) {
+    var randomIds = randomIds(userId, size, false);
+    return generate(randomIds, id -> one(id, lecture));
   }
 
   private static LectureInfo lectureInfo(Lecture lecture) {
-    return new LectureInfo(lecture.getId(), lecture.getName(), lecture.getSemester(), lecture.getProfessor());
+    var semester = lecture.getSemester().split(",")[0];
+    return new LectureInfo(lecture.getId(), lecture.getName(), semester, lecture.getProfessor());
   }
 
   private static ExamDetail examDetail() {

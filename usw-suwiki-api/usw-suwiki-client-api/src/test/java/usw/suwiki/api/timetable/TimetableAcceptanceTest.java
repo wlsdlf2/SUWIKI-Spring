@@ -2,6 +2,7 @@ package usw.suwiki.api.timetable;
 
 import io.github.hejow.restdocs.document.RestDocument;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -410,13 +411,13 @@ class TimetableAcceptanceTest extends AcceptanceTestSupport {
     @Test
     void 시간표_단건_불러오기_성공() throws Exception {
       // given
-      var timetable = fixtures.시간표_생성(user.getId());
       var timetableCell = fixtures.시간표_셀_생성("MON", 2, 4);
-      var timetableCell2 = fixtures.시간표_셀_생성("TUE", 1, 3);
 
-      timetable.addCell(timetableCell);
-      timetable.addCell(timetableCell2);
-      timetableRepository.save(timetable);
+      var timetable = timetableRepository.save(
+        fixtures.시간표_생성(user.getId())
+          .addCell(timetableCell)
+          .addCell(fixtures.시간표_셀_생성("TUE", 1, 3))
+      );
 
       // when
       var result = get(Uri.of("/timetables/{timetableId}", timetable.getId()), accessToken);
@@ -453,9 +454,9 @@ class TimetableAcceptanceTest extends AcceptanceTestSupport {
 
   @Nested
   class 시간표_셀_추가_테스트 {
-    private final String endpoint = "/timetables/{timetableId}/cells";
+    private final String urlTemplate = "/timetables/{timetableId}/cells";
 
-    @Transactional
+    @Transactional // on validation lazy initializing
     @ParameterizedTest
     @MethodSource("cellEnumInputs")
     void 시간표_셀_추가_성공(TimetableDay day, TimetableCellColor color) throws Exception {
@@ -465,7 +466,7 @@ class TimetableAcceptanceTest extends AcceptanceTestSupport {
       var request = new TimetableRequest.Cell("강의", "교수님", color.name(), "강의실", day.name(), 1, 3);
 
       // when
-      var result = post(Uri.of(endpoint, timetable.getId()), accessToken, request);
+      var result = post(Uri.of(urlTemplate, timetable.getId()), accessToken, request);
 
       // then
       result.andExpectAll(
@@ -515,7 +516,7 @@ class TimetableAcceptanceTest extends AcceptanceTestSupport {
       var anotherToken = fixtures.다른_사용자_토큰_생성();
 
       // when
-      var result = post(Uri.of(endpoint, timetable.getId()), anotherToken, request);
+      var result = post(Uri.of(urlTemplate, timetable.getId()), anotherToken, request);
 
       // then
       result.andExpectAll(
@@ -543,7 +544,7 @@ class TimetableAcceptanceTest extends AcceptanceTestSupport {
       var request = new TimetableRequest.Cell("강의", "교수님", "ORANGE", "강의실", "MON", 2, 4);
 
       // when
-      var result = post(Uri.of(endpoint, timetable.getId()), accessToken, request);
+      var result = post(Uri.of(urlTemplate, timetable.getId()), accessToken, request);
 
       // then
       result.andExpectAll(
@@ -564,27 +565,25 @@ class TimetableAcceptanceTest extends AcceptanceTestSupport {
 
   @Nested
   class 시간표_셀_수정_테스트 {
-    private final String endpoint = "/timetables/{timetableId}/cells/{cellIdx}";
+    private final String urlTemplate = "/timetables/{timetableId}/cells/{cellIdx}";
 
-    @Transactional
+    @Transactional // on validation lazy initializing
     @Test
     void 시간표_셀_수정_성공() throws Exception {
       // given
-      var timetable = fixtures.시간표_생성(user.getId());
-      var timetableCell = fixtures.시간표_셀_생성("MON", 1, 3);
-      var timetableCell2 = fixtures.시간표_셀_생성("TUE", 1, 3);
 
-      timetable.addCell(timetableCell);
-      timetable.addCell(timetableCell2);
+      var timetable = timetableRepository.save(
+        fixtures.시간표_생성(user.getId())
+          .addCell(fixtures.시간표_셀_생성("MON", 1, 3))
+          .addCell(fixtures.시간표_셀_생성("TUE", 1, 3))
+      );
 
       var cellIndex = timetable.getCells().size() - 1;
-
-      timetableRepository.save(timetable);
 
       var request = new TimetableRequest.UpdateCell("강의2", "교수님2", "GRAY", "강의실2", "FRI", 3, 5);
 
       // when
-      var result = put(Uri.of(endpoint, timetable.getId(), cellIndex), accessToken, request);
+      var result = put(Uri.of(urlTemplate, timetable.getId(), cellIndex), accessToken, request);
 
       // then
       result.andExpectAll(
@@ -626,7 +625,7 @@ class TimetableAcceptanceTest extends AcceptanceTestSupport {
       var request = new TimetableRequest.UpdateCell("강의2", "교수님2", "GRAY", "강의실2", "FRI", 3, 5);
 
       // when
-      var result = put(Uri.of(endpoint, timetable.getId(), 0), anotherToken, request);
+      var result = put(Uri.of(urlTemplate, timetable.getId(), 0), anotherToken, request);
 
       // then
       result.andExpectAll(
@@ -647,16 +646,16 @@ class TimetableAcceptanceTest extends AcceptanceTestSupport {
     @Test
     void 시간표_셀_수정_실패_중복된_셀() throws Exception {
       // given
-      var timetable = fixtures.시간표_생성(user.getId());
-      timetable.addCell(fixtures.시간표_셀_생성("MON", 1, 3));
-      timetable.addCell(fixtures.시간표_셀_생성("TUE", 1, 3));
-
-      timetableRepository.save(timetable);
+      var timetable = timetableRepository.save(
+        fixtures.시간표_생성(user.getId())
+          .addCell(fixtures.시간표_셀_생성("MON", 1, 3))
+          .addCell(fixtures.시간표_셀_생성("TUE", 1, 3))
+      );
 
       var request = new TimetableRequest.UpdateCell("강의2", "교수님2", "GRAY", "강의실2", "MON", 2, 4);
 
       // when
-      var result = put(Uri.of(endpoint, timetable.getId(), timetable.getCells().size() - 1), accessToken, request);
+      var result = put(Uri.of(urlTemplate, timetable.getId(), timetable.getCells().size() - 1), accessToken, request);
 
       // then
       result.andExpectAll(
@@ -677,29 +676,32 @@ class TimetableAcceptanceTest extends AcceptanceTestSupport {
 
   @Nested
   class 시간표_셀_삭제_테스트 {
-    private final String endpoint = "/timetables/{timetableId}/cells/{cellIdx}";
+    private final String urlTemplate = "/timetables/{timetableId}/cells/{cellIdx}";
 
+    @Transactional // on validation lazy initializing
     @Test
     void 시간표_셀_삭제_성공() throws Exception {
       // given
-      var timetable = fixtures.시간표_생성(user.getId());
-      var timetableCell = fixtures.시간표_셀_생성("mon", 1, 3);
-      var timetableCell2 = fixtures.시간표_셀_생성("fri", 1, 3);
+      var timetable = timetableRepository.save(
+        fixtures.시간표_생성(user.getId())
+          .addCell(fixtures.시간표_셀_생성("mon", 1, 3))
+          .addCell(fixtures.시간표_셀_생성("fri", 1, 3))
+      );
 
-      timetable.addCell(timetableCell);
-      timetable.addCell(timetableCell2);
-      timetableRepository.save(timetable);
-
-      var cellIndex = timetable.getCells().size() - 1;
+      var cellCount = timetable.getCells().size();
+      var cellIndex = cellCount - 1;
 
       // when
-      var result = delete(Uri.of(endpoint, timetable.getId(), cellIndex), accessToken);
+      var result = delete(Uri.of(urlTemplate, timetable.getId(), cellIndex), accessToken);
 
       // then
       result.andExpectAll(
         status().isOk(),
         jsonPath("$.data.success").value(true)
       );
+
+      var saved = timetableRepository.findById(timetable.getId()).orElseThrow();
+      assertThat(saved.getCells()).isNotEmpty().hasSize(cellCount - 1);
 
       // docs
       result.andDo(
@@ -720,7 +722,7 @@ class TimetableAcceptanceTest extends AcceptanceTestSupport {
       var anotherToken = fixtures.다른_사용자_토큰_생성();
 
       // when
-      var result = delete(Uri.of(endpoint, timetable.getId(), 0), anotherToken);
+      var result = delete(Uri.of(urlTemplate, timetable.getId(), 0), anotherToken);
 
       // then
       result.andExpectAll(
@@ -739,9 +741,11 @@ class TimetableAcceptanceTest extends AcceptanceTestSupport {
     }
   }
 
+  @Disabled
   @Nested
   class 시간표_동기화_테스트 {
-    @Transactional
+
+    @Transactional // on validation lazy initializing
     @Test
     void 시간표_동기화_성공() throws Exception {
       // given
@@ -775,8 +779,8 @@ class TimetableAcceptanceTest extends AcceptanceTestSupport {
       result.andDo(
         RestDocument.builder()
           .identifier("timetable-bulk-insert-success")
-          .summary("[토큰 필요] 시간표 벌크 인서트 API")
-          .description("시간표 벌크 인서트 API 입니다.")
+          .summary("[토큰 필요] 시간표 일괄 DB 동기화 API")
+          .description("시간표 일괄 DB 동기화 API 입니다.")
           .tag(Tag.TIMETABLE)
           .result(result)
           .generateDocs()

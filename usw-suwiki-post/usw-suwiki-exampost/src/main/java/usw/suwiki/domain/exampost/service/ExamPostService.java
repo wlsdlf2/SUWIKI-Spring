@@ -13,9 +13,7 @@ import usw.suwiki.domain.exampost.dto.ExamPostRequest;
 import usw.suwiki.domain.lecture.service.LectureService;
 import usw.suwiki.domain.report.model.Report;
 import usw.suwiki.domain.report.service.ReportService;
-import usw.suwiki.domain.user.User;
-import usw.suwiki.domain.user.service.UserCRUDService;
-import usw.suwiki.domain.viewexam.ViewExam;
+import usw.suwiki.domain.user.service.UserBusinessService;
 import usw.suwiki.domain.viewexam.ViewExamQueryRepository;
 import usw.suwiki.domain.viewexam.dto.ViewExamResponse;
 import usw.suwiki.domain.viewexam.service.ViewExamCRUDService;
@@ -39,15 +37,11 @@ public class ExamPostService {
   private final ExamPostQueryRepository examPostQueryRepository;
 
   private final LectureService lectureService;
-  private final UserCRUDService userCRUDService;
+  private final UserBusinessService userBusinessService;
   private final ReportService reportService;
 
   private final ViewExamCRUDService viewExamCRUDService;
   private final ViewExamQueryRepository viewExamQueryRepository;
-
-  public boolean isAlreadyPurchased(Long userId, Long lectureId) {
-    return viewExamCRUDService.isExist(userId, lectureId);
-  }
 
   public boolean isAlreadyWritten(Long userId, Long lectureId) {
     return examPostRepository.existsByUserIdxAndLectureInfo_LectureId(userId, lectureId);
@@ -92,12 +86,8 @@ public class ExamPostService {
     }
 
     lectureService.findLectureById(lectureId);
-    User user = userCRUDService.loadUserFromUserIdx(userId);
-
-    ExamPost examPost = ExamPostMapper.toEntity(userId, lectureId, request);
-    examPostRepository.save(examPost);
-
-    user.writeExamPost();
+    examPostRepository.save(ExamPostMapper.toEntity(userId, lectureId, request));
+    userBusinessService.writeExamPost(userId);
   }
 
   @Transactional
@@ -107,26 +97,28 @@ public class ExamPostService {
     }
 
     lectureService.findLectureById(lectureId);
-    User user = userCRUDService.loadUserFromUserIdx(userId);
+    viewExamCRUDService.save(userId, lectureId);
+    userBusinessService.purchaseExamPost(userId);
+  }
 
-    viewExamCRUDService.save(new ViewExam(userId, lectureId));
-    user.purchaseExamPost();
+  private boolean isAlreadyPurchased(Long userId, Long lectureId) {
+    return viewExamCRUDService.isExist(userId, lectureId);
   }
 
   @Transactional
-  public void update(Long examId, ExamPostRequest.Update request) {
-    ExamPost examPost = loadExamPostOrThrow(examId);
+  public void update(Long userId, Long examId, ExamPostRequest.Update request) {
+    var examPost = loadExamPostOrThrow(examId);
+    examPost.validateAuthor(userId);
     examPost.update(request.getContent(), request.getSelectedSemester(), ExamPostMapper.toExamDetail(request));
   }
 
   @Transactional
-  public void deleteExamPost(Long userIdx, Long examId) {
-    ExamPost examPost = loadExamPostOrThrow(examId);
-
-    User user = userCRUDService.loadUserFromUserIdx(userIdx);
+  public void deleteExamPost(Long userId, Long examId) {
+    var examPost = loadExamPostOrThrow(examId);
+    examPost.validateAuthor(userId);
+    
     examPostRepository.delete(examPost);
-
-    user.deleteExamPost();
+    userBusinessService.eraseExamPost(userId);
   }
 
   private ExamPost loadExamPostOrThrow(Long examId) {

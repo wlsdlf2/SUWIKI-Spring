@@ -16,7 +16,7 @@ import usw.suwiki.domain.user.Role;
 
 @Component
 @RequiredArgsConstructor
-public class JwtInterceptor implements HandlerInterceptor {
+public class AuthorizationInterceptor implements HandlerInterceptor {
   private final JwtAgent jwtAgent;
 
   @Override

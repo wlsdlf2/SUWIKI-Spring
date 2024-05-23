@@ -13,15 +13,6 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @Configuration
 public class SecurityConfig {
 
-  private static final String[] PERMIT_URL_ARRAY = {
-    "/swagger-ui/**",
-    "/swagger-resources/**",
-    "/swagger-ui/**",
-    "/v3/api-docs",
-    "/swagger-ui.html",
-    "/webjars/**",
-  };
-
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     http

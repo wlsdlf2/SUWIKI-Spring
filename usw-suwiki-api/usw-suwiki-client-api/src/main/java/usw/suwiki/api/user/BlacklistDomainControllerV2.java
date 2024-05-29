@@ -23,7 +23,7 @@ public class BlacklistDomainControllerV2 {
   private final UserBusinessService userBusinessService;
 
   @Authorize
-  @Statistics(target = USER)
+  @Statistics(USER)
   @GetMapping("/logs")
   @ResponseStatus(OK)
   public List<LoadMyBlackListReasonResponseForm> loadBlacklistReason(@Authenticated Long userId) {

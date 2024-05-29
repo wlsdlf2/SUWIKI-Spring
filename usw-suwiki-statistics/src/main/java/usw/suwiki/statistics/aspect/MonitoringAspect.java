@@ -37,7 +37,7 @@ public class MonitoringAspect {
       LocalDateTime end = LocalDateTime.now();
       log.info("{} Api Start = {}, End = {}", request.getRequestURI(), start, end);
 
-      apiLoggerService.logApi(statistics.target(), Duration.between(start, end).toMillis());
+      apiLoggerService.logApi(statistics.value(), Duration.between(start, end).toMillis());
     }
   }
 

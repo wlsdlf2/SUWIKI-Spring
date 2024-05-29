@@ -32,7 +32,7 @@ import static usw.suwiki.statistics.log.MonitorTarget.NOTICE;
 public class NoticeController {
   private final NoticeService noticeService;
 
-  @Statistics(target = NOTICE)
+  @Statistics(NOTICE)
   @GetMapping("/all")
   @ResponseStatus(OK)
   public ResponseForm getNotices(@RequestParam(required = false) Optional<Integer> page) {
@@ -40,7 +40,7 @@ public class NoticeController {
     return new ResponseForm(response);
   }
 
-  @Statistics(target = NOTICE)
+  @Statistics(NOTICE)
   @GetMapping("/")
   @ResponseStatus(OK)
   public ResponseForm getNotice(@RequestParam Long noticeId) {
@@ -49,7 +49,7 @@ public class NoticeController {
   }
 
   @Authorize(ADMIN)
-  @Statistics(target = NOTICE)
+  @Statistics(NOTICE)
   @PostMapping("/")
   @ResponseStatus(OK)
   public String write(@Valid @RequestBody NoticeRequest.Create request) { // todo : admin api
@@ -58,7 +58,7 @@ public class NoticeController {
   }
 
   @Authorize(ADMIN)
-  @Statistics(target = NOTICE)
+  @Statistics(NOTICE)
   @PutMapping("/")
   @ResponseStatus(OK)
   public String updateNotice(@RequestParam Long noticeId, @Valid @RequestBody NoticeRequest.Update request) { // todo : admin api
@@ -67,7 +67,7 @@ public class NoticeController {
   }
 
   @Authorize(ADMIN)
-  @Statistics(target = NOTICE)
+  @Statistics(NOTICE)
   @DeleteMapping("/")
   @ResponseStatus(OK)
   public void deleteNotice(@RequestParam Long noticeId) {

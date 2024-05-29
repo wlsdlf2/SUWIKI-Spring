@@ -21,7 +21,7 @@ public class RestrictingUserControllerV2 {
   private final UserBusinessService userBusinessService;
 
   @Authorize
-  @Statistics(target = USER)
+  @Statistics(USER)
   @GetMapping
   @ResponseStatus(OK)
   public ResponseForm loadRestrictedReasons(@Authenticated Long userId) {

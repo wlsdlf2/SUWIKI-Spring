@@ -39,7 +39,7 @@ public class LectureController {
     return ApiResponse.ok(response);
   }
 
-  @Statistics(target = LECTURE)
+  @Statistics(LECTURE)
   @GetMapping("/search")
   @ResponseStatus(HttpStatus.OK)
   public LectureResponse.Simples search(
@@ -54,7 +54,7 @@ public class LectureController {
 
   @CacheStatics
   @Cacheable(cacheNames = "lecture")
-  @Statistics(target = LECTURE)
+  @Statistics(LECTURE)
   @GetMapping("/all")
   @ResponseStatus(HttpStatus.OK)
   public LectureResponse.Simples getMainPageLectures(
@@ -67,7 +67,7 @@ public class LectureController {
   }
 
   @Authorize
-  @Statistics(target = LECTURE)
+  @Statistics(LECTURE)
   @GetMapping
   @ResponseStatus(HttpStatus.OK)
   public ApiResponse<LectureResponse.Detail> getDetail(@RequestParam Long lectureId) {

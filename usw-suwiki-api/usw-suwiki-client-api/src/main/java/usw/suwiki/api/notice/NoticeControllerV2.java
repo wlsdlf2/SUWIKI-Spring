@@ -24,7 +24,7 @@ import static usw.suwiki.statistics.log.MonitorTarget.NOTICE;
 public class NoticeControllerV2 {
   private final NoticeService noticeService;
 
-  @Statistics(target = NOTICE)
+  @Statistics(NOTICE)
   @GetMapping("/v2")
   @ResponseStatus(OK)
   public ResponseForm getAllNoticesV2(@RequestParam(required = false) Optional<Integer> page) {
@@ -32,7 +32,7 @@ public class NoticeControllerV2 {
     return new ResponseForm(response);
   }
 
-  @Statistics(target = NOTICE)
+  @Statistics(NOTICE)
   @GetMapping("/v2/{noticeId}")
   @ResponseStatus(OK)
   public ResponseForm getNoticeV2(@PathVariable Long noticeId) {

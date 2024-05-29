@@ -19,7 +19,7 @@ import static usw.suwiki.statistics.log.MonitorTarget.USER;
 public class ConfirmationTokenControllerV2 {
   private final ConfirmationTokenBusinessService confirmationTokenBusinessService;
 
-  @Statistics(target = USER)
+  @Statistics(USER)
   @GetMapping(value = "verify", produces = MediaType.TEXT_HTML_VALUE + ";charset=UTF-8")
   @ResponseStatus(OK)
   public String confirmEmail(@RequestParam("token") String token) {

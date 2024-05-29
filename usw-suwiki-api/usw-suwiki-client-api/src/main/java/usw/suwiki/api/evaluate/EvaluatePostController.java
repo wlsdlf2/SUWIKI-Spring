@@ -32,7 +32,7 @@ public class EvaluatePostController {
   private final EvaluatePostService evaluatePostService;
 
   @Authorize
-  @Statistics(target = EVALUATE_POSTS)
+  @Statistics(EVALUATE_POSTS)
   @GetMapping
   @ResponseStatus(OK)
   public EvaluatePostResponse.Details getAllOfLecture(
@@ -44,7 +44,7 @@ public class EvaluatePostController {
   }
 
   @Authorize
-  @Statistics(target = EVALUATE_POSTS)
+  @Statistics(EVALUATE_POSTS)
   @PostMapping
   @ResponseStatus(OK)
   public void writeEvaluation(
@@ -56,7 +56,7 @@ public class EvaluatePostController {
   }
 
   @Authorize
-  @Statistics(target = EVALUATE_POSTS)
+  @Statistics(EVALUATE_POSTS)
   @PutMapping
   @ResponseStatus(OK)
   public void updateEvaluation(
@@ -68,7 +68,7 @@ public class EvaluatePostController {
   }
 
   @Authorize
-  @Statistics(target = EVALUATE_POSTS)
+  @Statistics(EVALUATE_POSTS)
   @GetMapping("/written")
   @ResponseStatus(OK)
   public ResponseForm findByUser(@Authenticated Long userId, @RequestParam(required = false) Optional<Integer> page) {
@@ -77,7 +77,7 @@ public class EvaluatePostController {
   }
 
   @Authorize
-  @Statistics(target = EVALUATE_POSTS)
+  @Statistics(EVALUATE_POSTS)
   @DeleteMapping
   @ResponseStatus(OK)
   public void deleteEvaluation(@Authenticated Long userId, @RequestParam Long evaluateIdx) {

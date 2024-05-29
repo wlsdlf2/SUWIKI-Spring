@@ -51,21 +51,21 @@ public class UserController {
   private final UserBusinessService userBusinessService;
   private final ConfirmationTokenBusinessService confirmationTokenBusinessService;
 
-  @Statistics(target = USER)
+  @Statistics(USER)
   @PostMapping("/check-id")
   @ResponseStatus(OK)
   public Map<String, Boolean> overlapId(@Valid @RequestBody CheckLoginIdForm checkLoginIdForm) {
     return userBusinessService.isDuplicatedId(checkLoginIdForm.loginId());
   }
 
-  @Statistics(target = USER)
+  @Statistics(USER)
   @PostMapping("/check-email")
   @ResponseStatus(OK)
   public Map<String, Boolean> overlapEmail(@Valid @RequestBody CheckEmailForm checkEmailForm) {
     return userBusinessService.isDuplicatedEmail(checkEmailForm.email());
   }
 
-  @Statistics(target = USER)
+  @Statistics(USER)
   @PostMapping("join")
   @ResponseStatus(OK)
   public Map<String, Boolean> join(@Valid @RequestBody JoinForm joinForm) {
@@ -73,21 +73,21 @@ public class UserController {
   }
 
   // todo: confirmationControllerV2와 같은 코드
-  @Statistics(target = USER)
+  @Statistics(USER)
   @GetMapping(value = "verify-email", produces = MediaType.TEXT_HTML_VALUE + ";charset=UTF-8")
   @ResponseStatus(OK)
   public String confirmEmail(@RequestParam("token") String token) {
     return confirmationTokenBusinessService.confirmToken(token);
   }
 
-  @Statistics(target = USER)
+  @Statistics(USER)
   @PostMapping("find-id")
   @ResponseStatus(OK)
   public Map<String, Boolean> findId(@Valid @RequestBody FindIdForm findIdForm) {
     return userBusinessService.findId(findIdForm.email());
   }
 
-  @Statistics(target = USER)
+  @Statistics(USER)
   @PostMapping("find-pw")
   @ResponseStatus(OK)
   public Map<String, Boolean> findPw(@Valid @RequestBody FindPasswordForm findPasswordForm) {
@@ -95,21 +95,21 @@ public class UserController {
   }
 
   @Authorize
-  @Statistics(target = USER)
+  @Statistics(USER)
   @PostMapping("reset-pw")
   @ResponseStatus(OK)
   public Map<String, Boolean> resetPw(@Authenticated Long id, @Valid @RequestBody EditMyPasswordForm editMyPasswordForm) {
     return userBusinessService.editPassword(id, editMyPasswordForm.prePassword(), editMyPasswordForm.newPassword());
   }
 
-  @Statistics(target = USER)
+  @Statistics(USER)
   @PostMapping("login")
   @ResponseStatus(OK)
   public Map<String, String> mobileLogin(@Valid @RequestBody LoginForm loginForm) {
     return userBusinessService.login(loginForm.loginId(), loginForm.password());
   }
 
-  @Statistics(target = USER)
+  @Statistics(USER)
   @PostMapping("client-login")
   @ResponseStatus(OK)
   public Map<String, String> clientLogin(@Valid @RequestBody LoginForm loginForm, HttpServletResponse response) {
@@ -126,7 +126,7 @@ public class UserController {
     }};
   }
 
-  @Statistics(target = USER)
+  @Statistics(USER)
   @PostMapping("client-logout")
   @ResponseStatus(OK)
   public Map<String, Boolean> clientLogout(HttpServletResponse response) {
@@ -140,14 +140,14 @@ public class UserController {
   }
 
   @Authorize
-  @Statistics(target = USER)
+  @Statistics(USER)
   @GetMapping("/my-page")
   @ResponseStatus(OK)
   public UserInformationResponseForm myPage(@Authenticated Long userId) {
     return userBusinessService.loadMyPage(userId);
   }
 
-  @Statistics(target = USER)
+  @Statistics(USER)
   @PostMapping("/client-refresh")
   @ResponseStatus(OK)
   public Map<String, String> clientTokenRefresh(
@@ -167,14 +167,14 @@ public class UserController {
     }};
   }
 
-  @Statistics(target = USER)
+  @Statistics(USER)
   @PostMapping("/refresh")
   @ResponseStatus(OK)
   public Map<String, String> tokenRefresh(@Valid @RequestHeader String Authorization) {
     return userBusinessService.executeJWTRefreshForMobileClient(Authorization); // todo: check business logic
   }
 
-  @Statistics(target = USER)
+  @Statistics(USER)
   @PostMapping("quit")
   @ResponseStatus(INTERNAL_SERVER_ERROR)
   public Map<String, Boolean> userQuit(
@@ -191,7 +191,7 @@ public class UserController {
   }
 
   @Authorize
-  @Statistics(target = USER)
+  @Statistics(USER)
   @PostMapping("/favorite-major")
   @ResponseStatus(OK)
   public String saveFavoriteMajor(@Authenticated Long userId, @Valid @RequestBody FavoriteSaveDto favoriteSaveDto) {
@@ -200,7 +200,7 @@ public class UserController {
   }
 
   @Authorize
-  @Statistics(target = USER)
+  @Statistics(USER)
   @DeleteMapping("/favorite-major")
   @ResponseStatus(OK)
   public String deleteFavoriteMajor(@Authenticated Long userId, @RequestParam String majorType) {
@@ -209,7 +209,7 @@ public class UserController {
   }
 
   @Authorize
-  @Statistics(target = USER)
+  @Statistics(USER)
   @GetMapping("/favorite-major")
   @ResponseStatus(OK)
   public ResponseForm loadFavoriteMajors(@Authenticated Long userId) {
@@ -217,7 +217,7 @@ public class UserController {
     return new ResponseForm(response);
   }
 
-  @Statistics(target = USER)
+  @Statistics(USER)
   @GetMapping(value = "/suki", produces = MediaType.TEXT_HTML_VALUE + ";charset=UTF-8")
   @ResponseStatus(OK)
   public String thanksToSuwiki() {
@@ -232,7 +232,7 @@ public class UserController {
   }
 
   @Authorize
-  @Statistics(target = USER)
+  @Statistics(USER)
   @GetMapping("/restricted-reason")
   @ResponseStatus(OK) // todo: RestrictingUserControllerV2 동일한 API
   public List<LoadMyRestrictedReasonResponseForm> loadRestrictedReason(@Authenticated Long userId) {
@@ -240,7 +240,7 @@ public class UserController {
   }
 
   @Authorize
-  @Statistics(target = USER)
+  @Statistics(USER)
   @GetMapping("/blacklist-reason")
   @ResponseStatus(OK) // todo: BlacklistDomainControllerV2 동일한 API
   public List<LoadMyBlackListReasonResponseForm> loadBlacklistReason(@Authenticated Long userId) {

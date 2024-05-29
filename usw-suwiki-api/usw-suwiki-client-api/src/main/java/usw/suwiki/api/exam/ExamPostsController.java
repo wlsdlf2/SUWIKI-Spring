@@ -32,7 +32,7 @@ public class ExamPostsController {
   private final ExamPostService examPostService;
 
   @Authorize
-  @Statistics(target = EXAM_POSTS)
+  @Statistics(EXAM_POSTS)
   @GetMapping
   @ResponseStatus(OK)
   public ExamPostResponse.Details getAllExamPosts(
@@ -44,7 +44,7 @@ public class ExamPostsController {
   }
 
   @Authorize
-  @Statistics(target = EXAM_POSTS)
+  @Statistics(EXAM_POSTS)
   @GetMapping("/purchase")
   @ResponseStatus(OK)
   public ResponseForm getPurchaseHistories(@Authenticated Long userId) {
@@ -53,7 +53,7 @@ public class ExamPostsController {
   }
 
   @Authorize
-  @Statistics(target = EXAM_POSTS)
+  @Statistics(EXAM_POSTS)
   @GetMapping("/written")
   @ResponseStatus(OK)
   public ResponseForm getWroteExamPosts(
@@ -65,7 +65,7 @@ public class ExamPostsController {
   }
 
   @Authorize
-  @Statistics(target = EXAM_POSTS)
+  @Statistics(EXAM_POSTS)
   @PostMapping("/purchase")
   @ResponseStatus(OK)
   public void purchaseExamPost(@Authenticated Long userId, @RequestParam Long lectureId) {
@@ -73,7 +73,7 @@ public class ExamPostsController {
   }
 
   @Authorize
-  @Statistics(target = EXAM_POSTS)
+  @Statistics(EXAM_POSTS)
   @PostMapping
   @ResponseStatus(OK)
   public void writeExamPost(
@@ -85,7 +85,7 @@ public class ExamPostsController {
   }
 
   @Authorize
-  @Statistics(target = EXAM_POSTS)
+  @Statistics(EXAM_POSTS)
   @PutMapping
   @ResponseStatus(OK)
   public void updateExamPost(
@@ -97,7 +97,7 @@ public class ExamPostsController {
   }
 
   @Authorize
-  @Statistics(target = EXAM_POSTS)
+  @Statistics(EXAM_POSTS)
   @DeleteMapping
   @ResponseStatus(OK)
   public void deleteExamPosts(@Authenticated Long userId, @RequestParam Long examIdx) {

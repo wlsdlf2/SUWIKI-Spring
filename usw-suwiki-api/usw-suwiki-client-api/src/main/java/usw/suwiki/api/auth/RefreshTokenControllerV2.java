@@ -25,7 +25,7 @@ import static usw.suwiki.statistics.log.MonitorTarget.USER;
 public class RefreshTokenControllerV2 {
   private final UserBusinessService userBusinessService;
 
-  @Statistics(target = USER)
+  @Statistics(USER)
   @PostMapping("/web-client/refresh")
   @ResponseStatus(OK)
   public ResponseForm clientTokenRefresh(
@@ -45,7 +45,7 @@ public class RefreshTokenControllerV2 {
     }});
   }
 
-  @Statistics(target = USER)
+  @Statistics(USER)
   @PostMapping("/mobile-client/refresh")
   @ResponseStatus(OK)
   public ResponseForm tokenRefresh(@RequestHeader String Authorization) {

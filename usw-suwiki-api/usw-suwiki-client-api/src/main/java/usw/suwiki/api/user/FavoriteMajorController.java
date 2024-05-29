@@ -26,7 +26,7 @@ public class FavoriteMajorController {
   private final FavoriteMajorServiceV2 favoriteMajorServiceV2;
 
   @Authorize
-  @Statistics(target = USER)
+  @Statistics(USER)
   @GetMapping
   @ResponseStatus(OK)
   public ResponseForm getFavoriteMajors(@Authenticated Long userId) {
@@ -35,7 +35,7 @@ public class FavoriteMajorController {
   }
 
   @Authorize
-  @Statistics(target = USER)
+  @Statistics(USER)
   @PostMapping
   @ResponseStatus(OK)
   public String create(@Authenticated Long userId, @RequestBody FavoriteSaveDto favoriteSaveDto) {
@@ -44,7 +44,7 @@ public class FavoriteMajorController {
   }
 
   @Authorize
-  @Statistics(target = USER)
+  @Statistics(USER)
   @DeleteMapping
   @ResponseStatus(OK)
   public String delete(@Authenticated Long userId, @RequestParam String majorType) {

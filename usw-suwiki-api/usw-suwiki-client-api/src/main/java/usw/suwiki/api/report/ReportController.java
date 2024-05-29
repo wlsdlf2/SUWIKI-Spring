@@ -28,7 +28,7 @@ public class ReportController {
   private final ExamPostService examPostService;
 
   @Authorize
-  @Statistics(target = USER)
+  @Statistics(USER)
   @PostMapping("/evaluate")
   @ResponseStatus(OK)
   public Map<String, Boolean> reportEvaluate(
@@ -40,7 +40,7 @@ public class ReportController {
   }
 
   @Authorize
-  @Statistics(target = USER)
+  @Statistics(USER)
   @PostMapping("/exam")
   @ResponseStatus(OK)
   public Map<String, Boolean> reportExam(

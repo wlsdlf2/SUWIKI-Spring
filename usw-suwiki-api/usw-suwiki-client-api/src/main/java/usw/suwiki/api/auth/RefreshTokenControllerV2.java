@@ -32,7 +32,7 @@ public class RefreshTokenControllerV2 {
     @CookieValue(value = "refreshToken") Cookie requestRefreshCookie,
     HttpServletResponse response
   ) {
-    Map<String, String> tokenPair = userBusinessService.executeJWTRefreshForWebClient(requestRefreshCookie);
+    Map<String, String> tokenPair = userBusinessService.reissueWeb(requestRefreshCookie);
 
     Cookie refreshCookie = new Cookie("refreshToken", tokenPair.get("RefreshToken"));
     refreshCookie.setMaxAge(14 * 24 * 60 * 60);
@@ -49,6 +49,6 @@ public class RefreshTokenControllerV2 {
   @PostMapping("/mobile-client/refresh")
   @ResponseStatus(OK)
   public ResponseForm tokenRefresh(@RequestHeader String Authorization) {
-    return ResponseForm.success(userBusinessService.executeJWTRefreshForMobileClient(Authorization));
+    return ResponseForm.success(userBusinessService.reissueMobile(Authorization));
   }
 }

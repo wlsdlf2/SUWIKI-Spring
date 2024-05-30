@@ -1,11 +1,5 @@
 package usw.suwiki.domain.user.blacklist.service;
 
-import static usw.suwiki.domain.user.dto.UserResponseDto.LoadMyBlackListReasonResponseForm;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +9,13 @@ import usw.suwiki.domain.user.blacklist.BlacklistDomain;
 import usw.suwiki.domain.user.blacklist.BlacklistRepository;
 import usw.suwiki.domain.user.service.BlacklistDomainCRUDService;
 import usw.suwiki.domain.user.service.UserCRUDService;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import static usw.suwiki.domain.user.dto.UserResponse.LoadMyBlackListReasonResponse;
 
 @Service
 @Transactional
@@ -28,18 +29,18 @@ class BlacklistDomainCRUDServiceImpl implements BlacklistDomainCRUDService {
   private final PasswordEncoder passwordEncoder;
 
   @Override
-  public List<LoadMyBlackListReasonResponseForm> loadAllBlacklistLog(Long userIdx) {
+  public List<LoadMyBlackListReasonResponse> loadAllBlacklistLog(Long userIdx) {
     Optional<BlacklistDomain> loadedDomain = blacklistRepository.findByUserIdx(userIdx);
-    List<LoadMyBlackListReasonResponseForm> finalResultForm = new ArrayList<>();
+    List<LoadMyBlackListReasonResponse> finalResultForm = new ArrayList<>();
     if (loadedDomain.isPresent()) {
-      LoadMyBlackListReasonResponseForm loadMyBlackListReasonResponseForm =
-        LoadMyBlackListReasonResponseForm.builder()
+      LoadMyBlackListReasonResponse loadMyBlackListReasonResponse =
+        LoadMyBlackListReasonResponse.builder()
           .blackListReason(loadedDomain.get().getBannedReason())
           .judgement(loadedDomain.get().getJudgement())
           .createdAt(loadedDomain.get().getCreateDate())
           .expiredAt(loadedDomain.get().getExpiredAt())
           .build();
-      finalResultForm.add(loadMyBlackListReasonResponseForm);
+      finalResultForm.add(loadMyBlackListReasonResponse);
     }
     return finalResultForm;
   }

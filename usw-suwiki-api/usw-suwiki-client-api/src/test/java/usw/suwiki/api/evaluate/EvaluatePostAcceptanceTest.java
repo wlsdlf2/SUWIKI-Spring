@@ -1,6 +1,6 @@
 package usw.suwiki.api.evaluate;
 
-import io.github.hejow.restdocs.document.RestDocument;
+import io.github.hejow.restdocs.generator.RestDocument;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -83,7 +83,6 @@ public class EvaluatePostAcceptanceTest extends AcceptanceTestSupport {
       // docs
       result.andDo(
         RestDocument.builder()
-          .identifier("create-evaluate-post")
           .summary("[토큰 필요] 강의 평가 생성 API")
           .description("강의 평가를 생성하는 API 입니다. Body에는 String 타입을 입력해야하며 Blank 제약조건이 있습니다.")
           .tag(EVALUATE_POST)
@@ -110,7 +109,6 @@ public class EvaluatePostAcceptanceTest extends AcceptanceTestSupport {
       // docs
       result.andDo(
         RestDocument.builder()
-          .identifier("create-evaluate-post-fail-wrong-satisfaction-value")
           .tag(EVALUATE_POST)
           .result(result)
           .generateDocs()
@@ -135,7 +133,6 @@ public class EvaluatePostAcceptanceTest extends AcceptanceTestSupport {
       // docs
       result.andDo(
         RestDocument.builder()
-          .identifier("create-evaluate-post-fail-wrong-learning-value")
           .tag(EVALUATE_POST)
           .result(result)
           .generateDocs()
@@ -160,7 +157,6 @@ public class EvaluatePostAcceptanceTest extends AcceptanceTestSupport {
       // docs
       result.andDo(
         RestDocument.builder()
-          .identifier("create-evaluate-post-fail-wrong-honey-value")
           .tag(EVALUATE_POST)
           .result(result)
           .generateDocs()
@@ -188,7 +184,6 @@ public class EvaluatePostAcceptanceTest extends AcceptanceTestSupport {
       // docs
       result.andDo(
         RestDocument.builder()
-          .identifier("create-evaluate-post-fail-wrong-team-value")
           .tag(EVALUATE_POST)
           .result(result)
           .generateDocs()
@@ -213,7 +208,6 @@ public class EvaluatePostAcceptanceTest extends AcceptanceTestSupport {
       // docs
       result.andDo(
         RestDocument.builder()
-          .identifier("create-evaluate-post-fail-wrong-difficult-value")
           .tag(EVALUATE_POST)
           .result(result)
           .generateDocs()
@@ -238,7 +232,6 @@ public class EvaluatePostAcceptanceTest extends AcceptanceTestSupport {
       // docs
       result.andDo(
         RestDocument.builder()
-          .identifier("create-evaluate-post-fail-wrong-homework-value")
           .tag(EVALUATE_POST)
           .result(result)
           .generateDocs()
@@ -262,7 +255,6 @@ public class EvaluatePostAcceptanceTest extends AcceptanceTestSupport {
       // docs
       result.andDo(
         RestDocument.builder()
-          .identifier("create-evaluate-post-fail-wrong-parameter-lecture-id")
           .tag(EVALUATE_POST)
           .result(result)
           .generateDocs()
@@ -288,7 +280,6 @@ public class EvaluatePostAcceptanceTest extends AcceptanceTestSupport {
       // docs
       result.andDo(
         RestDocument.builder()
-          .identifier("create-evaluate-post-fail-already-write-evaluate-post")
           .tag(EVALUATE_POST)
           .result(result)
           .generateDocs()
@@ -330,7 +321,6 @@ public class EvaluatePostAcceptanceTest extends AcceptanceTestSupport {
       // docs
       result.andDo(
         RestDocument.builder()
-          .identifier("update-evaluate-post")
           .summary("[토큰 필요] 강의 평가 수정 API")
           .description("강의 평가를 수정하는 API 입니다")
           .tag(EVALUATE_POST)
@@ -356,7 +346,6 @@ public class EvaluatePostAcceptanceTest extends AcceptanceTestSupport {
       // docs
       result.andDo(
         RestDocument.builder()
-          .identifier("update-evaluate-post-fail-wrong-parameter-evaluate-id")
           .tag(EVALUATE_POST)
           .result(result)
           .generateDocs()
@@ -383,7 +372,6 @@ public class EvaluatePostAcceptanceTest extends AcceptanceTestSupport {
       // docs
       result.andDo(
         RestDocument.builder()
-          .identifier("update-evaluate-post-fail-not-author")
           .tag(EVALUATE_POST)
           .result(result)
           .generateDocs()
@@ -415,7 +403,6 @@ public class EvaluatePostAcceptanceTest extends AcceptanceTestSupport {
       // docs
       result.andDo(
         RestDocument.builder()
-          .identifier("delete-evaluate-post")
           .summary("[토큰 필요] 강의 평가 삭제 API")
           .description("강의 평가를 삭제하는 API 입니다")
           .tag(EVALUATE_POST)
@@ -441,7 +428,6 @@ public class EvaluatePostAcceptanceTest extends AcceptanceTestSupport {
       // docs
       result.andDo(
         RestDocument.builder()
-          .identifier("delete-evaluate-post-fail-lack-user-point")
           .tag(EVALUATE_POST)
           .result(result)
           .generateDocs()
@@ -466,7 +452,6 @@ public class EvaluatePostAcceptanceTest extends AcceptanceTestSupport {
       // docs
       result.andDo(
         RestDocument.builder()
-          .identifier("delete-evaluate-post-fail-not-author")
           .tag(EVALUATE_POST)
           .result(result)
           .generateDocs()
@@ -517,7 +502,6 @@ public class EvaluatePostAcceptanceTest extends AcceptanceTestSupport {
       // docs
       result.andDo(
         RestDocument.builder()
-          .identifier("get-evaluate-posts-success-with-post-history")
           .summary("[토큰 필요] 강의 평가 리스트 조회 API")
           .description("강의 평가 조회 API입니다.")
           .tag(EVALUATE_POST)
@@ -557,7 +541,6 @@ public class EvaluatePostAcceptanceTest extends AcceptanceTestSupport {
       // docs
       result.andDo(
         RestDocument.builder()
-          .identifier("get-evaluate-posts-success-without-post-history")
           .tag(EVALUATE_POST)
           .result(result)
           .generateDocs()

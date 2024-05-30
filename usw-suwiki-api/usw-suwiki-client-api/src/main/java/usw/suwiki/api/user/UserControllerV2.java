@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import usw.suwiki.auth.core.annotation.Authenticated;
 import usw.suwiki.auth.core.annotation.Authorize;
 import usw.suwiki.common.response.ResponseForm;
+import usw.suwiki.domain.user.dto.UserRequest;
 import usw.suwiki.domain.user.service.UserBusinessService;
 import usw.suwiki.statistics.annotation.Statistics;
 
@@ -22,14 +23,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.springframework.http.HttpStatus.OK;
-import static usw.suwiki.domain.user.dto.UserRequestDto.CheckEmailForm;
-import static usw.suwiki.domain.user.dto.UserRequestDto.CheckLoginIdForm;
-import static usw.suwiki.domain.user.dto.UserRequestDto.EditMyPasswordForm;
-import static usw.suwiki.domain.user.dto.UserRequestDto.FindIdForm;
-import static usw.suwiki.domain.user.dto.UserRequestDto.FindPasswordForm;
-import static usw.suwiki.domain.user.dto.UserRequestDto.JoinForm;
-import static usw.suwiki.domain.user.dto.UserRequestDto.LoginForm;
-import static usw.suwiki.domain.user.dto.UserRequestDto.UserQuitForm;
 import static usw.suwiki.statistics.log.MonitorTarget.USER;
 
 @RestController
@@ -41,40 +34,40 @@ public class UserControllerV2 {
   @Statistics(USER)
   @PostMapping("/loginId/check")
   @ResponseStatus(OK)
-  public ResponseForm overlapId(@Valid @RequestBody CheckLoginIdForm checkLoginIdForm) {
-    var response = userBusinessService.isDuplicatedId(checkLoginIdForm.loginId());
+  public ResponseForm overlapId(@Valid @RequestBody UserRequest.CheckLoginId checkLoginId) {
+    var response = userBusinessService.isDuplicatedId(checkLoginId.loginId());
     return ResponseForm.success(response);
   }
 
   @Statistics(USER)
   @PostMapping("/email/check")
   @ResponseStatus(OK)
-  public ResponseForm overlapEmail(@Valid @RequestBody CheckEmailForm checkEmailForm) {
-    var response = userBusinessService.isDuplicatedEmail(checkEmailForm.email());
+  public ResponseForm overlapEmail(@Valid @RequestBody UserRequest.CheckEmail checkEmail) {
+    var response = userBusinessService.isDuplicatedEmail(checkEmail.email());
     return ResponseForm.success(response);
   }
 
   @Statistics(USER)
   @PostMapping
   @ResponseStatus(OK)
-  public ResponseForm join(@Valid @RequestBody JoinForm joinForm) {
-    Map<?, ?> response = userBusinessService.executeJoin(joinForm.loginId(), joinForm.password(), joinForm.email());
+  public ResponseForm join(@Valid @RequestBody UserRequest.Join join) {
+    Map<?, ?> response = userBusinessService.join(join.loginId(), join.password(), join.email());
     return ResponseForm.success(response);
   }
 
   @Statistics(USER)
   @PostMapping("inquiry-loginId")
   @ResponseStatus(OK)
-  public ResponseForm findId(@Valid @RequestBody FindIdForm findIdForm) {
-    var response = userBusinessService.findId(findIdForm.email());
+  public ResponseForm findId(@Valid @RequestBody UserRequest.FindId findId) {
+    var response = userBusinessService.findId(findId.email());
     return ResponseForm.success(response);
   }
 
   @Statistics(USER)
   @PostMapping("inquiry-password")
   @ResponseStatus(OK)
-  public ResponseForm findPw(@Valid @RequestBody FindPasswordForm findPasswordForm) {
-    var response = userBusinessService.findPw(findPasswordForm.loginId(), findPasswordForm.email());
+  public ResponseForm findPw(@Valid @RequestBody UserRequest.FindPassword findPassword) {
+    var response = userBusinessService.findPw(findPassword.loginId(), findPassword.email());
     return ResponseForm.success(response);
   }
 
@@ -82,7 +75,7 @@ public class UserControllerV2 {
   @Statistics(USER)
   @PatchMapping("password")
   @ResponseStatus(OK)
-  public ResponseForm resetPw(@Authenticated Long userId, @Valid @RequestBody EditMyPasswordForm request) {
+  public ResponseForm resetPw(@Authenticated Long userId, @Valid @RequestBody UserRequest.EditPassword request) {
     var response = userBusinessService.editPassword(userId, request.prePassword(), request.newPassword());
     return ResponseForm.success(response);
   }
@@ -90,7 +83,7 @@ public class UserControllerV2 {
   @Statistics(USER)
   @PostMapping("mobile-login")
   @ResponseStatus(OK)
-  public ResponseForm mobileLogin(@Valid @RequestBody LoginForm request) {
+  public ResponseForm mobileLogin(@Valid @RequestBody UserRequest.Login request) {
     return ResponseForm.success(userBusinessService.login(request.loginId(), request.password()));
   }
 
@@ -98,10 +91,10 @@ public class UserControllerV2 {
   @PostMapping("web-login")
   @ResponseStatus(OK)
   public ResponseForm webLogin(
-    @Valid @RequestBody LoginForm loginForm,
+    @Valid @RequestBody UserRequest.Login login,
     HttpServletResponse response
   ) {
-    Map<String, String> tokenPair = userBusinessService.login(loginForm.loginId(), loginForm.password());
+    Map<String, String> tokenPair = userBusinessService.login(login.loginId(), login.password());
 
     Cookie refreshCookie = new Cookie("refreshToken", tokenPair.get("RefreshToken"));
     refreshCookie.setMaxAge(270 * 24 * 60 * 60);
@@ -141,7 +134,7 @@ public class UserControllerV2 {
   @Statistics(USER)
   @DeleteMapping
   @ResponseStatus(OK)
-  public ResponseForm userQuit(@Authenticated Long userId, @Valid @RequestBody UserQuitForm userQuitForm) {
-    return ResponseForm.success(userBusinessService.quit(userId, userQuitForm.password()));
+  public ResponseForm quit(@Authenticated Long userId, @Valid @RequestBody UserRequest.Quit quit) {
+    return ResponseForm.success(userBusinessService.quit(userId, quit.password()));
   }
 }

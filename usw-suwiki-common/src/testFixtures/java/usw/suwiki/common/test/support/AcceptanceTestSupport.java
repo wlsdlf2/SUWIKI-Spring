@@ -1,60 +1,40 @@
 package usw.suwiki.common.test.support;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.filter.CharacterEncodingFilter;
 import usw.suwiki.common.test.HttpMethod;
 
 import java.util.Arrays;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 
 @AutoConfigureMockMvc
+@AutoConfigureRestDocs
+@Import(MockMvcConfiguration.class)
 @ExtendWith(RestDocumentationExtension.class)
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 public abstract class AcceptanceTestSupport {
-  protected final String INVALID_ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9" +
-                                                ".eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ" +
-                                                ".SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
+  protected final String INVALID_ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
 
   @Autowired
   private ObjectMapper objectMapper;
 
+  @Autowired
   private MockMvc mockMvc;
-
-  @BeforeEach
-  public void setUp(WebApplicationContext webApplicationContext, RestDocumentationContextProvider restDocumentation) {
-    mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
-      .alwaysDo(print())
-      .apply(documentationConfiguration(restDocumentation))
-      .addFilter(new CharacterEncodingFilter(UTF_8.displayName(), true))
-      .defaultRequest(RestDocumentationRequestBuilders.post("/**").with(csrf().asHeader()))
-      .defaultRequest(RestDocumentationRequestBuilders.get("/**").with(csrf().asHeader()))
-      .defaultRequest(RestDocumentationRequestBuilders.put("/**").with(csrf().asHeader()))
-      .defaultRequest(RestDocumentationRequestBuilders.patch("/**").with(csrf().asHeader()))
-      .defaultRequest(RestDocumentationRequestBuilders.delete("/**").with(csrf().asHeader()))
-      .build();
-  }
 
   public ResultActions get(Uri uri, String accessToken) throws Exception {
     return perform(uri, accessToken, null);

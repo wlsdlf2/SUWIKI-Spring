@@ -1,6 +1,6 @@
 package usw.suwiki.common.test;
 
-import io.github.hejow.restdocs.document.ApiTag;
+import io.github.hejow.restdocs.generator.ApiTag;
 
 public enum Tag implements ApiTag {
   TIMETABLE("시간표 API"),
@@ -8,7 +8,7 @@ public enum Tag implements ApiTag {
   USER("유저 API"),
   EVALUATE_POST("강의 평가 API"),
   EXAM_POST("시험 평가 API"),
-  NOTICE("공지 API")
+  NOTICE("공지 API"),
   ;
 
   private final String description;

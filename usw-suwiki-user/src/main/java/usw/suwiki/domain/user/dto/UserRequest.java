@@ -1,44 +1,47 @@
 package usw.suwiki.domain.user.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
-public final class UserRequestDto {
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class UserRequest {
 
-  public record CheckLoginIdForm(@NotBlank String loginId) {
+  public record CheckLoginId(@NotBlank String loginId) {
   }
 
-  public record CheckEmailForm(@NotBlank String email) {
+  public record CheckEmail(@NotBlank String email) {
   }
 
-  public record JoinForm(
+  public record Join(
     @NotBlank String loginId,
     @NotBlank String password,
     @NotBlank String email
   ) {
   }
 
-  public record LoginForm(
+  public record Login(
     @NotBlank String loginId,
     @NotBlank String password
   ) {
   }
 
-  public record FindIdForm(@NotBlank String email) {
+  public record FindId(@NotBlank String email) {
   }
 
-  public record FindPasswordForm(
+  public record FindPassword(
     @NotBlank String loginId,
     @NotBlank String email
   ) {
   }
 
-  public record EditMyPasswordForm(
+  public record EditPassword(
     @NotBlank String prePassword,
     @NotBlank String newPassword
   ) {
   }
 
-  public record UserQuitForm(
+  public record Quit(
     @NotBlank String loginId,
     @NotBlank String password
   ) {

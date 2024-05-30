@@ -33,12 +33,11 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
   }
 
   private Authorize resolve(Object handler) {
-    var method = ((HandlerMethod) handler).getMethod();
-    return method.getAnnotation(Authorize.class);
+    return handler instanceof HandlerMethod handlerMethod ? handlerMethod.getMethodAnnotation(Authorize.class) : null;
   }
 
-  private void validateAccessIfAdmin(Role role, String token) {
-    if (role.isAdmin() && jwtAgent.isNotAdmin(token)) {
+  private void validateAccessIfAdmin(Role request, String token) {
+    if (request.isAdmin() && jwtAgent.isNotAdmin(token)) {
       throw new AccountException(ExceptionType.USER_RESTRICTED);
     }
   }

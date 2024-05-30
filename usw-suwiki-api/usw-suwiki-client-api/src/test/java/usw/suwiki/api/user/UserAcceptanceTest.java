@@ -1,0 +1,690 @@
+package usw.suwiki.api.user;
+
+import io.github.hejow.restdocs.generator.RestDocument;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.data.util.Pair;
+import usw.suwiki.auth.token.ConfirmationToken;
+import usw.suwiki.auth.token.ConfirmationTokenRepository;
+import usw.suwiki.common.test.annotation.AcceptanceTest;
+import usw.suwiki.common.test.support.AcceptanceTestSupport;
+import usw.suwiki.common.test.support.Uri;
+import usw.suwiki.core.secure.PasswordEncoder;
+import usw.suwiki.domain.user.User;
+import usw.suwiki.domain.user.UserRepository;
+import usw.suwiki.domain.user.dto.UserRequest;
+import usw.suwiki.domain.user.dto.UserRequest.CheckEmail;
+import usw.suwiki.domain.user.dto.UserRequest.CheckLoginId;
+import usw.suwiki.domain.user.dto.UserRequest.EditPassword;
+import usw.suwiki.domain.user.dto.UserRequest.FindId;
+import usw.suwiki.domain.user.dto.UserRequest.FindPassword;
+import usw.suwiki.domain.user.dto.UserRequest.Join;
+import usw.suwiki.test.fixture.Fixtures;
+
+import java.util.Optional;
+import java.util.stream.Stream;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.BDDMockito.given;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static usw.suwiki.auth.token.response.ConfirmResponse.ERROR;
+import static usw.suwiki.auth.token.response.ConfirmResponse.EXPIRED;
+import static usw.suwiki.auth.token.response.ConfirmResponse.SUCCESS;
+import static usw.suwiki.common.test.Tag.USER;
+import static usw.suwiki.common.test.support.Pair.parameter;
+import static usw.suwiki.common.test.support.ResponseValidator.validate;
+import static usw.suwiki.common.test.support.ResponseValidator.validateHtml;
+import static usw.suwiki.core.exception.ExceptionType.IS_NOT_EMAIL_FORM;
+import static usw.suwiki.core.exception.ExceptionType.LOGIN_ID_OR_EMAIL_OVERLAP;
+import static usw.suwiki.core.exception.ExceptionType.PARAMETER_VALIDATION_FAIL;
+import static usw.suwiki.core.exception.ExceptionType.PASSWORD_ERROR;
+import static usw.suwiki.core.exception.ExceptionType.SAME_PASSWORD_WITH_OLD;
+
+@AcceptanceTest
+class UserAcceptanceTest extends AcceptanceTestSupport {
+  private static final String loginId = "suwiki";
+  private static final String email = "suwiki@suwon.ac.kr";
+  private static final String password = "p@sSw0rc1!!";
+
+  @Autowired
+  private UserRepository userRepository;
+
+  @Autowired
+  private PasswordEncoder passwordEncoder;
+  @Autowired
+  private Fixtures fixtures;
+
+  @SpyBean
+  private ConfirmationTokenRepository confirmationTokenRepository;
+
+  private String accessToken;
+  private ConfirmationToken confirmationToken;
+
+  @BeforeEach
+  public void setup() {
+    var user = userRepository.save(User.init(loginId, passwordEncoder.encode(password), email).activate());
+    confirmationToken = fixtures.가입_인증_토큰_생성(user.getId());
+    accessToken = fixtures.토큰_생성(user);
+  }
+
+  @Nested
+  class 유저_아이디_중복_확인_테스트 {
+    private final String endpoint = "/user/check-id";
+
+    @Test
+    void 아이디_중복확인_성공_중복() throws Exception {
+      // setup
+      var request = new CheckLoginId(loginId);
+
+      // execution
+      var result = post(Uri.of(endpoint), request);
+
+      // result validation
+      validate(result, status().isOk(), Pair.of("$.overlap", true));
+
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .summary("아이디 중복 확인 API")
+          .description("아이디 중복 확인 API입니다. Body에는 String 타입을 입력해야하며 Blank 제약조건이 있습니다.")
+          .tag(USER)
+          .result(result)
+          .generateDocs()
+      );
+    }
+
+    @Test
+    void 아이디_중복확인_성공_중복_아님() throws Exception {
+      // setup
+      var request = new CheckLoginId("diger");
+
+      // execution
+      var result = post(Uri.of(endpoint), request);
+
+      // result validation
+      validate(result, status().isOk(), Pair.of("$.overlap", false));
+
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .tag(USER)
+          .result(result)
+          .generateDocs()
+      );
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    void 아이디_중복확인_실패_잘못된_파라미터(String loginId) throws Exception {
+      // setup
+      var request = new CheckLoginId(loginId);
+
+      // execution
+      var result = post(Uri.of(endpoint), request);
+
+      // result validation
+      validate(result, status().isBadRequest(), PARAMETER_VALIDATION_FAIL);
+
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .tag(USER)
+          .result(result)
+          .generateDocs()
+      );
+    }
+  }
+
+  @Nested
+  class 유저_이메일_중복_확인_테스트 {
+    private final String urlTemplate = "/user/check-email";
+
+    @Test
+    void 이메일_중복확인_성공_중복() throws Exception {
+      // setup
+      var request = new CheckEmail(email);
+
+      // execution
+      var result = post(Uri.of(urlTemplate), request);
+
+      // result validation
+      validate(result, status().isOk(), Pair.of("$.overlap", true));
+
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .tag(USER)
+          .result(result)
+          .generateDocs()
+      );
+    }
+
+    @Test
+    void 이메일_중복확인_성공_중복_아님() throws Exception {
+      // setup
+      var request = new CheckEmail("diger@suwon.ac.kr");
+
+      // execution
+      var result = post(Uri.of(urlTemplate), request);
+
+      // result validation
+      validate(result, status().isOk(), Pair.of("$.overlap", false));
+
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .summary("이메일 중복 확인 API")
+          .description("이메일 중복 확인 API입니다. Body에는 String 타입을 입력해야하며 Blank 제약조건이 있습니다.")
+          .tag(USER)
+          .result(result)
+          .generateDocs()
+      );
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    void 아이디_중복확인_실패_잘못된_파라미터(String email) throws Exception {
+      // setup
+      var request = new CheckEmail(email);
+
+      // execution
+      var result = post(Uri.of(urlTemplate), request);
+
+      // result validation
+      validate(result, status().isBadRequest(), PARAMETER_VALIDATION_FAIL);
+
+      result.andDo(
+        RestDocument.builder()
+          .tag(USER)
+          .result(result)
+          .generateDocs()
+      );
+    }
+  }
+
+  @Nested
+  class 유저_회원가입_테스트 {
+    private final String endpoint = "/user/join";
+
+    @Test
+    void 회원가입_성공() throws Exception {
+      // setup
+      var request = new Join("diger", "digerpassword1!", "diger@suwon.ac.kr");
+
+      // execution
+      var result = post(Uri.of(endpoint), request);
+
+      // result validation
+      validate(result, status().isOk(), Pair.of("$.success", true));
+
+      // db validation
+      Optional<User> saved = userRepository.findByLoginId("diger");
+      assertAll(
+        () -> assertThat(saved).isNotEmpty(),
+        () -> assertThat(saved.get().getEmail()).isEqualTo(request.email()),
+        () -> assertTrue(passwordEncoder.matches(request.password(), saved.get().getPassword()))
+      );
+
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .summary("회원가입 API")
+          .description("""
+            회원가입 API입니다.
+            Body에는 String 타입의 \"LoginId\", \"Password\", \"Email\"을 입력해야하며 모든 필드가 Blank 제약조건이 있습니다.
+            """)
+          .tag(USER)
+          .result(result)
+          .generateDocs()
+      );
+    }
+
+    @ParameterizedTest
+    @MethodSource("duplicatedLoginIdAndEmail")
+    void 회원가입_실패_아이디_이메일_중복(String loginId, String email) throws Exception {
+      // setup
+      var requestBody = new Join(loginId, "digerPassword123!", email);
+
+      // execution
+      var result = post(Uri.of(endpoint), requestBody);
+
+      // result validation
+      validate(result, status().isBadRequest(), LOGIN_ID_OR_EMAIL_OVERLAP);
+
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .tag(USER)
+          .result(result)
+          .generateDocs()
+      );
+    }
+
+    static Stream<Arguments> duplicatedLoginIdAndEmail() {
+      return Stream.of(
+        Arguments.of(loginId, "test@suwiki.kr"),
+        Arguments.of("test", email)
+      );
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    void 회원가입_실패_잘못된_파라미터(String password) throws Exception {
+      // setup
+      var requestBody = new Join("diger", password, "test@suwiki.kr");
+
+      // execution
+      var result = post(Uri.of(endpoint), requestBody);
+
+      // result validation
+      validate(result, status().isBadRequest(), PARAMETER_VALIDATION_FAIL);
+
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .tag(USER)
+          .result(result)
+          .generateDocs()
+      );
+    }
+
+    @Test
+    void 회원가입_실패_교내_이메일이_아님() throws Exception {
+      // setup
+      var requestBody = new Join("diger", "digerPassword123!", "diger@gmail.com");
+
+      // execution
+      var result = post(Uri.of(endpoint), requestBody);
+
+      // result validation
+      validate(result, status().isBadRequest(), IS_NOT_EMAIL_FORM);
+
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .tag(USER)
+          .result(result)
+          .generateDocs()
+      );
+    }
+  }
+
+  @Nested
+  class 유저_이메일_인증_테스트 {
+    private final String endpoint = "/user/verify-email";
+
+    @Test
+    void 이메일_인증_성공() throws Exception {
+      // setup
+      final String emailVerificationToken = confirmationToken.getToken();
+
+      // execution
+      var result = getHtml(Uri.of(endpoint), parameter("token", emailVerificationToken));
+
+      // result validation
+      validateHtml(result, status().isOk(), SUCCESS.getContent());
+
+      // db validation
+      Optional<ConfirmationToken> confirmationToken = confirmationTokenRepository.findByToken(emailVerificationToken);
+
+      assertAll(
+        () -> assertThat(confirmationToken).isNotEmpty(),
+        () -> assertTrue(confirmationToken.get().isVerified())
+      );
+
+      result.andDo(document("test"));
+
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .summary("이메일 인증 API")
+          .description("""
+            이메일 인증 API입니다.
+            Parameter에는 'token'을 Key로 갖고 값을 입력해야합니다.
+            """)
+          .tag(USER)
+          .result(result)
+          .generateDocs()
+      );
+    }
+
+    @Test
+    void 이메일_인증_실패_잘못된_토큰() throws Exception {
+      // setup
+      final String emailVerificationToken = confirmationToken.getToken();
+
+      // execution
+      var result = getHtml(Uri.of(endpoint), parameter("token", emailVerificationToken + "diger"));
+
+      // result validation
+      validateHtml(result, status().isOk(), ERROR.getContent());
+
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .tag(USER)
+          .result(result)
+          .generateDocs()
+      );
+    }
+
+    @Test
+    void 이메일_인증_실패_만료된_토큰() throws Exception {
+      // setup
+      var sut = Mockito.mock(ConfirmationToken.class);
+
+      given(confirmationTokenRepository.findByToken(anyString())).willReturn(Optional.of(sut));
+      given(sut.isExpired()).willReturn(true);
+
+      // execution
+      var result = getHtml(Uri.of(endpoint), parameter("token", confirmationToken.getToken()));
+
+      // result validation
+      validateHtml(result, status().isOk(), EXPIRED.getContent());
+
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .tag(USER)
+          .result(result)
+          .generateDocs()
+      );
+    }
+  }
+
+  @Nested
+  class 아이디_찾기_테스트 {
+    private final String endpoint = "/user/find-id";
+
+    @Test
+    void 아이디_찾기_성공() throws Exception {
+      // setup
+      var request = new FindId(email);
+
+      // execution
+      var result = post(Uri.of(endpoint), request);
+
+      // result validation
+      validate(result, status().isOk(), Pair.of("$.success", true));
+
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .summary("아이디 찾기 API")
+          .description("아이디 찾기 API입니다.")
+          .tag(USER)
+          .result(result)
+          .generateDocs()
+      );
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    void 아이디_찾기_실페_잘못된_파라미터(String email) throws Exception {
+      // setup
+      var request = new FindId(email);
+
+      // execution
+      var result = post(Uri.of(endpoint), request);
+
+      // result validation
+      validate(result, status().isBadRequest(), PARAMETER_VALIDATION_FAIL);
+
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .tag(USER)
+          .result(result)
+          .generateDocs()
+      );
+    }
+  }
+
+  @Nested
+  class 비밀번호_찾기_테스트 {
+    private final String endpoint = "/user/find-pw";
+
+    @Test
+    void 비밀번호_찾기_성공() throws Exception {
+      // setup
+      var requestBody = new FindPassword(loginId, email);
+
+      // execution
+      var result = post(Uri.of(endpoint), requestBody);
+
+      // result validation
+      validate(result, status().isOk(), Pair.of("$.success", true));
+
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .summary("비밀번호 찾기 API")
+          .description("비밀번호 찾기 API입니다.")
+          .tag(USER)
+          .result(result)
+          .generateDocs()
+      );
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    void 비밀번호_찾기_실패_유효하지_않은_아이디(String loginId) throws Exception {
+      // setup
+      var requestBody = new FindPassword(loginId, email);
+
+      // execution
+      var result = post(Uri.of(endpoint), requestBody);
+
+      // result validation
+      validate(result, status().isBadRequest(), PARAMETER_VALIDATION_FAIL);
+
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .tag(USER)
+          .result(result)
+          .generateDocs()
+      );
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    void 비밀번호_찾기_실패_유효하지_않은_이메일(String email) throws Exception {
+      // setup
+      var requestBody = new FindPassword(loginId, email);
+
+      // execution
+      var result = post(Uri.of(endpoint), requestBody);
+
+      // result validation
+      validate(result, status().isBadRequest(), PARAMETER_VALIDATION_FAIL);
+
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .tag(USER)
+          .result(result)
+          .generateDocs()
+      );
+    }
+  }
+
+  @Nested
+  class 비밀번호_변경_테스트 {
+    private final String endpoint = "/user/reset-pw";
+
+    @Test
+    void 비밀번호_변경_성공() throws Exception {
+      // setup
+      String newPassword = "newPassword1!";
+      var request = new EditPassword(password, newPassword);
+
+      // execution
+      var result = post(Uri.of(endpoint), accessToken, request);
+
+      // result validation
+      validate(result, status().isOk(), Pair.of("$.success", true));
+
+      // db validation
+      Optional<User> diger = userRepository.findByLoginId(loginId);
+      assertAll(
+        () -> assertThat(diger).isNotEmpty(),
+        () -> assertTrue(passwordEncoder.matches(newPassword, diger.get().getPassword()))
+      );
+
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .summary("비밀번호 변경 API")
+          .description("비밀번호 변경 API입니다.")
+          .tag(USER)
+          .result(result)
+          .generateDocs()
+      );
+    }
+
+    @Test
+    void 비밀번호_변경_실패_비밀번호_틀림() throws Exception {
+      // given
+      var request = new EditPassword("wrongPassword", password);
+
+      // when
+      var result = post(Uri.of(endpoint), accessToken, request);
+
+      // then
+      validate(result, status().isBadRequest(), PASSWORD_ERROR);
+
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .tag(USER)
+          .result(result)
+          .generateDocs()
+      );
+    }
+
+    @Test
+    void 비밀번호_변경_실패_기존과_같은_비밀번호() throws Exception {
+      // given
+      var request = new EditPassword(password, password);
+
+      // when
+      var result = post(Uri.of(endpoint), accessToken, request);
+
+      // then
+      validate(result, status().isBadRequest(), SAME_PASSWORD_WITH_OLD);
+
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .tag(USER)
+          .result(result)
+          .generateDocs()
+      );
+    }
+  }
+
+  @Disabled
+  @Nested
+  class 로그인_테스트 {
+    private final String mobileEndpoint = "/user/login";
+    private final String webEndpoint = "/user/client-login";
+
+    @Test
+    void 웹_로그인_성공() throws Exception {
+      // given
+      var request = new UserRequest.Login(loginId, password);
+
+      // when
+      var result = post(Uri.of(webEndpoint), request);
+
+      // then
+      result.andExpect(status().isOk());
+
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .summary("웹 로그인 API")
+          .description("로그인 API 웹 버전입니다. 토큰과 쿠키를 반환합니다.")
+          .tag(USER)
+          .result(result)
+          .generateDocs()
+      );
+    }
+
+    @Test
+    void 웹_로그인_실패_잘못된_비밀번호() throws Exception {
+      // given
+      var request = new UserRequest.Login(loginId, "wrongPassword");
+
+      // when
+      var result = post(Uri.of(webEndpoint), request);
+
+      // then
+      validate(result, status().isBadRequest(), PASSWORD_ERROR);
+
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .tag(USER)
+          .result(result)
+          .generateDocs()
+      );
+    }
+
+    @Test
+    void 모바일_로그인_성공() throws Exception {
+      // given
+      var request = new UserRequest.Login(loginId, password);
+
+      // when
+      var result = post(Uri.of(mobileEndpoint), request);
+
+      // then
+      result.andExpect(status().isOk());
+
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .summary("모바일 로그인 API")
+          .description("로그인 API 모바일 버전입니다. 토큰을 반환합니다.")
+          .tag(USER)
+          .result(result)
+          .generateDocs()
+      );
+    }
+
+    @Test
+    void 모바일_로그인_실패_잘못된_비밀번호() throws Exception {
+      // given
+      var request = new UserRequest.Login(loginId, "wrongPassword");
+
+      // when
+      var result = post(Uri.of(webEndpoint), request);
+
+      // then
+      validate(result, status().isBadRequest(), PASSWORD_ERROR);
+
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .tag(USER)
+          .result(result)
+          .generateDocs()
+      );
+    }
+  }
+}

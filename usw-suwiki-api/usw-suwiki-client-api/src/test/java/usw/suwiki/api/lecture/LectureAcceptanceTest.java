@@ -1,6 +1,6 @@
 package usw.suwiki.api.lecture;
 
-import io.github.hejow.restdocs.document.RestDocument;
+import io.github.hejow.restdocs.generator.RestDocument;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,7 +60,6 @@ class LectureAcceptanceTest extends AcceptanceTestSupport {
       // docs
       result.andDo(
         RestDocument.builder()
-          .identifier("search-lecture-success")
           .summary("강의 통합 검색 API")
           .description("""
             강의 통합 검색 API 입니다. 검색에 사용되는 값은 다음과 같습니다.
@@ -112,7 +111,6 @@ class LectureAcceptanceTest extends AcceptanceTestSupport {
       // docs
       result.andDo(
         RestDocument.builder()
-          .identifier("search-lecture-cursor-success")
           .tag(Tag.LECTURE)
           .result(result)
           .generateDocs()
@@ -155,7 +153,6 @@ class LectureAcceptanceTest extends AcceptanceTestSupport {
     // docs
     result.andDo(
       RestDocument.builder()
-        .identifier("get-main-page-lecture-success")
         .summary("메인 페이지 강의 조회 API")
         .description("""
           메인 페이지에 사용되는 강의 조회 API 입니다. 검색에 사용되는 값은 다음과 같습니다.
@@ -205,7 +202,6 @@ class LectureAcceptanceTest extends AcceptanceTestSupport {
       // docs
       result.andDo(
         RestDocument.builder()
-          .identifier("get-lecture-success")
           .summary("[토큰 필요] 강의 조회 API")
           .description("강의 조회 API입니다. 토큰을 넣지 않는 경우 403 에러가 발생합니다.")
           .tag(Tag.LECTURE)
@@ -233,7 +229,6 @@ class LectureAcceptanceTest extends AcceptanceTestSupport {
       // docs
       result.andDo(
         RestDocument.builder()
-          .identifier("get-lecture-fail-restricted-user")
           .tag(Tag.LECTURE)
           .result(result)
           .generateDocs()
@@ -265,7 +260,6 @@ class LectureAcceptanceTest extends AcceptanceTestSupport {
     // docs
     result.andDo(
       RestDocument.builder()
-        .identifier("get-lecture-schedule-success")
         .summary("시간표용 강의 정보 조회 API")
         .description("""
           시간표용 강의 정보 조회 API 입니다. 최근 학기를 기준으로 조회됩니다. 사용할 수 있는 QueryString 은 다음과 같습니다.

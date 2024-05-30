@@ -22,7 +22,7 @@ public interface UserIsolationCRUDService {
 
   String updateIsolatedUserPassword(PasswordEncoder passwordEncoder, String email); // todo: refactoring 할 것
 
-  User awakeIsolated(UserCRUDService userCRUDService, String loginId);
+  User wakeIsolated(UserCRUDService userCRUDService, String loginId);
 
   void saveUserIsolation(User user);
 

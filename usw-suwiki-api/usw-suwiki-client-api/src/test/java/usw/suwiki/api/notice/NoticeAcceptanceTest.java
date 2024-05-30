@@ -1,6 +1,6 @@
 package usw.suwiki.api.notice;
 
-import io.github.hejow.restdocs.document.RestDocument;
+import io.github.hejow.restdocs.generator.RestDocument;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -8,11 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import usw.suwiki.common.pagination.PageOption;
 import usw.suwiki.common.test.annotation.AcceptanceTest;
 import usw.suwiki.common.test.support.AcceptanceTestSupport;
-import usw.suwiki.common.test.support.ResponseValidator;
 import usw.suwiki.common.test.support.Uri;
 import usw.suwiki.domain.notice.NoticeRepository;
 import usw.suwiki.domain.notice.dto.NoticeRequest;
-import usw.suwiki.domain.user.User;
 import usw.suwiki.test.fixture.Fixtures;
 
 import java.time.format.DateTimeFormatter;
@@ -36,12 +34,11 @@ public class NoticeAcceptanceTest extends AcceptanceTestSupport {
   @Autowired
   private Fixtures fixtures;
 
-  private User admin;
   private String accessToken;
 
   @BeforeEach
   public void setup() {
-    admin = fixtures.관리자_생성();
+    var admin = fixtures.관리자_생성();
     accessToken = fixtures.토큰_생성(admin);
   }
 
@@ -51,13 +48,6 @@ public class NoticeAcceptanceTest extends AcceptanceTestSupport {
 
     @Test
     void 공지_생성_성공() throws Exception {
-      // expected
-      var identifier = "create-notice";
-      var summary = "[Admin 토큰 필요] 공지 생성 API";
-      var description = "공지를 생성하는 API 입니다."; // todo
-      var tag = NOTICE;
-      var expectedResults = "success";
-
       // given
       var request = new NoticeRequest.Create("공지사항 제목", "공지사항 내용");
 
@@ -72,10 +62,17 @@ public class NoticeAcceptanceTest extends AcceptanceTestSupport {
         () -> assertThat(notices.get(0).getContent()).isEqualTo(request.getContent())
       );
 
-      // result validation
-      ResponseValidator.validateHtml(result, status().isOk(), expectedResults);
+      result.andExpect(status().isOk());
 
-      // Non DOCS
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .summary("[관리자 토큰 필요] 공지 생성 API")
+          .description("공지를 생성하는 API 입니다.")
+          .tag(NOTICE)
+          .result(result)
+          .generateDocs()
+      );
     }
 
     @Test
@@ -96,7 +93,6 @@ public class NoticeAcceptanceTest extends AcceptanceTestSupport {
       // docs
       result.andDo(
         RestDocument.builder()
-          .identifier("create-notice-fail-forbidden-user")
           .tag(NOTICE)
           .result(result)
           .generateDocs()
@@ -111,12 +107,6 @@ public class NoticeAcceptanceTest extends AcceptanceTestSupport {
 
     @Test
     void 공지_수정_성공() throws Exception {
-      // expected
-      var identifier = "update-notice";
-      var summary = "[Admin 토큰 필요] 공지 수정 API";
-      var description = "공지를 생성하는 API 입니다."; // todo
-      var expectedResults = "success";
-
       // given
       var notice = fixtures.공지사항_생성();
       var request = new NoticeRequest.Update("수정된 공지사항 제목", "수정된 공지사항 내용");
@@ -132,10 +122,17 @@ public class NoticeAcceptanceTest extends AcceptanceTestSupport {
         () -> assertThat(evaluatePosts.get(0).getContent()).isEqualTo(request.getContent())
       );
 
-      // result validation
-      ResponseValidator.validateHtml(result, status().isOk(), expectedResults);
+      result.andExpect(status().isOk());
 
-      // Non DOCS
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .summary("[관리자 토큰 필요] 공지 수정 API")
+          .description("공지를 생성하는 API 입니다.")
+          .tag(NOTICE)
+          .result(result)
+          .generateDocs()
+      );
     }
 
     @Test
@@ -158,7 +155,6 @@ public class NoticeAcceptanceTest extends AcceptanceTestSupport {
       // docs
       result.andDo(
         RestDocument.builder()
-          .identifier("update-notice-fail-forbidden-user")
           .tag(NOTICE)
           .result(result)
           .generateDocs()
@@ -182,7 +178,6 @@ public class NoticeAcceptanceTest extends AcceptanceTestSupport {
       // docs
       result.andDo(
         RestDocument.builder()
-          .identifier("update-notice-fail-not-exist-notice")
           .tag(NOTICE)
           .result(result)
           .generateDocs()
@@ -196,7 +191,7 @@ public class NoticeAcceptanceTest extends AcceptanceTestSupport {
     private final String paramKey = "noticeId";
 
     @Test
-    void 공자_삭제_성공() throws Exception {
+    void 공지_삭제_성공() throws Exception {
       // given
       var notice = fixtures.공지사항_생성();
 
@@ -212,8 +207,7 @@ public class NoticeAcceptanceTest extends AcceptanceTestSupport {
       // docs
       result.andDo(
         RestDocument.builder()
-          .identifier("delete-notice")
-          .summary("[Admin 토큰 필요] 공지 삭제 API")
+          .summary("[관리자 토큰 필요] 공지 삭제 API")
           .description("공지를 삭제하는 API 입니다.")
           .tag(NOTICE)
           .result(result)
@@ -237,7 +231,6 @@ public class NoticeAcceptanceTest extends AcceptanceTestSupport {
       // docs
       result.andDo(
         RestDocument.builder()
-          .identifier("delete-notice-fail-not-exist-notice")
           .tag(NOTICE)
           .result(result)
           .generateDocs()
@@ -262,7 +255,6 @@ public class NoticeAcceptanceTest extends AcceptanceTestSupport {
       // docs
       result.andDo(
         RestDocument.builder()
-          .identifier("delete-notice-fail-forbidden-user")
           .tag(NOTICE)
           .result(result)
           .generateDocs()
@@ -295,7 +287,6 @@ public class NoticeAcceptanceTest extends AcceptanceTestSupport {
       // docs
       result.andDo(
         RestDocument.builder()
-          .identifier("get-notice")
           .summary("[토큰 필요] 공지 조회 API")
           .description("공지를 조회하는 API 입니다.")
           .tag(NOTICE)
@@ -320,7 +311,6 @@ public class NoticeAcceptanceTest extends AcceptanceTestSupport {
       // docs
       result.andDo(
         RestDocument.builder()
-          .identifier("get-notice-fail-not-exist-notice")
           .tag(NOTICE)
           .result(result)
           .generateDocs()
@@ -354,7 +344,6 @@ public class NoticeAcceptanceTest extends AcceptanceTestSupport {
     // docs
     result.andDo(
       RestDocument.builder()
-        .identifier("get-notice-list-success")
         .summary("공지 리스트 조회 API")
         .description("공지 리스트 조회 API 입니다.")
         .tag(NOTICE)

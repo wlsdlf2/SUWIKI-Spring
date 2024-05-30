@@ -1,6 +1,6 @@
 package usw.suwiki.api.exam;
 
-import io.github.hejow.restdocs.document.RestDocument;
+import io.github.hejow.restdocs.generator.RestDocument;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -94,7 +94,6 @@ public class ExamPostAcceptanceTest extends AcceptanceTestSupport {
       // docs
       result.andDo(
         RestDocument.builder()
-          .identifier("create-exam-post")
           .summary("[토큰 필요] 시험 평가 생성 API")
           .description("시험 평가를 생성하는 API 입니다.")
           .tag(EXAM_POST)
@@ -122,7 +121,6 @@ public class ExamPostAcceptanceTest extends AcceptanceTestSupport {
       // docs
       result.andDo(
         RestDocument.builder()
-          .identifier("create-exam-post-fail-already-written")
           .tag(EXAM_POST)
           .result(result)
           .generateDocs()
@@ -146,7 +144,6 @@ public class ExamPostAcceptanceTest extends AcceptanceTestSupport {
       // docs
       result.andDo(
         RestDocument.builder()
-          .identifier("create-exam-post-fail-wrong-parameter-lecture-id")
           .tag(EXAM_POST)
           .result(result)
           .generateDocs()
@@ -186,7 +183,6 @@ public class ExamPostAcceptanceTest extends AcceptanceTestSupport {
       // docs
       result.andDo(
         RestDocument.builder()
-          .identifier("update-exam-post")
           .summary("[토큰 필요] 시험 평가 수정 API")
           .description("시험 평가를 수정하는 API 입니다.")
           .tag(EXAM_POST)
@@ -212,7 +208,6 @@ public class ExamPostAcceptanceTest extends AcceptanceTestSupport {
       // docs
       result.andDo(
         RestDocument.builder()
-          .identifier("update-exam-post-fail-wrong-parameter-exam-id")
           .tag(EXAM_POST)
           .result(result)
           .generateDocs()
@@ -239,7 +234,6 @@ public class ExamPostAcceptanceTest extends AcceptanceTestSupport {
       // docs
       result.andDo(
         RestDocument.builder()
-          .identifier("update-exam-post-fail-not-author")
           .tag(EXAM_POST)
           .result(result)
           .generateDocs()
@@ -271,7 +265,6 @@ public class ExamPostAcceptanceTest extends AcceptanceTestSupport {
       // docs
       result.andDo(
         RestDocument.builder()
-          .identifier("delete-exam-post")
           .summary("[토큰 필요] 시험 평가 삭제 API")
           .description("시험 평가를 삭제하는 API 입니다.")
           .tag(EXAM_POST)
@@ -297,7 +290,6 @@ public class ExamPostAcceptanceTest extends AcceptanceTestSupport {
       // docs
       result.andDo(
         RestDocument.builder()
-          .identifier("delete-exam-post-fail-lack-user-point")
           .tag(EXAM_POST)
           .result(result)
           .generateDocs()
@@ -320,7 +312,6 @@ public class ExamPostAcceptanceTest extends AcceptanceTestSupport {
       // docs
       result.andDo(
         RestDocument.builder()
-          .identifier("delete-exam-post-fail-wrong-parameter-exam-id")
           .tag(EXAM_POST)
           .result(result)
           .generateDocs()
@@ -345,7 +336,6 @@ public class ExamPostAcceptanceTest extends AcceptanceTestSupport {
       // docs
       result.andDo(
         RestDocument.builder()
-          .identifier("delete-exam-post-fail-not-author")
           .tag(EXAM_POST)
           .result(result)
           .generateDocs()
@@ -384,7 +374,6 @@ public class ExamPostAcceptanceTest extends AcceptanceTestSupport {
       // docs
       result.andDo(
         RestDocument.builder()
-          .identifier("purchase-exam-post")
           .summary("[토큰 필요] 시험 평가 구매 API")
           .description("시험 평가를 구매하는 API 입니다.")
           .tag(EXAM_POST)
@@ -409,7 +398,6 @@ public class ExamPostAcceptanceTest extends AcceptanceTestSupport {
       // docs
       result.andDo(
         RestDocument.builder()
-          .identifier("purchase-exam-post-fail-lack-user-point")
           .tag(EXAM_POST)
           .result(result)
           .generateDocs()
@@ -433,7 +421,6 @@ public class ExamPostAcceptanceTest extends AcceptanceTestSupport {
       // docs
       result.andDo(
         RestDocument.builder()
-          .identifier("purchase-exam-post-fail-already-purchase")
           .tag(EXAM_POST)
           .result(result)
           .generateDocs()
@@ -473,7 +460,6 @@ public class ExamPostAcceptanceTest extends AcceptanceTestSupport {
     // docs
     result.andDo(
       RestDocument.builder()
-        .identifier("get-exam_post-written-by-me-success")
         .summary("내가 쓴 시험 평가 조회 API")
         .description("")
         .tag(EXAM_POST)
@@ -505,7 +491,6 @@ public class ExamPostAcceptanceTest extends AcceptanceTestSupport {
       // docs
       result.andDo(
         RestDocument.builder()
-          .identifier("get-exam_post-purchase-history-success")
           .summary("[토큰 필요] 시험 평가 구매 이력 조회 API")
           .description("")
           .tag(EXAM_POST)
@@ -558,7 +543,6 @@ public class ExamPostAcceptanceTest extends AcceptanceTestSupport {
       // docs
       result.andDo(
         RestDocument.builder()
-          .identifier("get-exam_posts-success")
           .summary("시험 평가 리스트 조회 API")
           .description("""
             파라미터는 다음과 같습니다.

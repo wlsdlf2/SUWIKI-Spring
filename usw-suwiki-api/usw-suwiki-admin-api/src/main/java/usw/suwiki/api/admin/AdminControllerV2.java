@@ -15,6 +15,7 @@ import usw.suwiki.domain.report.EvaluatePostReport;
 import usw.suwiki.domain.report.ExamPostReport;
 import usw.suwiki.domain.user.Role;
 import usw.suwiki.domain.user.dto.UserAdminResponseDto;
+import usw.suwiki.domain.user.dto.UserRequest;
 import usw.suwiki.domain.user.service.AdminBusinessService;
 import usw.suwiki.statistics.annotation.Statistics;
 
@@ -27,7 +28,6 @@ import static usw.suwiki.domain.user.dto.UserAdminRequestDto.EvaluatePostRestric
 import static usw.suwiki.domain.user.dto.UserAdminRequestDto.ExamPostBlacklistForm;
 import static usw.suwiki.domain.user.dto.UserAdminRequestDto.ExamPostNoProblemForm;
 import static usw.suwiki.domain.user.dto.UserAdminRequestDto.ExamPostRestrictForm;
-import static usw.suwiki.domain.user.dto.UserRequestDto.LoginForm;
 import static usw.suwiki.statistics.log.MonitorTarget.ADMIN;
 
 @RestController
@@ -39,8 +39,8 @@ public class AdminControllerV2 {
   @Statistics(ADMIN)
   @PostMapping("/login")
   @ResponseStatus(OK)
-  public Map<String, String> administratorLogin(@Valid @RequestBody LoginForm loginForm) {
-    return adminBusinessService.adminLogin(loginForm);
+  public Map<String, String> administratorLogin(@Valid @RequestBody UserRequest.Login login) {
+    return adminBusinessService.adminLogin(login);
   }
 
   @Authorize(Role.ADMIN)

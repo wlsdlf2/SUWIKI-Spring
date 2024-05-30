@@ -18,7 +18,7 @@ dependencies {
   testFixturesApi("com.epages:restdocs-api-spec-mockmvc:${restdocsApiSpecVersion}")
   testFixturesApi('org.springframework.restdocs:spring-restdocs-mockmvc')
   testFixturesApi('org.springframework.security:spring-security-test')
-  testFixturesApi('io.github.hejow:easy-restdocs-generator:0.0.3')
+  testFixturesApi('io.github.hejow:easy-restdocs-generator:0.0.8')
 
   testFixturesRuntimeOnly('com.h2database:h2')
 }

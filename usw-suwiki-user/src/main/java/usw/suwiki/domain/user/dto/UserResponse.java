@@ -6,10 +6,10 @@ import usw.suwiki.domain.user.User;
 
 import java.time.LocalDateTime;
 
-public final class UserResponseDto {
+public final class UserResponse {
 
   @Builder
-  public record UserInformationResponseForm(
+  public record UserInformationResponse(
     String loginId,
     String email,
     Integer point,
@@ -17,7 +17,7 @@ public final class UserResponseDto {
     Integer writtenExam,
     Integer viewExam
   ) {
-    public static UserInformationResponseForm toMyPageResponse(User user) {
+    public static UserInformationResponse toMyPageResponse(User user) {
       return builder()
         .loginId(user.getLoginId())
         .email(user.getEmail())
@@ -30,7 +30,7 @@ public final class UserResponseDto {
   }
 
   @Builder
-  public record LoadMyRestrictedReasonResponseForm(
+  public record LoadMyRestrictedReasonResponse(
     String restrictedReason,
     String judgement,
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")
@@ -41,7 +41,7 @@ public final class UserResponseDto {
   }
 
   @Builder
-  public record LoadMyBlackListReasonResponseForm(
+  public record LoadMyBlackListReasonResponse(
     String blackListReason,
     String judgement,
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")

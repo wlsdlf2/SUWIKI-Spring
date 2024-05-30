@@ -13,7 +13,7 @@ import usw.suwiki.auth.core.annotation.Authenticated;
 import usw.suwiki.auth.core.annotation.Authorize;
 import usw.suwiki.common.response.ResponseForm;
 import usw.suwiki.domain.lecture.major.service.FavoriteMajorServiceV2;
-import usw.suwiki.domain.user.dto.FavoriteSaveDto;
+import usw.suwiki.domain.user.dto.MajorRequest;
 import usw.suwiki.statistics.annotation.Statistics;
 
 import static org.springframework.http.HttpStatus.OK;
@@ -38,8 +38,8 @@ public class FavoriteMajorController {
   @Statistics(USER)
   @PostMapping
   @ResponseStatus(OK)
-  public String create(@Authenticated Long userId, @RequestBody FavoriteSaveDto favoriteSaveDto) {
-    favoriteMajorServiceV2.save(userId, favoriteSaveDto.getMajorType());
+  public String create(@Authenticated Long userId, @RequestBody MajorRequest majorRequest) {
+    favoriteMajorServiceV2.save(userId, majorRequest.getMajorType());
     return "success";
   }
 

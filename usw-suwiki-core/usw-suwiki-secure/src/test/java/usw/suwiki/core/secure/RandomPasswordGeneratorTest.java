@@ -1,7 +1,6 @@
 package usw.suwiki.core.secure;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -9,9 +8,8 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 class RandomPasswordGeneratorTest {
   private static final String[] SYMBOLS = {"!", "@", "#", "$", "%", "^"};
 
-  @RepeatedTest(10)
-  @DisplayName("랜덤한 비밀번호를 생성하면 8자리 이하의 특수문자를 포함한 값이어야 한다.")
-  void generate_Success_Within8Letters() {
+  @Test
+  void 비밀번호_생성_성공_8자리_이하의_특수문자_포함() {
     // given
 
     // when

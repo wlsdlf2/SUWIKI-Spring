@@ -9,12 +9,11 @@ import usw.suwiki.auth.token.RefreshToken;
 import usw.suwiki.auth.token.service.ConfirmationTokenCRUDService;
 import usw.suwiki.auth.token.service.RefreshTokenService;
 import usw.suwiki.core.exception.AccountException;
-import usw.suwiki.core.exception.ExceptionType;
 import usw.suwiki.core.mail.EmailSender;
 import usw.suwiki.core.secure.PasswordEncoder;
 import usw.suwiki.core.secure.TokenAgent;
 import usw.suwiki.domain.user.User;
-import usw.suwiki.domain.user.dto.FavoriteSaveDto;
+import usw.suwiki.domain.user.dto.MajorRequest;
 
 import java.util.HashMap;
 import java.util.List;
@@ -25,12 +24,18 @@ import static usw.suwiki.common.response.ApiResponseFactory.overlapFalseFlag;
 import static usw.suwiki.common.response.ApiResponseFactory.overlapTrueFlag;
 import static usw.suwiki.common.response.ApiResponseFactory.successFlag;
 import static usw.suwiki.core.exception.ExceptionType.EMAIL_NOT_AUTHED;
+import static usw.suwiki.core.exception.ExceptionType.IS_NOT_EMAIL_FORM;
+import static usw.suwiki.core.exception.ExceptionType.LOGIN_ID_OR_EMAIL_OVERLAP;
+import static usw.suwiki.core.exception.ExceptionType.PASSWORD_ERROR;
+import static usw.suwiki.core.exception.ExceptionType.USER_NOT_EXISTS;
+import static usw.suwiki.core.exception.ExceptionType.USER_NOT_FOUND_BY_EMAIL;
+import static usw.suwiki.core.exception.ExceptionType.USER_NOT_FOUND_BY_LOGINID;
 import static usw.suwiki.core.mail.MailType.EMAIL_AUTH;
 import static usw.suwiki.core.mail.MailType.FIND_ID;
 import static usw.suwiki.core.mail.MailType.FIND_PASSWORD;
-import static usw.suwiki.domain.user.dto.UserResponseDto.LoadMyBlackListReasonResponseForm;
-import static usw.suwiki.domain.user.dto.UserResponseDto.LoadMyRestrictedReasonResponseForm;
-import static usw.suwiki.domain.user.dto.UserResponseDto.UserInformationResponseForm;
+import static usw.suwiki.domain.user.dto.UserResponse.LoadMyBlackListReasonResponse;
+import static usw.suwiki.domain.user.dto.UserResponse.LoadMyRestrictedReasonResponse;
+import static usw.suwiki.domain.user.dto.UserResponse.UserInformationResponse;
 
 @Service
 @Transactional
@@ -104,7 +109,7 @@ public class UserBusinessService {
     user.eraseExamPost();
   }
 
-  public Map<String, Boolean> executeJoin(String loginId, String password, String email) {
+  public Map<String, Boolean> join(String loginId, String password, String email) {
     blacklistDomainService.isUserInBlackListThatRequestJoin(email);
 
     if (userCRUDService.loadWrappedUserFromLoginId(loginId).isPresent() ||
@@ -112,11 +117,11 @@ public class UserBusinessService {
         userCRUDService.loadWrappedUserFromEmail(email).isPresent() ||
         userIsolationCRUDService.isIsolatedByEmail(email)
     ) {
-      throw new AccountException(ExceptionType.LOGIN_ID_OR_EMAIL_OVERLAP);
+      throw new AccountException(LOGIN_ID_OR_EMAIL_OVERLAP);
     }
 
     if (!email.contains(MAIL_FORM)) {
-      throw new AccountException(ExceptionType.IS_NOT_EMAIL_FORM);
+      throw new AccountException(IS_NOT_EMAIL_FORM);
     }
 
     User user = User.init(loginId, passwordEncoder.encode(password), email);
@@ -140,7 +145,7 @@ public class UserBusinessService {
       emailSender.send(email, FIND_ID, isolatedLoginId.get());
       return successFlag();
     }
-    throw new AccountException(ExceptionType.USER_NOT_EXISTS);
+    throw new AccountException(USER_NOT_EXISTS);
   }
 
   // todo: isoloation user table부터 확인 후 user table 확인하도록 수정
@@ -148,12 +153,12 @@ public class UserBusinessService {
     Optional<User> userByLoginId = userCRUDService.loadWrappedUserFromLoginId(loginId);
 
     if (userByLoginId.isEmpty()) {
-      throw new AccountException(ExceptionType.USER_NOT_FOUND_BY_LOGINID);
+      throw new AccountException(USER_NOT_FOUND_BY_LOGINID);
     }
 
     Optional<User> userByEmail = userCRUDService.loadWrappedUserFromEmail(email);
     if (userByEmail.isEmpty()) {
-      throw new AccountException(ExceptionType.USER_NOT_FOUND_BY_EMAIL);
+      throw new AccountException(USER_NOT_FOUND_BY_EMAIL);
     }
 
     if (userByLoginId.equals(userByEmail)) {
@@ -165,7 +170,7 @@ public class UserBusinessService {
       emailSender.send(email, FIND_PASSWORD, newPassword);
       return successFlag();
     }
-    throw new AccountException(ExceptionType.USER_NOT_FOUND_BY_EMAIL);
+    throw new AccountException(USER_NOT_FOUND_BY_EMAIL);
   }
 
   public Map<String, String> login(String loginId, String inputPassword) {
@@ -186,39 +191,36 @@ public class UserBusinessService {
         user.login();
         return generateJwt(user);
       }
-    } else if (userIsolationCRUDService.isLoginableIsolatedUser(loginId, inputPassword, passwordEncoder)) {
-      User user = userIsolationCRUDService.awakeIsolated(userCRUDService, loginId);
+    }
+
+    if (userIsolationCRUDService.isLoginableIsolatedUser(loginId, inputPassword, passwordEncoder)) {
+      User user = userIsolationCRUDService.wakeIsolated(userCRUDService, loginId);
       return generateJwt(user);
     }
-    throw new AccountException(ExceptionType.PASSWORD_ERROR);
+
+    throw new AccountException(PASSWORD_ERROR);
   }
 
 
   public Map<String, Boolean> editPassword(Long userId, String prePassword, String newPassword) {
-    User user = userCRUDService.loadUserFromUserIdx(userId);
-
-    if (!passwordEncoder.matches(prePassword, user.getPassword())) {
-      throw new AccountException(ExceptionType.PASSWORD_ERROR);
-    } else if (prePassword.equals(newPassword)) {
-      throw new AccountException(ExceptionType.PASSWORD_NOT_CHANGED);
-    }
-    user.changePassword(passwordEncoder, newPassword);
+    var user = userCRUDService.loadUserFromUserIdx(userId);
+    user.changePassword(passwordEncoder, prePassword, newPassword);
     return successFlag();
   }
 
-  public UserInformationResponseForm loadMyPage(Long userId) {
+  public UserInformationResponse loadMyPage(Long userId) {
     User user = userCRUDService.loadUserFromUserIdx(userId);
-    return UserInformationResponseForm.toMyPageResponse(user);
+    return UserInformationResponse.toMyPageResponse(user);
   }
 
-  public Map<String, String> executeJWTRefreshForWebClient(Cookie requestRefreshCookie) {
+  public Map<String, String> reissueWeb(Cookie requestRefreshCookie) {
     String payload = requestRefreshCookie.getValue();
     RefreshToken refreshToken = refreshTokenService.loadByPayload(payload);
     User user = userCRUDService.loadUserFromUserIdx(refreshToken.getUserIdx());
     return refreshJwt(user, payload);
   }
 
-  public Map<String, String> executeJWTRefreshForMobileClient(String payload) {
+  public Map<String, String> reissueMobile(String payload) {
     RefreshToken refreshToken = refreshTokenService.loadByPayload(payload);
     User user = userCRUDService.loadUserFromUserIdx(refreshToken.getUserIdx());
     return refreshJwt(user, refreshToken.getPayload());
@@ -228,7 +230,7 @@ public class UserBusinessService {
     User user = userCRUDService.loadUserFromUserIdx(userId);
 
     if (!user.isPasswordEquals(passwordEncoder, inputPassword)) {
-      throw new AccountException(ExceptionType.PASSWORD_ERROR);
+      throw new AccountException(PASSWORD_ERROR);
     }
 
     favoriteMajorService.clear(user.getId());
@@ -241,18 +243,18 @@ public class UserBusinessService {
     return successFlag();
   }
 
-  public List<LoadMyBlackListReasonResponseForm> executeLoadBlackListReason(Long id) {
+  public List<LoadMyBlackListReasonResponse> executeLoadBlackListReason(Long id) {
     User requestUser = userCRUDService.loadUserFromUserIdx(id);
     return blacklistDomainCRUDService.loadAllBlacklistLog(requestUser.getId());
   }
 
-  public List<LoadMyRestrictedReasonResponseForm> executeLoadRestrictedReason(Long userId) {
+  public List<LoadMyRestrictedReasonResponse> executeLoadRestrictedReason(Long userId) {
     User requestUser = userCRUDService.loadUserFromUserIdx(userId);
     return restrictingUserCRUDService.loadRestrictedLog(requestUser.getId());
   }
 
-  public void saveFavoriteMajor(Long userId, FavoriteSaveDto favoriteSaveDto) {
-    favoriteMajorService.save(userId, favoriteSaveDto.getMajorType());
+  public void saveFavoriteMajor(Long userId, MajorRequest majorRequest) {
+    favoriteMajorService.save(userId, majorRequest.getMajorType());
   }
 
   public void deleteFavoriteMajor(Long userId, String majorType) {
@@ -265,7 +267,7 @@ public class UserBusinessService {
 
   private void rollBackUserFromSleeping(Long userIdx, String loginId, String password, String email) {
     User user = userCRUDService.loadUserFromUserIdx(userIdx);
-    user.awake(loginId, password, email);
+    user.wake(loginId, password, email);
   }
 
   private Map<String, String> generateJwt(User user) {

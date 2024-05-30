@@ -20,6 +20,8 @@ import usw.suwiki.infra.jpa.BaseEntity;
 
 import java.time.LocalDateTime;
 
+import static usw.suwiki.core.exception.ExceptionType.PASSWORD_ERROR;
+import static usw.suwiki.core.exception.ExceptionType.SAME_PASSWORD_WITH_OLD;
 import static usw.suwiki.core.exception.ExceptionType.USER_POINT_LACK;
 
 @Entity
@@ -114,7 +116,7 @@ public class User extends BaseEntity {
     this.email = null;
   }
 
-  public void awake(String loginId, String password, String email) {
+  public void wake(String loginId, String password, String email) {
     this.loginId = loginId;
     this.password = password;
     this.email = email;
@@ -140,18 +142,32 @@ public class User extends BaseEntity {
     return this.role == Role.ADMIN;
   }
 
-  public void changePassword(PasswordEncoder passwordEncoder, String newPassword) {
+  public void changePassword(PasswordEncoder passwordEncoder, String prePassword, String newPassword) {
+    validatePassword(passwordEncoder, prePassword);
+    validateDuplicatedPassword(passwordEncoder, newPassword);
     this.password = passwordEncoder.encode(newPassword);
+  }
+
+  private void validatePassword(PasswordEncoder passwordEncoder, String rawPassword) {
+    if (!isPasswordEquals(passwordEncoder, rawPassword)) {
+      throw new AccountException(PASSWORD_ERROR);
+    }
+  }
+
+  private void validateDuplicatedPassword(PasswordEncoder passwordEncoder, String newPassword) {
+    if (isPasswordEquals(passwordEncoder, newPassword)) {
+      throw new AccountException(SAME_PASSWORD_WITH_OLD);
+    }
   }
 
   public String resetPassword(PasswordEncoder passwordEncoder) {
     String newPassword = RandomPasswordGenerator.generate();
     this.password = passwordEncoder.encode(newPassword);
-    return newPassword;
+    return password;
   }
 
-  public boolean isPasswordEquals(PasswordEncoder passwordEncoder, String inputPassword) {
-    return passwordEncoder.matches(inputPassword, this.password);
+  public boolean isPasswordEquals(PasswordEncoder passwordEncoder, String rawPassword) {
+    return passwordEncoder.matches(rawPassword, this.password);
   }
 
   public void login() {

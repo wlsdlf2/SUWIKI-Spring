@@ -28,7 +28,7 @@ import static usw.suwiki.domain.user.dto.UserAdminRequestDto.ExamPostBlacklistFo
 import static usw.suwiki.domain.user.dto.UserAdminRequestDto.ExamPostNoProblemForm;
 import static usw.suwiki.domain.user.dto.UserAdminRequestDto.ExamPostRestrictForm;
 import static usw.suwiki.domain.user.dto.UserAdminResponseDto.LoadAllReportedPostForm;
-import static usw.suwiki.domain.user.dto.UserRequestDto.LoginForm;
+import static usw.suwiki.domain.user.dto.UserRequest.Login;
 
 @Service
 @Transactional
@@ -48,9 +48,9 @@ public class AdminBusinessService {
 
   private final TokenAgent tokenAgent;
 
-  public Map<String, String> adminLogin(LoginForm loginForm) {
-    User user = userCRUDService.loadUserFromLoginId(loginForm.loginId());
-    if (user.isPasswordEquals(passwordEncoder, loginForm.password())) {
+  public Map<String, String> adminLogin(Login login) {
+    User user = userCRUDService.loadUserFromLoginId(login.loginId());
+    if (user.isPasswordEquals(passwordEncoder, login.password())) {
       if (user.isAdmin()) {
         final long userCount = userCRUDService.countAllUsers();
         final long userIsolationCount = userIsolationCRUDService.countAllIsolatedUsers();

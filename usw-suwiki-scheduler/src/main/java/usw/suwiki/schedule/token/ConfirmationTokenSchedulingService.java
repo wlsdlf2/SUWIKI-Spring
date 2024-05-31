@@ -18,21 +18,21 @@ import java.util.List;
 @Transactional
 @RequiredArgsConstructor
 public class ConfirmationTokenSchedulingService {
-    private final UserCRUDService userCRUDService;
-    private final ConfirmationTokenCRUDService confirmationTokenCRUDService;
+  private final UserCRUDService userCRUDService;
+  private final ConfirmationTokenCRUDService confirmationTokenCRUDService;
 
-    @Scheduled(cron = "0 0 * * * * ")
-    public void isNotConfirmedEmail() {
-        log.info("{} - 이메일 인증을 수행하지 않은 유저 검증 시작", LocalDateTime.now());
-        List<ConfirmationToken> confirmationTokens =
-          confirmationTokenCRUDService.loadNotConfirmedTokens(LocalDateTime.now().minusMinutes(30));
+  @Scheduled(cron = "0 0 * * * * ")
+  public void isNotConfirmedEmail() {
+    log.info("{} - 이메일 인증을 수행하지 않은 유저 검증 시작", LocalDateTime.now());
+    List<ConfirmationToken> confirmationTokens =
+      confirmationTokenCRUDService.loadNotConfirmedTokens(LocalDateTime.now().minusMinutes(30));
 
-        for (ConfirmationToken confirmationToken : confirmationTokens) {
-            User targetUser = userCRUDService.loadUserFromUserIdx(confirmationToken.getUserIdx());
-            confirmationTokenCRUDService.deleteFromId(confirmationToken.getId());
-            userCRUDService.deleteFromUserIdx(targetUser.getId());
-        }
-
-        log.info("{} - 이메일 인증을 수행하지 않은 유저 검증 종료", LocalDateTime.now());
+    for (ConfirmationToken confirmationToken : confirmationTokens) {
+      User targetUser = userCRUDService.loadUserById(confirmationToken.getUserIdx());
+      confirmationTokenCRUDService.deleteFromId(confirmationToken.getId());
+      userCRUDService.deleteById(targetUser.getId());
     }
+
+    log.info("{} - 이메일 인증을 수행하지 않은 유저 검증 종료", LocalDateTime.now());
+  }
 }

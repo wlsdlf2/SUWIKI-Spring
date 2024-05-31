@@ -25,9 +25,8 @@ public enum ExceptionType {
   /**
    * Domain : User
    */
-  IS_NOT_EMAIL_FORM("USER003", "올바른 이메일 형식이 아닙니다.", BAD_REQUEST),
-  USER_NOT_EXISTS("USER004", "사용자가 존재하지 않습니다.", BAD_REQUEST),
-  USER_NOT_FOUND("USER004", "사용자가 존재하지 않습니다.", NOT_FOUND),     // ver 2. status code 400 -> 404
+  INVALID_EMAIL_FORMAT("USER003", "올바른 이메일 형식이 아닙니다.", BAD_REQUEST),
+  USER_NOT_FOUND("USER004", "사용자가 존재하지 않습니다.", NOT_FOUND),
   PASSWORD_ERROR("USER005", "비밀번호를 확인해주세요.", BAD_REQUEST),
   USER_POINT_LACK("USER006", "유저 포인트가 부족합니다.", BAD_REQUEST),
   LOGIN_REQUIRED("USER007", "로그인이 필요합니다.", FORBIDDEN),

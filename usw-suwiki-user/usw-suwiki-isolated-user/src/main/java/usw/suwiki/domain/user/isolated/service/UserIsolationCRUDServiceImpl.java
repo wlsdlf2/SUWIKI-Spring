@@ -58,23 +58,23 @@ class UserIsolationCRUDServiceImpl implements UserIsolationCRUDService {
   public String updateIsolatedUserPassword(PasswordEncoder passwordEncoder, String email) {
     return userIsolationRepository.findByEmail(email)
       .map(it -> it.updateRandomPassword(passwordEncoder))
-      .orElseThrow(() -> new AccountException(ExceptionType.USER_NOT_EXISTS));
+      .orElseThrow(() -> new AccountException(ExceptionType.USER_NOT_FOUND));
   }
 
   @Override
   public boolean isLoginableIsolatedUser(String loginId, String inputPassword, PasswordEncoder passwordEncoder) {
     return userIsolationRepository.findByLoginId(loginId)
       .map(it -> it.validatePassword(passwordEncoder, inputPassword))
-      .orElseThrow(() -> new AccountException(ExceptionType.USER_NOT_EXISTS));
+      .orElseThrow(() -> new AccountException(ExceptionType.USER_NOT_FOUND));
   }
 
   @Override
   @Transactional
   public User wakeIsolated(UserCRUDService userCRUDService, String loginId) {
     UserIsolation userIsolation = userIsolationRepository.findByLoginId(loginId)
-      .orElseThrow(() -> new AccountException(ExceptionType.USER_NOT_EXISTS));
+      .orElseThrow(() -> new AccountException(ExceptionType.USER_NOT_FOUND));
 
-    User user = userCRUDService.loadUserFromUserIdx(userIsolation.getUserIdx());
+    User user = userCRUDService.loadUserById(userIsolation.getUserIdx());
     user.wake(userIsolation.getLoginId(), userIsolation.getPassword(), userIsolation.getEmail());
 
     userIsolationRepository.deleteByLoginId(loginId);

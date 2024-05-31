@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static usw.suwiki.domain.user.dto.UserResponse.LoadMyBlackListReasonResponse;
+import static usw.suwiki.domain.user.dto.UserResponse.BlackedReason;
 
 @Service
 @Transactional
@@ -29,25 +29,25 @@ class BlacklistDomainCRUDServiceImpl implements BlacklistDomainCRUDService {
   private final PasswordEncoder passwordEncoder;
 
   @Override
-  public List<LoadMyBlackListReasonResponse> loadAllBlacklistLog(Long userIdx) {
+  public List<BlackedReason> loadAllBlacklistLog(Long userIdx) {
     Optional<BlacklistDomain> loadedDomain = blacklistRepository.findByUserIdx(userIdx);
-    List<LoadMyBlackListReasonResponse> finalResultForm = new ArrayList<>();
+    List<BlackedReason> finalResultForm = new ArrayList<>();
     if (loadedDomain.isPresent()) {
-      LoadMyBlackListReasonResponse loadMyBlackListReasonResponse =
-        LoadMyBlackListReasonResponse.builder()
+      BlackedReason blackedReason =
+        BlackedReason.builder()
           .blackListReason(loadedDomain.get().getBannedReason())
           .judgement(loadedDomain.get().getJudgement())
           .createdAt(loadedDomain.get().getCreateDate())
           .expiredAt(loadedDomain.get().getExpiredAt())
           .build();
-      finalResultForm.add(loadMyBlackListReasonResponse);
+      finalResultForm.add(blackedReason);
     }
     return finalResultForm;
   }
 
   @Override
   public void saveBlackListDomain(Long userIdx, Long bannedPeriod, String bannedReason, String judgement) {
-    User user = userCRUDService.loadUserFromUserIdx(userIdx);
+    User user = userCRUDService.loadUserById(userIdx);
     user.restrict();
 
     String hashTargetEmail = passwordEncoder.encode(user.getEmail());

@@ -29,10 +29,10 @@ public class RefreshTokenControllerV2 {
   @PostMapping("/web-client/refresh")
   @ResponseStatus(OK)
   public ResponseForm clientTokenRefresh(
-    @CookieValue(value = "refreshToken") Cookie requestRefreshCookie,
+    @CookieValue(value = "refreshToken") Cookie cookie,
     HttpServletResponse response
   ) {
-    Map<String, String> tokenPair = userBusinessService.reissueWeb(requestRefreshCookie);
+    Map<String, String> tokenPair = userBusinessService.reissue(cookie.getValue());
 
     Cookie refreshCookie = new Cookie("refreshToken", tokenPair.get("RefreshToken"));
     refreshCookie.setMaxAge(14 * 24 * 60 * 60);
@@ -49,6 +49,6 @@ public class RefreshTokenControllerV2 {
   @PostMapping("/mobile-client/refresh")
   @ResponseStatus(OK)
   public ResponseForm tokenRefresh(@RequestHeader String Authorization) {
-    return ResponseForm.success(userBusinessService.reissueMobile(Authorization));
+    return ResponseForm.success(userBusinessService.reissue(Authorization));
   }
 }

@@ -23,7 +23,7 @@ public class RestrictingUserSchedulingService {
   public void isUnrestrictedTarget() {
     log.info("{} - 정지 유저 출소 시작", LocalDateTime.now());
     for (Long restrictedId : restrictingUserService.loadAllRestrictedUntilNow()) {
-      User user = userCRUDService.loadUserFromUserIdx(restrictedId);
+      User user = userCRUDService.loadUserById(restrictedId);
       user.released();
       restrictingUserService.releaseByUserId(restrictedId);
     }

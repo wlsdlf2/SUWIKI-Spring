@@ -8,12 +8,9 @@ import usw.suwiki.domain.evaluatepost.LectureRating;
 import usw.suwiki.domain.lecture.Lecture;
 
 import java.util.List;
-import java.util.Random;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class EvaluatePostFixture {
-  private static final Random RANDOM = new Random();
-
   public static EvaluatePost one(Long userId, Lecture lecture) {
     return new EvaluatePost(userId, "강의 평가", lectureInfo(lecture), lectureRating());
   }

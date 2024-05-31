@@ -175,4 +175,13 @@ public final class Fixtures {
   public ConfirmationToken 가입_인증_토큰_생성(Long userId) {
     return confirmationTokenRepository.save(new ConfirmationToken(userId));
   }
+
+  public ConfirmationToken 가입_인증된_토큰_생성(Long userId) {
+    var token = new ConfirmationToken(userId).confirm();
+    return confirmationTokenRepository.save(token);
+  }
+
+  public String 리프레시_토큰_생성(Long userId) {
+    return tokenAgent.login(userId);
+  }
 }

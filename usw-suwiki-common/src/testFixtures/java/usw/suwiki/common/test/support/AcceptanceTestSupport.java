@@ -1,6 +1,7 @@
 package usw.suwiki.common.test.support;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,7 +33,6 @@ public abstract class AcceptanceTestSupport {
 
   @Autowired
   private ObjectMapper objectMapper;
-
   @Autowired
   private MockMvc mockMvc;
 
@@ -50,6 +50,17 @@ public abstract class AcceptanceTestSupport {
 
   public ResultActions getHtml(Uri uri, Pair... parameters) throws Exception {
     return performNonJson(uri, null, parameters);
+  }
+
+  // for auth
+  public ResultActions post(Uri uri, Cookie cookie) throws Exception {
+    return mockMvc.perform(RestDocumentationRequestBuilders.post(uri.resource)
+      .cookie(cookie)
+      .contentType(MediaType.APPLICATION_JSON));
+  }
+
+  public ResultActions post(Uri uri, String accessToken) throws Exception {
+    return perform(uri, HttpMethod.POST, accessToken, null);
   }
 
   public ResultActions post(Uri uri, Object requestBody) throws Exception {

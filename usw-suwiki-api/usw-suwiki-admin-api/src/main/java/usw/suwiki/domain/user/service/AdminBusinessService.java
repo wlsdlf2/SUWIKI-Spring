@@ -49,7 +49,7 @@ public class AdminBusinessService {
   private final TokenAgent tokenAgent;
 
   public Map<String, String> adminLogin(Login login) {
-    User user = userCRUDService.loadUserFromLoginId(login.loginId());
+    User user = userCRUDService.loadByLoginId(login.loginId());
     if (user.isPasswordEquals(passwordEncoder, login.password())) {
       if (user.isAdmin()) {
         final long userCount = userCRUDService.countAllUsers();
@@ -157,12 +157,12 @@ public class AdminBusinessService {
   }
 
   private void plusRestrictCount(Long userId) {
-    User user = userCRUDService.loadUserFromUserIdx(userId);
+    User user = userCRUDService.loadUserById(userId);
     user.reported();
   }
 
   private void plusReportingUserPoint(Long reportingUserId) {
-    User user = userCRUDService.loadUserFromUserIdx(reportingUserId);
+    User user = userCRUDService.loadUserById(reportingUserId);
     user.report();
   }
 }

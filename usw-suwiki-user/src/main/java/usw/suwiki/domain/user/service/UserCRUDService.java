@@ -23,7 +23,7 @@ public class UserCRUDService implements UserAdapterService {
     userRepository.save(user);
   }
 
-  public List<User> loadUsersLastLoginBetweenStartEnd(LocalDateTime startTime, LocalDateTime endTime) {
+  public List<User> loadUsersLastLoginBetween(LocalDateTime startTime, LocalDateTime endTime) {
     return userRepository.findByLastLoginBetween(startTime, endTime);
   }
 
@@ -32,50 +32,28 @@ public class UserCRUDService implements UserAdapterService {
       .orElseThrow(() -> new AccountException(ExceptionType.USER_NOT_FOUND));
   }
 
-  @Transactional(readOnly = true)
-  public Optional<User> loadWrappedUserFromUserIdx(Long userIdx) {
-    return userRepository.findById(userIdx);
-  }
-
-  @Transactional(readOnly = true)
-  public Optional<User> loadWrappedUserFromLoginId(String loginId) {
+  public Optional<User> findOptionalByLoginId(String loginId) {
     return userRepository.findByLoginId(loginId);
   }
 
-  @Transactional(readOnly = true)
-  public Optional<User> loadWrappedUserFromEmail(String email) {
+  public Optional<User> findOptionalByEmail(String email) {
     return userRepository.findByEmail(email);
   }
 
-  @Transactional(readOnly = true)
-  public User loadUserFromUserIdx(Long userIdx) {
-    return convertOptionalUserToDomainUser(userRepository.findById(userIdx));
+  public User loadByLoginId(String loginId) {
+    return userRepository.findByLoginId(loginId)
+      .orElseThrow(() -> new AccountException(ExceptionType.USER_NOT_FOUND));
   }
 
-  @Transactional(readOnly = true)
-  public User loadUserFromLoginId(String loginId) {
-    return convertOptionalUserToDomainUser(userRepository.findByLoginId(loginId));
-  }
-
-  @Transactional(readOnly = true)
-  public User loadUserFromEmail(String email) {
-    return convertOptionalUserToDomainUser(userRepository.findByEmail(email));
-  }
-
-  private User convertOptionalUserToDomainUser(Optional<User> optionalUser) {
-    return optionalUser.orElseThrow(() -> new AccountException(ExceptionType.USER_NOT_EXISTS));
-  }
-
-  @Transactional(readOnly = true)
   public long countAllUsers() {
     return userRepository.count();
   }
 
-  public void deleteFromUserIdx(Long userIdx) {
-    userRepository.deleteById(userIdx);
+  public void deleteById(Long userId) {
+    userRepository.deleteById(userId);
   }
 
-  public void softDeleteForIsolation(Long userIdx) {
+  public void sleep(Long userIdx) {
     User user = loadUserById(userIdx);
     user.sleep();
   }

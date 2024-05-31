@@ -1,13 +1,12 @@
 package usw.suwiki.auth.token;
 
+import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import usw.suwiki.infra.jpa.BaseEntity;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -15,19 +14,13 @@ import java.util.UUID;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ConfirmationToken {
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
-
+@AttributeOverride(name = "createDate", column = @Column(name = "createdAt", nullable = false))
+public class ConfirmationToken extends BaseEntity {
   @Column
   private Long userIdx;
 
   @Column(nullable = false)
   private String token;
-
-  @Column(nullable = false)
-  private LocalDateTime createdAt;
 
   @Column(nullable = false)
   private LocalDateTime expiresAt;
@@ -38,12 +31,12 @@ public class ConfirmationToken {
   public ConfirmationToken(Long userIdx) {
     this.userIdx = userIdx;
     this.token = UUID.randomUUID().toString();
-    this.createdAt = LocalDateTime.now();
     this.expiresAt = LocalDateTime.now().plusMinutes(15);
   }
 
-  public void confirm() {
+  public ConfirmationToken confirm() {
     this.confirmedAt = LocalDateTime.now();
+    return this;
   }
 
   public boolean isExpired() {

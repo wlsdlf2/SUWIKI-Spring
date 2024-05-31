@@ -1,15 +1,18 @@
 package usw.suwiki.domain.user.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.NoArgsConstructor;
 import usw.suwiki.domain.user.User;
 
 import java.time.LocalDateTime;
 
-public final class UserResponse {
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public class UserResponse {
 
   @Builder
-  public record UserInformationResponse(
+  public record MyPage(
     String loginId,
     String email,
     Integer point,
@@ -17,7 +20,7 @@ public final class UserResponse {
     Integer writtenExam,
     Integer viewExam
   ) {
-    public static UserInformationResponse toMyPageResponse(User user) {
+    public static MyPage from(User user) {
       return builder()
         .loginId(user.getLoginId())
         .email(user.getEmail())
@@ -30,7 +33,7 @@ public final class UserResponse {
   }
 
   @Builder
-  public record LoadMyRestrictedReasonResponse(
+  public record RestrictedReason(
     String restrictedReason,
     String judgement,
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")
@@ -41,7 +44,7 @@ public final class UserResponse {
   }
 
   @Builder
-  public record LoadMyBlackListReasonResponse(
+  public record BlackedReason(
     String blackListReason,
     String judgement,
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")

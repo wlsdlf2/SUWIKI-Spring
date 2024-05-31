@@ -1,8 +1,8 @@
 package usw.suwiki.api.user;
 
 import io.github.hejow.restdocs.generator.RestDocument;
+import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -39,6 +39,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static usw.suwiki.auth.token.response.ConfirmResponse.ERROR;
 import static usw.suwiki.auth.token.response.ConfirmResponse.EXPIRED;
@@ -47,7 +48,9 @@ import static usw.suwiki.common.test.Tag.USER;
 import static usw.suwiki.common.test.support.Pair.parameter;
 import static usw.suwiki.common.test.support.ResponseValidator.validate;
 import static usw.suwiki.common.test.support.ResponseValidator.validateHtml;
-import static usw.suwiki.core.exception.ExceptionType.IS_NOT_EMAIL_FORM;
+import static usw.suwiki.core.exception.ExceptionType.EMAIL_NOT_AUTHED;
+import static usw.suwiki.core.exception.ExceptionType.INVALID_EMAIL_FORMAT;
+import static usw.suwiki.core.exception.ExceptionType.INVALID_TOKEN;
 import static usw.suwiki.core.exception.ExceptionType.LOGIN_ID_OR_EMAIL_OVERLAP;
 import static usw.suwiki.core.exception.ExceptionType.PARAMETER_VALIDATION_FAIL;
 import static usw.suwiki.core.exception.ExceptionType.PASSWORD_ERROR;
@@ -70,18 +73,17 @@ class UserAcceptanceTest extends AcceptanceTestSupport {
   @SpyBean
   private ConfirmationTokenRepository confirmationTokenRepository;
 
+  private User user;
   private String accessToken;
-  private ConfirmationToken confirmationToken;
 
   @BeforeEach
   public void setup() {
-    var user = userRepository.save(User.init(loginId, passwordEncoder.encode(password), email).activate());
-    confirmationToken = fixtures.가입_인증_토큰_생성(user.getId());
+    user = userRepository.save(User.init(loginId, passwordEncoder.encode(password), email).activate());
     accessToken = fixtures.토큰_생성(user);
   }
 
   @Nested
-  class 유저_아이디_중복_확인_테스트 {
+  class 아이디_중복_확인_테스트 {
     private final String endpoint = "/user/check-id";
 
     @Test
@@ -149,7 +151,7 @@ class UserAcceptanceTest extends AcceptanceTestSupport {
   }
 
   @Nested
-  class 유저_이메일_중복_확인_테스트 {
+  class 이메일_중복_확인_테스트 {
     private final String urlTemplate = "/user/check-email";
 
     @Test
@@ -216,7 +218,7 @@ class UserAcceptanceTest extends AcceptanceTestSupport {
   }
 
   @Nested
-  class 유저_회원가입_테스트 {
+  class 회원가입_테스트 {
     private final String endpoint = "/user/join";
 
     @Test
@@ -310,7 +312,7 @@ class UserAcceptanceTest extends AcceptanceTestSupport {
       var result = post(Uri.of(endpoint), requestBody);
 
       // result validation
-      validate(result, status().isBadRequest(), IS_NOT_EMAIL_FORM);
+      validate(result, status().isBadRequest(), INVALID_EMAIL_FORMAT);
 
       // docs
       result.andDo(
@@ -323,22 +325,22 @@ class UserAcceptanceTest extends AcceptanceTestSupport {
   }
 
   @Nested
-  class 유저_이메일_인증_테스트 {
+  class 이메일_인증_테스트 {
     private final String endpoint = "/user/verify-email";
 
     @Test
     void 이메일_인증_성공() throws Exception {
       // setup
-      final String emailVerificationToken = confirmationToken.getToken();
+      var token = fixtures.가입_인증_토큰_생성(user.getId()).getToken();
 
       // execution
-      var result = getHtml(Uri.of(endpoint), parameter("token", emailVerificationToken));
+      var result = getHtml(Uri.of(endpoint), parameter("token", token));
 
       // result validation
       validateHtml(result, status().isOk(), SUCCESS.getContent());
 
       // db validation
-      Optional<ConfirmationToken> confirmationToken = confirmationTokenRepository.findByToken(emailVerificationToken);
+      Optional<ConfirmationToken> confirmationToken = confirmationTokenRepository.findByToken(token);
 
       assertAll(
         () -> assertThat(confirmationToken).isNotEmpty(),
@@ -364,10 +366,10 @@ class UserAcceptanceTest extends AcceptanceTestSupport {
     @Test
     void 이메일_인증_실패_잘못된_토큰() throws Exception {
       // setup
-      final String emailVerificationToken = confirmationToken.getToken();
+      var token = fixtures.가입_인증_토큰_생성(user.getId()).getToken();
 
       // execution
-      var result = getHtml(Uri.of(endpoint), parameter("token", emailVerificationToken + "diger"));
+      var result = getHtml(Uri.of(endpoint), parameter("token", token + "diger"));
 
       // result validation
       validateHtml(result, status().isOk(), ERROR.getContent());
@@ -384,13 +386,14 @@ class UserAcceptanceTest extends AcceptanceTestSupport {
     @Test
     void 이메일_인증_실패_만료된_토큰() throws Exception {
       // setup
+      var token = fixtures.가입_인증_토큰_생성(user.getId()).getToken();
       var sut = Mockito.mock(ConfirmationToken.class);
 
       given(confirmationTokenRepository.findByToken(anyString())).willReturn(Optional.of(sut));
       given(sut.isExpired()).willReturn(true);
 
       // execution
-      var result = getHtml(Uri.of(endpoint), parameter("token", confirmationToken.getToken()));
+      var result = getHtml(Uri.of(endpoint), parameter("token", token));
 
       // result validation
       validateHtml(result, status().isOk(), EXPIRED.getContent());
@@ -597,7 +600,6 @@ class UserAcceptanceTest extends AcceptanceTestSupport {
     }
   }
 
-  @Disabled
   @Nested
   class 로그인_테스트 {
     private final String mobileEndpoint = "/user/login";
@@ -606,6 +608,7 @@ class UserAcceptanceTest extends AcceptanceTestSupport {
     @Test
     void 웹_로그인_성공() throws Exception {
       // given
+      fixtures.가입_인증된_토큰_생성(user.getId());
       var request = new UserRequest.Login(loginId, password);
 
       // when
@@ -613,6 +616,10 @@ class UserAcceptanceTest extends AcceptanceTestSupport {
 
       // then
       result.andExpect(status().isOk());
+
+      var cookies = result.andReturn().getResponse().getCookies();
+      assertThat(cookies).isNotNull()
+        .allMatch(cookie -> cookie.getMaxAge() != 0);
 
       // docs
       result.andDo(
@@ -626,8 +633,29 @@ class UserAcceptanceTest extends AcceptanceTestSupport {
     }
 
     @Test
+    void 웹_로그인_실패_이메일_미인증_유저() throws Exception {
+      // given
+      var request = new UserRequest.Login(loginId, "wrongPassword");
+
+      // when
+      var result = post(Uri.of(webEndpoint), request);
+
+      // then
+      validate(result, status().isUnauthorized(), EMAIL_NOT_AUTHED);
+
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .tag(USER)
+          .result(result)
+          .generateDocs()
+      );
+    }
+
+    @Test
     void 웹_로그인_실패_잘못된_비밀번호() throws Exception {
       // given
+      fixtures.가입_인증된_토큰_생성(user.getId());
       var request = new UserRequest.Login(loginId, "wrongPassword");
 
       // when
@@ -648,6 +676,7 @@ class UserAcceptanceTest extends AcceptanceTestSupport {
     @Test
     void 모바일_로그인_성공() throws Exception {
       // given
+      fixtures.가입_인증된_토큰_생성(user.getId());
       var request = new UserRequest.Login(loginId, password);
 
       // when
@@ -660,7 +689,27 @@ class UserAcceptanceTest extends AcceptanceTestSupport {
       result.andDo(
         RestDocument.builder()
           .summary("모바일 로그인 API")
-          .description("로그인 API 모바일 버전입니다. 토큰을 반환합니다.")
+          .description("로그인 API 모바일 버전입니다. 토큰들을 반환합니다.")
+          .tag(USER)
+          .result(result)
+          .generateDocs()
+      );
+    }
+
+    @Test
+    void 모바일_로그인_실패_이메일_미인증_유저() throws Exception {
+      // given
+      var request = new UserRequest.Login(loginId, "wrongPassword");
+
+      // when
+      var result = post(Uri.of(mobileEndpoint), request);
+
+      // then
+      validate(result, status().isUnauthorized(), EMAIL_NOT_AUTHED);
+
+      // docs
+      result.andDo(
+        RestDocument.builder()
           .tag(USER)
           .result(result)
           .generateDocs()
@@ -670,13 +719,173 @@ class UserAcceptanceTest extends AcceptanceTestSupport {
     @Test
     void 모바일_로그인_실패_잘못된_비밀번호() throws Exception {
       // given
+      fixtures.가입_인증된_토큰_생성(user.getId());
       var request = new UserRequest.Login(loginId, "wrongPassword");
 
       // when
-      var result = post(Uri.of(webEndpoint), request);
+      var result = post(Uri.of(mobileEndpoint), request);
 
       // then
       validate(result, status().isBadRequest(), PASSWORD_ERROR);
+
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .tag(USER)
+          .result(result)
+          .generateDocs()
+      );
+    }
+  }
+
+  @Nested
+  class 로그아웃_테스트 {
+    @Test
+    void 로그아웃_성공() throws Exception {
+      // given
+      var payload = fixtures.리프레시_토큰_생성(user.getId());
+
+      // when
+      var result = post(Uri.of("/user/client-logout"), new Cookie("refreshToken", payload));
+
+      // then
+      result.andExpect(status().isOk());
+
+      var cookies = result.andReturn().getResponse().getCookies();
+      assertThat(cookies).isNotNull()
+        .allMatch(cookie -> cookie.getMaxAge() == 0);
+
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .summary("웹 로그아웃 API")
+          .description("로그아웃 API 웹 버전입니다. 쿠키의 시간을 만료시킵니다.")
+          .tag(USER)
+          .result(result)
+          .generateDocs()
+      );
+    }
+  }
+
+  @Nested
+  class 마이페이지_테스트 {
+    private final String endpoint = "/user/my-page";
+
+    @Test
+    void 마이페이지_조회_성공() throws Exception {
+      // given
+
+      // when
+      var result = get(Uri.of(endpoint), accessToken);
+
+      // then
+      result.andExpectAll(
+        status().isOk(),
+        jsonPath("loginId").value(user.getLoginId()),
+        jsonPath("email").value(user.getEmail()),
+        jsonPath("point").value(user.getPoint()),
+        jsonPath("writtenEvaluation").value(user.getWrittenEvaluation()),
+        jsonPath("writtenExam").value(user.getWrittenExam()),
+        jsonPath("viewExam").value(user.getViewExamCount())
+      );
+
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .summary("[토큰 필요] 마이페이지 조회 API")
+          .description("내 정보를 조회하는 API입니다.")
+          .tag(USER)
+          .result(result)
+          .generateDocs()
+      );
+    }
+  }
+
+  @Nested
+  class 토큰_재발급_테스트 {
+    private final String webEndpoint = "/user/client-refresh";
+    private final String mobileEndpoint = "/user/refresh";
+
+    @Test
+    void 웹_재발급_성공() throws Exception {
+      // given
+      var refreshToken = fixtures.리프레시_토큰_생성(user.getId());
+
+      // when
+      var result = post(Uri.of(webEndpoint), new Cookie("refreshToken", refreshToken));
+
+      // then
+      result.andExpect(status().isOk());
+
+      var cookies = result.andReturn().getResponse().getCookies();
+      assertThat(cookies).isNotNull()
+        .allMatch(cookie -> cookie.getMaxAge() != 0);
+
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .summary("[쿠키 필요] 웹 토큰 재발급 API")
+          .description("토큰 재발급 API 웹 버전입니다. 쿠키에 저장된 리프레시 토큰의 시간을 갱신합니다.")
+          .tag(USER)
+          .result(result)
+          .generateDocs()
+      );
+    }
+
+    @Test
+    void 웹_토큰_재발급_실패_유효하지_않은_토큰() throws Exception {
+      // given
+
+      // when
+      var result = post(Uri.of(webEndpoint), new Cookie("refreshToken", INVALID_ACCESS_TOKEN));
+
+      // then
+      validate(result, status().isBadRequest(), INVALID_TOKEN);
+
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .tag(USER)
+          .result(result)
+          .generateDocs()
+      );
+    }
+
+    @Test
+    void 모바일_재발급_성공() throws Exception {
+      // given
+      var refreshToken = fixtures.리프레시_토큰_생성(user.getId());
+
+      // when
+      var result = post(Uri.of(mobileEndpoint), refreshToken);
+
+      // then
+      result.andExpectAll(
+        status().isOk(),
+        jsonPath("$.AccessToken").exists(),
+        jsonPath("$.RefreshToken").exists()
+      );
+
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .summary("[쿠키 필요] 웹 토큰 재발급 API")
+          .description("토큰 재발급 API 웹 버전입니다. 쿠키에 저장된 리프레시 토큰의 시간을 갱신합니다.")
+          .tag(USER)
+          .result(result)
+          .generateDocs()
+      );
+    }
+
+    @Test
+    void 모바일_토큰_재발급_실패_유효하지_않은_토큰() throws Exception {
+      // given
+
+      // when
+      var result = post(Uri.of(mobileEndpoint), INVALID_ACCESS_TOKEN);
+
+      // then
+      validate(result, status().isBadRequest(), INVALID_TOKEN);
 
       // docs
       result.andDo(

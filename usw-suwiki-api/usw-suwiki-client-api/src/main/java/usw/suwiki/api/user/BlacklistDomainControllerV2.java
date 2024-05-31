@@ -13,7 +13,7 @@ import usw.suwiki.statistics.annotation.Statistics;
 import java.util.List;
 
 import static org.springframework.http.HttpStatus.OK;
-import static usw.suwiki.domain.user.dto.UserResponse.LoadMyBlackListReasonResponse;
+import static usw.suwiki.domain.user.dto.UserResponse.BlackedReason;
 import static usw.suwiki.statistics.log.MonitorTarget.USER;
 
 @RestController
@@ -26,7 +26,7 @@ public class BlacklistDomainControllerV2 {
   @Statistics(USER)
   @GetMapping("/logs")
   @ResponseStatus(OK)
-  public List<LoadMyBlackListReasonResponse> loadBlacklistReason(@Authenticated Long userId) {
+  public List<BlackedReason> loadBlacklistReason(@Authenticated Long userId) {
     return userBusinessService.executeLoadBlackListReason(userId);
   }
 }

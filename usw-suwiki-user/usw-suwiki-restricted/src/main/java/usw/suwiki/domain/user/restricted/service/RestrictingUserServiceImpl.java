@@ -1,10 +1,5 @@
 package usw.suwiki.domain.user.restricted.service;
 
-import static usw.suwiki.domain.user.dto.UserAdminRequestDto.EvaluatePostRestrictForm;
-import static usw.suwiki.domain.user.dto.UserAdminRequestDto.ExamPostRestrictForm;
-
-import java.time.LocalDateTime;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -15,6 +10,12 @@ import usw.suwiki.domain.user.restricted.RestrictingUserRepository;
 import usw.suwiki.domain.user.service.BlacklistDomainCRUDService;
 import usw.suwiki.domain.user.service.RestrictingUserService;
 import usw.suwiki.domain.user.service.UserCRUDService;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+import static usw.suwiki.domain.user.dto.UserAdminRequestDto.EvaluatePostRestrictForm;
+import static usw.suwiki.domain.user.dto.UserAdminRequestDto.ExamPostRestrictForm;
 
 @Slf4j
 @Service
@@ -44,7 +45,7 @@ class RestrictingUserServiceImpl implements RestrictingUserService {
 
   @Override
   public void executeRestrictUserFromEvaluatePost(EvaluatePostRestrictForm evaluatePostRestrictForm, Long reportedUserId) {
-    User user = userCRUDService.loadUserFromUserIdx(reportedUserId);
+    User user = userCRUDService.loadUserById(reportedUserId);
 
     if (user.isCloseToArrest()) {
       blacklistDomainCRUDService.saveBlackListDomain(
@@ -57,18 +58,18 @@ class RestrictingUserServiceImpl implements RestrictingUserService {
     }
     user.restrict();
     restrictingUserRepository.save(
-        RestrictingUser.builder()
-            .userIdx(user.getId())
-            .restrictingDate(LocalDateTime.now().plusDays(evaluatePostRestrictForm.restrictingDate()))
-            .restrictingReason(evaluatePostRestrictForm.restrictingReason())
-            .judgement(evaluatePostRestrictForm.judgement())
-            .build()
+      RestrictingUser.builder()
+        .userIdx(user.getId())
+        .restrictingDate(LocalDateTime.now().plusDays(evaluatePostRestrictForm.restrictingDate()))
+        .restrictingReason(evaluatePostRestrictForm.restrictingReason())
+        .judgement(evaluatePostRestrictForm.judgement())
+        .build()
     );
   }
 
   @Override
   public void executeRestrictUserFromExamPost(ExamPostRestrictForm examPostRestrictForm, Long reportedUserId) {
-    User user = userCRUDService.loadUserFromUserIdx(reportedUserId);
+    User user = userCRUDService.loadUserById(reportedUserId);
     if (user.isCloseToArrest()) {
       blacklistDomainCRUDService.saveBlackListDomain(
         user.getId(),
@@ -80,12 +81,12 @@ class RestrictingUserServiceImpl implements RestrictingUserService {
     }
     user.restrict();
     restrictingUserRepository.save(
-        RestrictingUser.builder()
-            .userIdx(user.getId())
-            .restrictingDate(LocalDateTime.now().plusDays(examPostRestrictForm.restrictingDate()))
-            .restrictingReason(examPostRestrictForm.restrictingReason())
-            .judgement(examPostRestrictForm.judgement())
-            .build()
+      RestrictingUser.builder()
+        .userIdx(user.getId())
+        .restrictingDate(LocalDateTime.now().plusDays(examPostRestrictForm.restrictingDate()))
+        .restrictingReason(examPostRestrictForm.restrictingReason())
+        .judgement(examPostRestrictForm.judgement())
+        .build()
     );
   }
 }

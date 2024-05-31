@@ -51,7 +51,7 @@ public class UserIsolationSchedulingService {
     LocalDateTime startTime = LocalDateTime.now().minusMonths(11).minusDays(1);
     LocalDateTime endTime = LocalDateTime.now().minusMonths(11);
 
-    for (User user : userCRUDService.loadUsersLastLoginBetweenStartEnd(startTime, endTime)) {
+    for (User user : userCRUDService.loadUsersLastLoginBetween(startTime, endTime)) {
       emailSender.send(user.getEmail(), DORMANT_NOTIFICATION);
     }
 
@@ -65,10 +65,10 @@ public class UserIsolationSchedulingService {
     LocalDateTime startTime = LocalDateTime.now().minusMonths(35);
     LocalDateTime endTime = LocalDateTime.now().minusMonths(12);
 
-    for (User user : userCRUDService.loadUsersLastLoginBetweenStartEnd(startTime, endTime)) {
+    for (User user : userCRUDService.loadUsersLastLoginBetween(startTime, endTime)) {
       if (userIsolationCRUDService.isNotIsolated(user.getId())) {
         userIsolationCRUDService.saveUserIsolation(user);
-        userCRUDService.softDeleteForIsolation(user.getId());
+        userCRUDService.sleep(user.getId());
       }
     }
 
@@ -82,7 +82,7 @@ public class UserIsolationSchedulingService {
     LocalDateTime startTime = LocalDateTime.now().minusMonths(36);
     LocalDateTime endTime = LocalDateTime.now().minusMonths(35);
 
-    for (User user : userCRUDService.loadUsersLastLoginBetweenStartEnd(startTime, endTime)) {
+    for (User user : userCRUDService.loadUsersLastLoginBetween(startTime, endTime)) {
       emailSender.send(user.getEmail(), DELETE_WARNING);
     }
 
@@ -96,7 +96,7 @@ public class UserIsolationSchedulingService {
     LocalDateTime startTime = LocalDateTime.now().minusMonths(100);
     LocalDateTime endTime = LocalDateTime.now().minusMonths(36);
 
-    for (User user : userCRUDService.loadUsersLastLoginBetweenStartEnd(startTime, endTime)) {
+    for (User user : userCRUDService.loadUsersLastLoginBetween(startTime, endTime)) {
       Long userIdx = user.getId();
       clearViewExamService.clear(userIdx);
       refreshTokenService.deleteByUserId(userIdx);
@@ -107,7 +107,7 @@ public class UserIsolationSchedulingService {
       restrictingUserService.releaseByUserId(userIdx);
       confirmationTokenCRUDService.deleteFromUserIdx(userIdx);
       userIsolationCRUDService.deleteByUserIdx(userIdx);
-      userCRUDService.deleteFromUserIdx(userIdx);
+      userCRUDService.deleteById(userIdx);
     }
 
     log.info("{} - 자동 삭제 종료", LocalDateTime.now());

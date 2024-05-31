@@ -8,15 +8,12 @@ import usw.suwiki.domain.exampost.LectureInfo;
 import usw.suwiki.domain.lecture.Lecture;
 
 import java.util.List;
-import java.util.Random;
 
 import static usw.suwiki.test.fixture.FixtureUtils.generate;
 import static usw.suwiki.test.fixture.FixtureUtils.randomIds;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ExamPostFixture {
-  private static final Random RANDOM = new Random();
-
   public static ExamPost one(Long userId, Lecture lecture) {
     return new ExamPost(userId, "시험 평가", lectureInfo(lecture), examDetail());
   }

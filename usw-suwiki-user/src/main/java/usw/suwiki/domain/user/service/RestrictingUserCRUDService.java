@@ -2,8 +2,8 @@ package usw.suwiki.domain.user.service;
 
 import java.util.List;
 
-import static usw.suwiki.domain.user.dto.UserResponse.LoadMyRestrictedReasonResponse;
+import static usw.suwiki.domain.user.dto.UserResponse.RestrictedReason;
 
 public interface RestrictingUserCRUDService {
-  List<LoadMyRestrictedReasonResponse> loadRestrictedLog(Long userIdx);
+  List<RestrictedReason> loadRestrictedLog(Long userIdx);
 }

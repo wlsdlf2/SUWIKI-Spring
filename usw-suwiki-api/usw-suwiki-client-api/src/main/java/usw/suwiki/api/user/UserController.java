@@ -21,6 +21,7 @@ import usw.suwiki.auth.token.service.ConfirmationTokenBusinessService;
 import usw.suwiki.common.response.ResponseForm;
 import usw.suwiki.domain.user.dto.MajorRequest;
 import usw.suwiki.domain.user.dto.UserRequest;
+import usw.suwiki.domain.user.dto.UserResponse;
 import usw.suwiki.domain.user.service.UserBusinessService;
 import usw.suwiki.statistics.annotation.Statistics;
 
@@ -29,9 +30,8 @@ import java.util.List;
 import java.util.Map;
 
 import static org.springframework.http.HttpStatus.OK;
-import static usw.suwiki.domain.user.dto.UserResponse.LoadMyBlackListReasonResponse;
-import static usw.suwiki.domain.user.dto.UserResponse.LoadMyRestrictedReasonResponse;
-import static usw.suwiki.domain.user.dto.UserResponse.UserInformationResponse;
+import static usw.suwiki.domain.user.dto.UserResponse.BlackedReason;
+import static usw.suwiki.domain.user.dto.UserResponse.RestrictedReason;
 import static usw.suwiki.statistics.log.MonitorTarget.USER;
 
 @RestController
@@ -119,10 +119,10 @@ public class UserController {
   @Statistics(USER)
   @PostMapping("/client-logout")
   @ResponseStatus(OK)
-  public Map<String, Boolean> webLogout(HttpServletResponse response) {
-    Cookie refreshCookie = new Cookie("refreshToken", "");
-    refreshCookie.setMaxAge(0);
-    response.addCookie(refreshCookie);
+  public Map<String, Boolean> logout(HttpServletResponse response) {
+    var cookie = new Cookie("refreshToken", "");
+    cookie.setMaxAge(0);
+    response.addCookie(cookie);
 
     return new HashMap<>() {{
       put("Success", true);
@@ -133,7 +133,7 @@ public class UserController {
   @Statistics(USER)
   @GetMapping("/my-page")
   @ResponseStatus(OK)
-  public UserInformationResponse myPage(@Authenticated Long userId) {
+  public UserResponse.MyPage myPage(@Authenticated Long userId) {
     return userBusinessService.loadMyPage(userId);
   }
 
@@ -141,7 +141,7 @@ public class UserController {
   @PostMapping("/client-refresh")
   @ResponseStatus(OK)
   public Map<String, String> reissueWeb(@CookieValue(value = "refreshToken") Cookie cookie, HttpServletResponse response) {
-    Map<String, String> tokens = userBusinessService.reissueWeb(cookie);
+    Map<String, String> tokens = userBusinessService.reissue(cookie.getValue());
 
     var newCookie = new Cookie("refreshToken", tokens.get("RefreshToken"));
     newCookie.setMaxAge(14 * 24 * 60 * 60);
@@ -157,8 +157,8 @@ public class UserController {
   @Statistics(USER)
   @PostMapping("/refresh")
   @ResponseStatus(OK)
-  public Map<String, String> reissueMobile(@Valid @RequestHeader String Authorization) {
-    return userBusinessService.reissueMobile(Authorization); // todo: check business logic
+  public Map<String, String> reissueMobile(@Valid @RequestHeader String Authorization) { // refresh 토큰임
+    return userBusinessService.reissue(Authorization); // todo: (05.31) change to id
   }
 
   @Authorize
@@ -204,7 +204,7 @@ public class UserController {
   @Statistics(USER)
   @GetMapping("/restricted-reason")
   @ResponseStatus(OK) // todo: RestrictingUserControllerV2 동일한 API
-  public List<LoadMyRestrictedReasonResponse> loadRestrictedReason(@Authenticated Long userId) {
+  public List<RestrictedReason> loadRestrictedReason(@Authenticated Long userId) {
     return userBusinessService.executeLoadRestrictedReason(userId);
   }
 
@@ -212,7 +212,7 @@ public class UserController {
   @Statistics(USER)
   @GetMapping("/blacklist-reason")
   @ResponseStatus(OK) // todo: BlacklistDomainControllerV2 동일한 API
-  public List<LoadMyBlackListReasonResponse> loadBlacklistReason(@Authenticated Long userId) {
+  public List<BlackedReason> loadBlacklistReason(@Authenticated Long userId) {
     return userBusinessService.executeLoadBlackListReason(userId);
   }
 

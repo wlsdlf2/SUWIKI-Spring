@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static usw.suwiki.domain.user.dto.UserResponse.LoadMyRestrictedReasonResponse;
+import static usw.suwiki.domain.user.dto.UserResponse.RestrictedReason;
 
 @Service
 @Transactional(readOnly = true)
@@ -21,13 +21,13 @@ class RestrictingUserCRUDServiceImpl implements RestrictingUserCRUDService {
   private final RestrictingUserRepository restrictingUserRepository;
 
   @Override
-  public List<LoadMyRestrictedReasonResponse> loadRestrictedLog(Long userIdx) {
+  public List<RestrictedReason> loadRestrictedLog(Long userIdx) {
     Optional<RestrictingUser> wrappedRestrictingUser = restrictingUserRepository.findByUserIdx(userIdx);
-    List<LoadMyRestrictedReasonResponse> finalResultForm = new ArrayList<>();
+    List<RestrictedReason> finalResultForm = new ArrayList<>();
 
     if (wrappedRestrictingUser.isPresent()) {
       RestrictingUser RestrictingUser = wrappedRestrictingUser.get();
-      LoadMyRestrictedReasonResponse resultForm = LoadMyRestrictedReasonResponse
+      RestrictedReason resultForm = RestrictedReason
         .builder()
         .restrictedReason(RestrictingUser.getRestrictingReason())
         .judgement(RestrictingUser.getJudgement())

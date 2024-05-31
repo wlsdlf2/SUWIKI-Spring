@@ -52,18 +52,16 @@ public class NoticeController {
   @Statistics(NOTICE)
   @PostMapping("/")
   @ResponseStatus(OK)
-  public String write(@Valid @RequestBody NoticeRequest.Create request) { // todo : admin api
+  public void write(@Valid @RequestBody NoticeRequest.Create request) { // todo : admin api
     noticeService.write(request.getTitle(), request.getContent());
-    return "success";
   }
 
   @Authorize(ADMIN)
   @Statistics(NOTICE)
   @PutMapping("/")
   @ResponseStatus(OK)
-  public String updateNotice(@RequestParam Long noticeId, @Valid @RequestBody NoticeRequest.Update request) { // todo : admin api
+  public void updateNotice(@RequestParam Long noticeId, @Valid @RequestBody NoticeRequest.Update request) { // todo : admin api
     noticeService.update(noticeId, request.getTitle(), request.getContent());
-    return "success";
   }
 
   @Authorize(ADMIN)

@@ -33,10 +33,9 @@ class FavoriteMajorServiceImpl implements FavoriteMajorService {
   }
 
   @Override
-  public void clear(Long userIdx) {
-    List<FavoriteMajor> list = favoriteMajorRepository.findAllByUser(userIdx);
-    for (FavoriteMajor favorite : list) {
-      favoriteMajorRepository.delete(favorite);
+  public void clear(Long userId) {
+    for (FavoriteMajor major : favoriteMajorRepository.findAllByUser(userId)) {
+      favoriteMajorRepository.delete(major);
     }
   }
 }

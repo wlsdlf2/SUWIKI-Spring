@@ -12,7 +12,6 @@ public class NoticeRequest {
   public static class Create {
     @NotBlank
     private final String title;
-
     @NotBlank
     private final String content;
   }
@@ -21,7 +20,6 @@ public class NoticeRequest {
   public static class Update {
     @NotBlank
     private final String title;
-
     @NotBlank
     private final String content;
   }

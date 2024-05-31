@@ -22,7 +22,7 @@ import static usw.suwiki.statistics.log.MonitorTarget.USER;
 @RestController
 @RequestMapping("/v2/favorite-major")
 @RequiredArgsConstructor
-public class FavoriteMajorController {
+public class FavoriteMajorControllerV2 {
   private final FavoriteMajorServiceV2 favoriteMajorServiceV2;
 
   @Authorize

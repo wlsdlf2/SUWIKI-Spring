@@ -12,6 +12,8 @@ import usw.suwiki.domain.exampost.ExamPost;
 import usw.suwiki.domain.exampost.ExamPostRepository;
 import usw.suwiki.domain.lecture.Lecture;
 import usw.suwiki.domain.lecture.LectureRepository;
+import usw.suwiki.domain.lecture.Major;
+import usw.suwiki.domain.lecture.major.FavoriteMajor;
 import usw.suwiki.domain.lecture.major.FavoriteMajorRepository;
 import usw.suwiki.domain.lecture.schedule.LectureSchedule;
 import usw.suwiki.domain.lecture.schedule.LectureScheduleRepository;
@@ -183,5 +185,24 @@ public final class Fixtures {
 
   public String 리프레시_토큰_생성(Long userId) {
     return tokenAgent.login(userId);
+  }
+
+  public String 전공_즐겨찾기_생성(Long userId) {
+    var major = Major.values()[0].name();
+    favoriteMajorRepository.save(new FavoriteMajor(userId, major));
+    return major;
+  }
+
+  public List<String> 전공_즐겨찾기_여러개_생성(Long userId) { // todo: jpa로 변경하면 saveAll()로 수정
+    var major = Major.values()[0].name();
+    favoriteMajorRepository.save(new FavoriteMajor(userId, major));
+
+    var major2 = Major.values()[1].name();
+    favoriteMajorRepository.save(new FavoriteMajor(userId, major2));
+
+    var major3 = Major.values()[2].name();
+    favoriteMajorRepository.save(new FavoriteMajor(userId, major3));
+
+    return List.of(major, major2, major3);
   }
 }

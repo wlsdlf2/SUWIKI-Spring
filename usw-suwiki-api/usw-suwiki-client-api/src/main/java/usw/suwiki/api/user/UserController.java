@@ -166,7 +166,7 @@ public class UserController {
   @PostMapping("/favorite-major")
   @ResponseStatus(OK)
   public void saveFavoriteMajor(@Authenticated Long userId, @Valid @RequestBody MajorRequest request) {
-    userBusinessService.saveFavoriteMajor(userId, request);
+    userBusinessService.saveFavoriteMajor(userId, request.getMajorType());
   }
 
   @Authorize

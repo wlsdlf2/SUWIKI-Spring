@@ -13,14 +13,18 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.data.util.Pair;
+import org.springframework.transaction.annotation.Transactional;
 import usw.suwiki.auth.token.ConfirmationToken;
 import usw.suwiki.auth.token.ConfirmationTokenRepository;
 import usw.suwiki.common.test.annotation.AcceptanceTest;
 import usw.suwiki.common.test.support.AcceptanceTestSupport;
 import usw.suwiki.common.test.support.Uri;
 import usw.suwiki.core.secure.PasswordEncoder;
+import usw.suwiki.domain.lecture.Major;
+import usw.suwiki.domain.lecture.major.FavoriteMajorRepository;
 import usw.suwiki.domain.user.User;
 import usw.suwiki.domain.user.UserRepository;
+import usw.suwiki.domain.user.dto.MajorRequest;
 import usw.suwiki.domain.user.dto.UserRequest;
 import usw.suwiki.domain.user.dto.UserRequest.CheckEmail;
 import usw.suwiki.domain.user.dto.UserRequest.CheckLoginId;
@@ -64,6 +68,8 @@ class UserAcceptanceTest extends AcceptanceTestSupport {
 
   @Autowired
   private UserRepository userRepository;
+  @Autowired
+  private FavoriteMajorRepository favoriteMajorRepository;
 
   @Autowired
   private PasswordEncoder passwordEncoder;
@@ -740,6 +746,7 @@ class UserAcceptanceTest extends AcceptanceTestSupport {
 
   @Nested
   class 로그아웃_테스트 {
+
     @Test
     void 로그아웃_성공() throws Exception {
       // given
@@ -890,6 +897,130 @@ class UserAcceptanceTest extends AcceptanceTestSupport {
       // docs
       result.andDo(
         RestDocument.builder()
+          .tag(USER)
+          .result(result)
+          .generateDocs()
+      );
+    }
+  }
+
+  @Nested
+  class 전공_즐겨찾기_테스트 {
+    private final String endpoint = "/user/favorite-major";
+
+    @Test
+    void 전공_즐겨찾기_등록_성공() throws Exception {
+      // given
+      var request = new MajorRequest(Major.values()[0].name());
+
+      // when
+      var result = post(Uri.of(endpoint), accessToken, request);
+
+      // then
+      result.andExpect(status().isOk());
+
+      var majors = favoriteMajorRepository.findAllByUser(user.getId());
+      assertThat(majors).isNotEmpty().hasSize(1);
+
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .summary("[토큰 필요] 전공 즐겨찾기 등록 API")
+          .description("전공 즐겨찾기 등록 API입니다.")
+          .tag(USER)
+          .result(result)
+          .generateDocs()
+      );
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    void 전공_즐겨찾기_등록_실패_잘못된_파라미터(String major) throws Exception {
+      // given
+      var request = new MajorRequest(major);
+
+      // when
+      var result = post(Uri.of(endpoint), accessToken, request);
+
+      // then
+      validate(result, status().isBadRequest(), PARAMETER_VALIDATION_FAIL);
+
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .tag(USER)
+          .result(result)
+          .generateDocs()
+      );
+    }
+
+    @Transactional
+    @Test
+    void 전공_즐겨찾기_삭제_성공() throws Exception {
+      // given
+      var major = fixtures.전공_즐겨찾기_생성(user.getId());
+
+      // when
+      var result = delete(Uri.of(endpoint), accessToken, null, parameter("majorType", major));
+
+      // then
+      result.andExpect(status().isOk());
+
+      var majors = favoriteMajorRepository.findAllByUser(user.getId());
+      assertThat(majors).isEmpty();
+
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .summary("[토큰 필요] 전공 즐겨찾기 삭제 API")
+          .description("즐겨찾기로 등록한 전공을 삭제하는 API입니다.")
+          .tag(USER)
+          .result(result)
+          .generateDocs()
+      );
+    }
+
+    @Test
+    void 전공_즐겨찾기_삭제_실패_잘못된_파라미터() throws Exception {
+      // given
+
+      // when
+      var result = delete(Uri.of(endpoint), accessToken, null, parameter("majorType", null));
+
+      // then
+      validate(result, status().isBadRequest(), PARAMETER_VALIDATION_FAIL);
+
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .tag(USER)
+          .result(result)
+          .generateDocs()
+      );
+    }
+
+    @Transactional
+    @Test
+    void 전공_즐겨찾기_조회_성공() throws Exception {
+      // given
+      var majors = fixtures.전공_즐겨찾기_여러개_생성(user.getId());
+
+      // when
+      var result = get(Uri.of(endpoint), accessToken);
+
+      // then
+      result.andExpectAll(
+        status().isOk(),
+        jsonPath("$.data").exists(),
+        jsonPath("$.data.size()").value(majors.size()),
+        jsonPath("$.data[0]").value(majors.get(0))
+      );
+
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .summary("[토큰 필요] 전공 즐겨찾기 조회 API")
+          .description("즐겨찾기한 모든 전공을 조회하는 API 입니다.")
           .tag(USER)
           .result(result)
           .generateDocs()

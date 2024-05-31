@@ -11,7 +11,6 @@ import usw.suwiki.core.mail.EmailSender;
 import usw.suwiki.core.secure.PasswordEncoder;
 import usw.suwiki.core.secure.TokenAgent;
 import usw.suwiki.domain.user.User;
-import usw.suwiki.domain.user.dto.MajorRequest;
 import usw.suwiki.domain.user.dto.UserResponse;
 
 import java.util.HashMap;
@@ -240,8 +239,8 @@ public class UserBusinessService {
     return restrictingUserCRUDService.loadRestrictedLog(requestUser.getId());
   }
 
-  public void saveFavoriteMajor(Long userId, MajorRequest majorRequest) {
-    favoriteMajorService.save(userId, majorRequest.getMajorType());
+  public void saveFavoriteMajor(Long userId, String majorType) {
+    favoriteMajorService.save(userId, majorType);
   }
 
   public void deleteFavoriteMajor(Long userId, String majorType) {

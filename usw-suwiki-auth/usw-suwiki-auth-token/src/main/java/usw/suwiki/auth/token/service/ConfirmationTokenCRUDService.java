@@ -6,40 +6,35 @@ import org.springframework.transaction.annotation.Transactional;
 import usw.suwiki.auth.token.ConfirmationToken;
 import usw.suwiki.auth.token.ConfirmationTokenRepository;
 
-import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class ConfirmationTokenCRUDService {
-    private final ConfirmationTokenRepository confirmationTokenRepository;
+  private final ConfirmationTokenRepository confirmationTokenRepository;
 
-    @Transactional
-    public void saveConfirmationToken(ConfirmationToken confirmationToken) {
-        confirmationTokenRepository.save(confirmationToken);
-    }
+  @Transactional
+  public String save(Long userId) {
+    var confirmationToken = confirmationTokenRepository.save(new ConfirmationToken(userId));
+    return confirmationToken.getToken();
+  }
 
-    public Optional<ConfirmationToken> loadConfirmationTokenFromUserIdx(Long userIdx) {
-        return confirmationTokenRepository.findByUserIdx(userIdx);
-    }
+  public Optional<ConfirmationToken> findOptionalTokenByUserId(Long userIdx) {
+    return confirmationTokenRepository.findByUserIdx(userIdx);
+  }
 
-    public Optional<ConfirmationToken> loadConfirmationTokenFromPayload(String payload) {
-        return confirmationTokenRepository.findByToken(payload);
-    }
+  public Optional<ConfirmationToken> findOptionalTokenByPayload(String payload) {
+    return confirmationTokenRepository.findByToken(payload);
+  }
 
-    public List<ConfirmationToken> loadNotConfirmedTokens(LocalDateTime targetTime) {
-        return confirmationTokenRepository.loadNotConfirmedTokensByExpiresAtIsNull(targetTime);
-    }
+  @Transactional
+  public void deleteFromId(Long id) {
+    confirmationTokenRepository.deleteById(id);
+  }
 
-    @Transactional
-    public void deleteFromId(Long id) {
-        confirmationTokenRepository.deleteById(id);
-    }
-
-    @Transactional
-    public void deleteFromUserIdx(Long userIdx) {
-        confirmationTokenRepository.deleteByUserIdx(userIdx);
-    }
+  @Transactional
+  public void deleteFromUserIdx(Long userIdx) {
+    confirmationTokenRepository.deleteByUserIdx(userIdx);
+  }
 }

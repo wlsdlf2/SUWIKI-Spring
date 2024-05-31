@@ -64,4 +64,8 @@ public class UserCRUDService implements UserAdapterService {
       .map(User::toAdapter)
       .orElseThrow(() -> new AccountException(ExceptionType.USER_NOT_FOUND));
   }
+
+  public void deleteAllInBatch(List<Long> userIds) {
+    userRepository.deleteAllByIdInBatch(userIds);
+  }
 }

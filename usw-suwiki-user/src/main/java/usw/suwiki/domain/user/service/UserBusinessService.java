@@ -3,7 +3,6 @@ package usw.suwiki.domain.user.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import usw.suwiki.auth.token.ConfirmationToken;
 import usw.suwiki.auth.token.RefreshToken;
 import usw.suwiki.auth.token.service.ConfirmationTokenCRUDService;
 import usw.suwiki.auth.token.service.RefreshTokenService;
@@ -127,10 +126,7 @@ public class UserBusinessService {
     User user = User.init(loginId, passwordEncoder.encode(password), email);
     userCRUDService.saveUser(user);
 
-    ConfirmationToken confirmationToken = new ConfirmationToken(user.getId());
-    confirmationTokenCRUDService.saveConfirmationToken(confirmationToken);
-
-    emailSender.send(email, EMAIL_AUTH, confirmationToken.getToken());
+    emailSender.send(email, EMAIL_AUTH, confirmationTokenCRUDService.save(user.getId()));
     return successFlag();
   }
 
@@ -177,7 +173,7 @@ public class UserBusinessService {
     if (userCRUDService.findOptionalByLoginId(loginId).isPresent()) {
       User user = userCRUDService.loadByLoginId(loginId);
 
-      var optionalConfirmationToken = confirmationTokenCRUDService.loadConfirmationTokenFromUserIdx(user.getId());
+      var optionalConfirmationToken = confirmationTokenCRUDService.findOptionalTokenByUserId(user.getId());
 
       if (optionalConfirmationToken.isEmpty()) {
         throw new AccountException(EMAIL_NOT_AUTHED);

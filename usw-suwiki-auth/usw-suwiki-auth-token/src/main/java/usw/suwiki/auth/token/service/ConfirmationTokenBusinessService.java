@@ -17,7 +17,7 @@ public class ConfirmationTokenBusinessService {
   private final ConfirmationTokenCRUDService confirmationTokenCRUDService;
 
   public String confirmToken(String token) {
-    return confirmationTokenCRUDService.loadConfirmationTokenFromPayload(token)
+    return confirmationTokenCRUDService.findOptionalTokenByPayload(token)
       .map(this::confirm)
       .orElse(ERROR.getContent());
   }

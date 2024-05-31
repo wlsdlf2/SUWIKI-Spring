@@ -17,7 +17,6 @@ import java.util.Objects;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class RefreshToken {
-
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;

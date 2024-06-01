@@ -33,7 +33,7 @@ class FavoriteMajorServiceImpl implements FavoriteMajorService {
   }
 
   @Override
-  public void clear(Long userId) {
+  public void clean(Long userId) {
     for (FavoriteMajor major : favoriteMajorRepository.findAllByUser(userId)) {
       favoriteMajorRepository.delete(major);
     }

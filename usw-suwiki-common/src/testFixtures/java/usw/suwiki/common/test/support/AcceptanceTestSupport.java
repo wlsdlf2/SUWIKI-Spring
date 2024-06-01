@@ -56,7 +56,8 @@ public abstract class AcceptanceTestSupport {
   public ResultActions post(Uri uri, Cookie cookie) throws Exception {
     return mockMvc.perform(RestDocumentationRequestBuilders.post(uri.resource)
       .cookie(cookie)
-      .contentType(MediaType.APPLICATION_JSON));
+      .contentType(MediaType.APPLICATION_JSON)
+      .requestAttr("org.springframework.restdocs.urlTemplate", uri.urlTemplate));
   }
 
   public ResultActions post(Uri uri, String accessToken) throws Exception {

@@ -20,9 +20,9 @@ class RestrictingUserCRUDServiceImpl implements RestrictingUserCRUDService {
 
   private final RestrictingUserRepository restrictingUserRepository;
 
-  @Override
-  public List<RestrictedReason> loadRestrictedLog(Long userIdx) {
-    Optional<RestrictingUser> wrappedRestrictingUser = restrictingUserRepository.findByUserIdx(userIdx);
+  @Override // todo: 네이밍은 all 인데 하나만 조회한다..?
+  public List<RestrictedReason> loadRestrictedLog(Long userId) {
+    Optional<RestrictingUser> wrappedRestrictingUser = restrictingUserRepository.findByUserIdx(userId);
     List<RestrictedReason> finalResultForm = new ArrayList<>();
 
     if (wrappedRestrictingUser.isPresent()) {

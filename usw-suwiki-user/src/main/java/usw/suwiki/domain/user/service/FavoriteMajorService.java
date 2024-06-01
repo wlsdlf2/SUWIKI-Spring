@@ -3,7 +3,7 @@ package usw.suwiki.domain.user.service;
 import java.util.List;
 
 public interface FavoriteMajorService {
-  void clear(Long userId);
+  void clean(Long userId);
 
   void delete(Long userId, String type);
 

@@ -10,7 +10,7 @@ public interface RestrictingUserService {
 
   void releaseByUserId(Long userId);
 
-  void executeRestrictUserFromEvaluatePost(EvaluatePostRestrictForm evaluatePostRestrictForm, Long reportedUserId);
+  void restrictFromEvaluatePost(EvaluatePostRestrictForm evaluatePostRestrictForm, Long reportedUserId);
 
-  void executeRestrictUserFromExamPost(ExamPostRestrictForm examPostRestrictForm, Long reportedUserId);
+  void restrictFromExamPost(ExamPostRestrictForm examPostRestrictForm, Long reportedUserId);
 }

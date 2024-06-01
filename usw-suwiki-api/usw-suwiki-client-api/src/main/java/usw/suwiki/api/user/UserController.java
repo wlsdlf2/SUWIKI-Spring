@@ -182,7 +182,7 @@ public class UserController {
   @GetMapping("/favorite-major")
   @ResponseStatus(OK)
   public ResponseForm loadFavoriteMajors(@Authenticated Long userId) {
-    var response = userBusinessService.executeFavoriteMajorLoad(userId);
+    var response = userBusinessService.loadAllFavoriteMajors(userId);
     return new ResponseForm(response);
   }
 
@@ -205,7 +205,7 @@ public class UserController {
   @GetMapping("/restricted-reason")
   @ResponseStatus(OK) // todo: RestrictingUserControllerV2 동일한 API
   public List<RestrictedReason> loadRestrictedReason(@Authenticated Long userId) {
-    return userBusinessService.executeLoadRestrictedReason(userId);
+    return userBusinessService.loadRestrictedReason(userId);
   }
 
   @Authorize
@@ -213,12 +213,12 @@ public class UserController {
   @GetMapping("/blacklist-reason")
   @ResponseStatus(OK) // todo: BlacklistDomainControllerV2 동일한 API
   public List<BlackedReason> loadBlacklistReason(@Authenticated Long userId) {
-    return userBusinessService.executeLoadBlackListReason(userId);
+    return userBusinessService.loadBlackListReason(userId);
   }
 
   @Authorize
   @Statistics(USER)
-  @DeleteMapping
+  @DeleteMapping("/quit")
   @ResponseStatus(OK)
   public Map<String, Boolean> quit(@Authenticated Long userId, @Valid @RequestBody UserRequest.Quit request) {
     return userBusinessService.quit(userId, request.password());

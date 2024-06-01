@@ -13,7 +13,7 @@ import usw.suwiki.domain.exampost.service.ExamPostCRUDService;
 import usw.suwiki.domain.report.service.ReportService;
 import usw.suwiki.domain.user.User;
 import usw.suwiki.domain.user.UserRepository;
-import usw.suwiki.domain.user.service.ClearViewExamService;
+import usw.suwiki.domain.user.service.CleanViewExamService;
 import usw.suwiki.domain.user.service.FavoriteMajorService;
 import usw.suwiki.domain.user.service.RestrictingUserService;
 import usw.suwiki.domain.user.service.UserIsolationCRUDService;
@@ -30,7 +30,7 @@ import static usw.suwiki.core.mail.MailType.PRIVACY_POLICY_NOTIFICATION;
 public class UserSchedulingService {
   private final EmailSender emailSender;
   private final UserRepository userRepository;
-  private final ClearViewExamService clearViewExamService;
+  private final CleanViewExamService cleanViewExamService;
   private final FavoriteMajorService favoriteMajorService;
   private final RestrictingUserService restrictingUserService;
   private final UserIsolationCRUDService userIsolationCRUDService;
@@ -64,24 +64,24 @@ public class UserSchedulingService {
     if (!targetUser.isEmpty()) {
       for (User user : targetUser) {
         Long userId = user.getId();
-        clearViewExamService.clear(userId);
+        cleanViewExamService.clean(userId);
         refreshTokenRepository.deleteByUserIdx(userId);
         reportService.deleteFromUserIdx(userId);
         evaluatePostService.deleteAllByUserId(userId);
         examPostCRUDService.deleteFromUserIdx(userId);
-        favoriteMajorService.clear(userId);
+        favoriteMajorService.clean(userId);
         restrictingUserService.releaseByUserId(userId);
         confirmationTokenRepository.deleteByUserIdx(userId);
         userRepository.deleteById(userId);
       }
     } else {
       for (Long isolatedUserId : isolatedUserIds) {
-        clearViewExamService.clear(isolatedUserId);
+        cleanViewExamService.clean(isolatedUserId);
         refreshTokenRepository.deleteByUserIdx(isolatedUserId);
         reportService.deleteFromUserIdx(isolatedUserId);
         evaluatePostService.deleteAllByUserId(isolatedUserId);
         examPostCRUDService.deleteFromUserIdx(isolatedUserId);
-        favoriteMajorService.clear(isolatedUserId);
+        favoriteMajorService.clean(isolatedUserId);
         restrictingUserService.releaseByUserId(isolatedUserId);
         confirmationTokenRepository.deleteByUserIdx(isolatedUserId);
         userIsolationCRUDService.deleteByUserIdx(isolatedUserId);

@@ -95,7 +95,7 @@ public class AdminBusinessService {
     plusReportingUserPoint(evaluatePostReport.getReportingUserIdx());
     plusRestrictCount(evaluatePostReport.getReportedUserIdx());
 
-    restrictingUserService.executeRestrictUserFromEvaluatePost(request, evaluatePostReport.getReportedUserIdx());
+    restrictingUserService.restrictFromEvaluatePost(request, evaluatePostReport.getReportedUserIdx());
 
     deleteReportedEvaluatePostFromEvaluateIdx(evaluatePostReport.getEvaluateIdx());
     return successCapitalFlag();
@@ -107,7 +107,7 @@ public class AdminBusinessService {
     plusReportingUserPoint(examPostReport.getReportingUserIdx());
     plusRestrictCount(examPostReport.getReportedUserIdx());
 
-    restrictingUserService.executeRestrictUserFromExamPost(request, examPostReport.getReportedUserIdx());
+    restrictingUserService.restrictFromExamPost(request, examPostReport.getReportedUserIdx());
 
     deleteReportedExamPostFromEvaluateIdx(examPostReport.getExamIdx());
     return successCapitalFlag();

@@ -362,7 +362,7 @@ public class ExamPostAcceptanceTest extends AcceptanceTestSupport {
       // then
       result.andExpect(status().isOk());
 
-      var exists = viewExamRepository.isExists(user.getId(), lecture.getId());
+      var exists = viewExamRepository.existsByUserIdxAndLectureId(user.getId(), lecture.getId());
       var after = userRepository.findById(user.getId()).orElseThrow();
 
       assertAll(

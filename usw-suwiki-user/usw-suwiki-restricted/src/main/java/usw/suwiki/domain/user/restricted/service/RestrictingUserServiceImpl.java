@@ -44,16 +44,11 @@ class RestrictingUserServiceImpl implements RestrictingUserService {
   }
 
   @Override
-  public void executeRestrictUserFromEvaluatePost(EvaluatePostRestrictForm evaluatePostRestrictForm, Long reportedUserId) {
+  public void restrictFromEvaluatePost(EvaluatePostRestrictForm evaluatePostRestrictForm, Long reportedUserId) {
     User user = userCRUDService.loadUserById(reportedUserId);
 
-    if (user.isCloseToArrest()) {
-      blacklistDomainCRUDService.saveBlackListDomain(
-        user.getId(),
-        BANNED_PERIOD,
-        BANNED_REASON,
-        JUDGEMENT
-      );
+    if (user.isAboutToArrest()) {
+      blacklistDomainCRUDService.saveBlackListDomain(user.getId(), BANNED_PERIOD, BANNED_REASON, JUDGEMENT);
       return;
     }
     user.restrict();
@@ -68,15 +63,10 @@ class RestrictingUserServiceImpl implements RestrictingUserService {
   }
 
   @Override
-  public void executeRestrictUserFromExamPost(ExamPostRestrictForm examPostRestrictForm, Long reportedUserId) {
+  public void restrictFromExamPost(ExamPostRestrictForm examPostRestrictForm, Long reportedUserId) {
     User user = userCRUDService.loadUserById(reportedUserId);
-    if (user.isCloseToArrest()) {
-      blacklistDomainCRUDService.saveBlackListDomain(
-        user.getId(),
-        BANNED_PERIOD,
-        BANNED_REASON,
-        JUDGEMENT
-      );
+    if (user.isAboutToArrest()) {
+      blacklistDomainCRUDService.saveBlackListDomain(user.getId(), BANNED_PERIOD, BANNED_REASON, JUDGEMENT);
       return;
     }
     user.restrict();

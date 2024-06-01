@@ -27,6 +27,6 @@ public class BlacklistDomainControllerV2 {
   @GetMapping("/logs")
   @ResponseStatus(OK)
   public List<BlackedReason> loadBlacklistReason(@Authenticated Long userId) {
-    return userBusinessService.executeLoadBlackListReason(userId);
+    return userBusinessService.loadBlackListReason(userId);
   }
 }

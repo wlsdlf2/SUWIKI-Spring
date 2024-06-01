@@ -25,7 +25,7 @@ public class RestrictingUserControllerV2 {
   @GetMapping
   @ResponseStatus(OK)
   public ResponseForm loadRestrictedReasons(@Authenticated Long userId) {
-    var response = userBusinessService.executeLoadRestrictedReason(userId);
+    var response = userBusinessService.loadRestrictedReason(userId);
     return ResponseForm.success(response);
   }
 }

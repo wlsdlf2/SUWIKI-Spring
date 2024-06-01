@@ -641,7 +641,7 @@ class UserAcceptanceTest extends AcceptanceTestSupport {
     @Test
     void 웹_로그인_실패_이메일_미인증_유저() throws Exception {
       // given
-      var request = new UserRequest.Login(loginId, "wrongPassword");
+      var request = new UserRequest.Login(loginId, password);
 
       // when
       var result = post(Uri.of(webEndpoint), request);
@@ -1021,6 +1021,129 @@ class UserAcceptanceTest extends AcceptanceTestSupport {
         RestDocument.builder()
           .summary("[토큰 필요] 전공 즐겨찾기 조회 API")
           .description("즐겨찾기한 모든 전공을 조회하는 API 입니다.")
+          .tag(USER)
+          .result(result)
+          .generateDocs()
+      );
+    }
+  }
+
+  @Nested
+  class 제한_내역_조회_테스트 {
+
+    @Test
+    void 이용제한_내역_조회_성공() throws Exception {
+      // given
+      var restrictingUser = fixtures.이용제한_내역_생성(user.getId());
+
+      // when
+      var result = get(Uri.of("/user/restricted-reason"), accessToken);
+
+      // then
+      result.andExpectAll(
+        status().isOk(),
+        jsonPath("$.[0]").exists(),
+        jsonPath("$.[0].restrictedReason").value(restrictingUser.getRestrictingReason()),
+        jsonPath("$.[0].judgement").value(restrictingUser.getJudgement())
+      );
+
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .summary("[토큰 필요] 이용제한 내역 조회 API")
+          .description("이용제한된 내역을 조회하는 API 입니다.")
+          .tag(USER)
+          .result(result)
+          .generateDocs()
+      );
+    }
+
+    @Test
+    void 블랙리스트_내역_조회_성공() throws Exception {
+      // given
+      var blacklistDomain = fixtures.블랙_리스트_생성(user.getId());
+
+      // when
+      var result = get(Uri.of("/user/blacklist-reason"), accessToken);
+
+      // then
+      result.andExpectAll(
+        status().isOk(),
+        jsonPath("$.[0]").exists(),
+        jsonPath("$.[0].blackListReason").value(blacklistDomain.getBannedReason()),
+        jsonPath("$.[0].judgement").value(blacklistDomain.getJudgement())
+      );
+
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .summary("[토큰 필요] 블랙리스트 내역 조회 API")
+          .description("영구 정지 사유를 조회하는 API 입니다.")
+          .tag(USER)
+          .result(result)
+          .generateDocs()
+      );
+    }
+  }
+
+  @Nested
+  class 회원탈퇴_테스트 {
+
+    private final String endpoint = "/user/quit";
+
+    @Transactional
+    @Test
+    void 회원탈퇴_성공() throws Exception {
+      // given
+      var request = new UserRequest.Quit(loginId, password);
+
+      var lecture = fixtures.강의_생성();
+
+      fixtures.전공_즐겨찾기_생성(user.getId());
+      fixtures.강의평가_생성(user.getId(), lecture);
+      fixtures.시험평가_생성(user.getId(), lecture);
+
+      // when
+      var result = delete(Uri.of(endpoint), accessToken, request);
+
+      // then
+      result.andExpect(status().isOk());
+
+      var saved = userRepository.findById(user.getId()).orElseThrow();
+      var majors = favoriteMajorRepository.findAllByUser(user.getId());
+
+      assertAll(
+        () -> assertThat(majors).isEmpty(),
+        () -> assertThat(saved).isNotNull(),
+        () -> assertThat(saved.getRole()).isNull(),
+        () -> assertThat(saved.isRestricted()).isTrue()
+      );
+
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .summary("[토큰 필요] 회원 탈퇴 API")
+          .description("회원 탈퇴 API입니다. 작성한 게시글, 신고 내역, 구매한 시험 정보 등 요청한 유저의 이력은 모두 제거됩니다.")
+          .tag(USER)
+          .result(result)
+          .generateDocs()
+      );
+    }
+
+    @Test
+    void 회원탈퇴_실패_비밀번호_불일치() throws Exception {
+      // given
+      var request = new UserRequest.Quit(loginId, "wrongPassword");
+
+      // when
+      var result = delete(Uri.of(endpoint), accessToken, request);
+
+      // then
+      validate(result, status().isBadRequest(), PASSWORD_ERROR);
+
+      // docs
+      result.andDo(
+        RestDocument.builder()
           .tag(USER)
           .result(result)
           .generateDocs()

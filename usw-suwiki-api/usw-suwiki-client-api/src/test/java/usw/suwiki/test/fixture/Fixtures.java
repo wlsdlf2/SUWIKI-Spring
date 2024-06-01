@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import usw.suwiki.auth.token.ConfirmationToken;
 import usw.suwiki.auth.token.ConfirmationTokenRepository;
-import usw.suwiki.auth.token.RefreshTokenRepository;
 import usw.suwiki.core.secure.TokenAgent;
 import usw.suwiki.domain.evaluatepost.EvaluatePost;
 import usw.suwiki.domain.evaluatepost.EvaluatePostRepository;
@@ -24,13 +23,16 @@ import usw.suwiki.domain.notice.Notice;
 import usw.suwiki.domain.notice.NoticeRepository;
 import usw.suwiki.domain.user.User;
 import usw.suwiki.domain.user.UserRepository;
+import usw.suwiki.domain.user.blacklist.BlacklistDomain;
 import usw.suwiki.domain.user.blacklist.BlacklistRepository;
 import usw.suwiki.domain.user.isolated.UserIsolationRepository;
 import usw.suwiki.domain.user.model.UserClaim;
+import usw.suwiki.domain.user.restricted.RestrictingUser;
 import usw.suwiki.domain.user.restricted.RestrictingUserRepository;
 import usw.suwiki.domain.viewexam.ViewExam;
 import usw.suwiki.domain.viewexam.ViewExamRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -38,8 +40,6 @@ import java.util.stream.IntStream;
 public final class Fixtures {
   @Autowired
   private ConfirmationTokenRepository confirmationTokenRepository;
-  @Autowired
-  private RefreshTokenRepository refreshTokenRepository;
 
   @Autowired
   private EvaluatePostRepository evaluatePostRepository;
@@ -204,5 +204,25 @@ public final class Fixtures {
     favoriteMajorRepository.save(new FavoriteMajor(userId, major3));
 
     return List.of(major, major2, major3);
+  }
+
+  public BlacklistDomain 블랙_리스트_생성(Long userId) {
+    var user = userRepository.findById(userId).orElseThrow();
+    var blacklist = new BlacklistDomain(userId, user.getEmail(), "그냥", "사형", LocalDateTime.now().plusYears(1));
+
+    user.restrict();
+
+    userRepository.save(user);
+    return blacklistRepository.save(blacklist);
+  }
+
+  public RestrictingUser 이용제한_내역_생성(Long userId) {
+    var user = userRepository.findById(userId).orElseThrow();
+    var restricted = new RestrictingUser(userId, LocalDateTime.now(), "그냥", "사형");
+
+    user.restrict();
+
+    userRepository.save(user);
+    return restrictingUserRepository.save(restricted);
   }
 }

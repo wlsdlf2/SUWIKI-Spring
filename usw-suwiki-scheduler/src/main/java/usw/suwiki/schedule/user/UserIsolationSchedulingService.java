@@ -12,7 +12,7 @@ import usw.suwiki.domain.evaluatepost.service.EvaluatePostService;
 import usw.suwiki.domain.exampost.service.ExamPostCRUDService;
 import usw.suwiki.domain.report.service.ReportService;
 import usw.suwiki.domain.user.User;
-import usw.suwiki.domain.user.service.ClearViewExamService;
+import usw.suwiki.domain.user.service.CleanViewExamService;
 import usw.suwiki.domain.user.service.FavoriteMajorService;
 import usw.suwiki.domain.user.service.RestrictingUserService;
 import usw.suwiki.domain.user.service.UserCRUDService;
@@ -33,7 +33,7 @@ public class UserIsolationSchedulingService {
   private final UserCRUDService userCRUDService;
   private final RestrictingUserService restrictingUserService;
   private final UserIsolationCRUDService userIsolationCRUDService;
-  private final ClearViewExamService clearViewExamService;
+  private final CleanViewExamService cleanViewExamService;
   private final FavoriteMajorService favoriteMajorService;
 
   private final ReportService reportService;
@@ -98,12 +98,12 @@ public class UserIsolationSchedulingService {
 
     for (User user : userCRUDService.loadUsersLastLoginBetween(startTime, endTime)) {
       Long userIdx = user.getId();
-      clearViewExamService.clear(userIdx);
+      cleanViewExamService.clean(userIdx);
       refreshTokenService.deleteByUserId(userIdx);
       reportService.deleteFromUserIdx(userIdx);
       evaluatePostService.deleteAllByUserId(userIdx);
       examPostCRUDService.deleteFromUserIdx(userIdx);
-      favoriteMajorService.clear(userIdx);
+      favoriteMajorService.clean(userIdx);
       restrictingUserService.releaseByUserId(userIdx);
       confirmationTokenCRUDService.deleteFromUserIdx(userIdx);
       userIsolationCRUDService.deleteByUserIdx(userIdx);

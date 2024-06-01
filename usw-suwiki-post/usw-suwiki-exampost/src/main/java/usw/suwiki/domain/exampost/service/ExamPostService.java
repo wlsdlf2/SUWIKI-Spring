@@ -16,7 +16,7 @@ import usw.suwiki.domain.report.service.ReportService;
 import usw.suwiki.domain.user.service.UserBusinessService;
 import usw.suwiki.domain.viewexam.ViewExamQueryRepository;
 import usw.suwiki.domain.viewexam.dto.ViewExamResponse;
-import usw.suwiki.domain.viewexam.service.ViewExamCRUDService;
+import usw.suwiki.domain.viewexam.service.ViewExamService;
 
 import java.util.List;
 
@@ -40,7 +40,7 @@ public class ExamPostService {
   private final UserBusinessService userBusinessService;
   private final ReportService reportService;
 
-  private final ViewExamCRUDService viewExamCRUDService;
+  private final ViewExamService viewExamService;
   private final ViewExamQueryRepository viewExamQueryRepository;
 
   public boolean isAlreadyWritten(Long userId, Long lectureId) {
@@ -97,12 +97,12 @@ public class ExamPostService {
     }
 
     lectureService.findLectureById(lectureId);
-    viewExamCRUDService.save(userId, lectureId);
+    viewExamService.save(userId, lectureId);
     userBusinessService.purchaseExamPost(userId);
   }
 
   private boolean isAlreadyPurchased(Long userId, Long lectureId) {
-    return viewExamCRUDService.isExist(userId, lectureId);
+    return viewExamService.isExist(userId, lectureId);
   }
 
   @Transactional
@@ -116,7 +116,7 @@ public class ExamPostService {
   public void deleteExamPost(Long userId, Long examId) {
     var examPost = loadExamPostOrThrow(examId);
     examPost.validateAuthor(userId);
-    
+
     examPostRepository.delete(examPost);
     userBusinessService.eraseExamPost(userId);
   }

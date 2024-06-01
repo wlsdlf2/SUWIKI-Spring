@@ -50,7 +50,7 @@ public class User extends BaseEntity {
   private String email;
 
   @Column
-  private Boolean restricted;
+  private boolean restricted;
 
   @Column
   private Integer restrictedCount;
@@ -139,16 +139,14 @@ public class User extends BaseEntity {
   }
 
   public boolean isAdmin() {
-    return this.role == Role.ADMIN;
+    return this.role.isAdmin();
   }
 
-  public void changePassword(PasswordEncoder passwordEncoder, String prePassword, String newPassword) {
-    validatePassword(passwordEncoder, prePassword);
-    validateDuplicatedPassword(passwordEncoder, newPassword);
-    this.password = passwordEncoder.encode(newPassword);
+  public boolean isPasswordEquals(PasswordEncoder passwordEncoder, String rawPassword) {
+    return passwordEncoder.matches(rawPassword, this.password);
   }
 
-  private void validatePassword(PasswordEncoder passwordEncoder, String rawPassword) {
+  public void validatePassword(PasswordEncoder passwordEncoder, String rawPassword) {
     if (!isPasswordEquals(passwordEncoder, rawPassword)) {
       throw new AccountException(PASSWORD_ERROR);
     }
@@ -160,14 +158,16 @@ public class User extends BaseEntity {
     }
   }
 
+  public void changePassword(PasswordEncoder passwordEncoder, String prePassword, String newPassword) {
+    validatePassword(passwordEncoder, prePassword);
+    validateDuplicatedPassword(passwordEncoder, newPassword);
+    this.password = passwordEncoder.encode(newPassword);
+  }
+
   public String resetPassword(PasswordEncoder passwordEncoder) {
     String newPassword = RandomPasswordGenerator.generate();
     this.password = passwordEncoder.encode(newPassword);
     return password;
-  }
-
-  public boolean isPasswordEquals(PasswordEncoder passwordEncoder, String rawPassword) {
-    return passwordEncoder.matches(rawPassword, this.password);
   }
 
   public void login() {
@@ -217,7 +217,7 @@ public class User extends BaseEntity {
     this.point++;
   }
 
-  public boolean isCloseToArrest() {
+  public boolean isAboutToArrest() {
     return this.restrictedCount == ARREST_LIMIT;
   }
 }

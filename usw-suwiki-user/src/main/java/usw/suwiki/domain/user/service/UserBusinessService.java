@@ -52,10 +52,10 @@ public class UserBusinessService {
 
   private final FavoriteMajorService favoriteMajorService;
 
-  private final ClearReportService clearReportService;
-  private final ClearViewExamService clearViewExamService;
-  private final ClearExamPostsService clearExamPostsService;
-  private final ClearEvaluatePostsService clearEvaluatePostsService;
+  private final CleanReportService cleanReportService;
+  private final CleanViewExamService cleanViewExamService;
+  private final CleanExamPostsService cleanExamPostsService;
+  private final CleanEvaluatePostsService cleanEvaluatePostsService;
 
   private final RefreshTokenService refreshTokenService;
   private final ConfirmationTokenCRUDService confirmationTokenCRUDService;
@@ -64,9 +64,7 @@ public class UserBusinessService {
 
   @Transactional(readOnly = true)
   public Map<String, Boolean> isDuplicatedId(String loginId) {
-    if (userCRUDService.findOptionalByLoginId(loginId).isPresent() ||
-        userIsolationCRUDService.isIsolatedByLoginId(loginId)
-    ) {
+    if (userCRUDService.findOptionalByLoginId(loginId).isPresent() || userIsolationCRUDService.isIsolatedByLoginId(loginId)) {
       return overlapTrueFlag();
     }
     return overlapFalseFlag();
@@ -74,9 +72,7 @@ public class UserBusinessService {
 
   @Transactional(readOnly = true)
   public Map<String, Boolean> isDuplicatedEmail(String email) {
-    if (userCRUDService.findOptionalByEmail(email).isPresent() ||
-        userIsolationCRUDService.isIsolatedByEmail(email)
-    ) {
+    if (userCRUDService.findOptionalByEmail(email).isPresent() || userIsolationCRUDService.isIsolatedByEmail(email)) {
       return overlapTrueFlag();
     }
     return overlapFalseFlag();
@@ -213,30 +209,27 @@ public class UserBusinessService {
   }
 
   public Map<String, Boolean> quit(Long userId, String inputPassword) {
-    User user = userCRUDService.loadUserById(userId);
+    var user = userCRUDService.loadUserById(userId);
+    user.validatePassword(passwordEncoder, inputPassword);
 
-    if (!user.isPasswordEquals(passwordEncoder, inputPassword)) {
-      throw new AccountException(PASSWORD_ERROR);
-    }
-
-    favoriteMajorService.clear(user.getId());
-    clearReportService.clear(user.getId());
-    clearViewExamService.clear(user.getId());
-    clearExamPostsService.clear(user.getId());
-    clearEvaluatePostsService.clear(user.getId());
+    favoriteMajorService.clean(user.getId());
+    cleanReportService.clean(user.getId());
+    cleanViewExamService.clean(user.getId());
+    cleanExamPostsService.clean(user.getId());
+    cleanEvaluatePostsService.clean(user.getId());
 
     user.waitQuit();
     return successFlag();
   }
 
-  public List<BlackedReason> executeLoadBlackListReason(Long id) {
-    User requestUser = userCRUDService.loadUserById(id);
-    return blacklistDomainCRUDService.loadAllBlacklistLog(requestUser.getId());
+  public List<BlackedReason> loadBlackListReason(Long id) {
+    var user = userCRUDService.loadUserById(id);
+    return blacklistDomainCRUDService.loadAllBlacklistLogs(user.getId());
   }
 
-  public List<RestrictedReason> executeLoadRestrictedReason(Long userId) {
-    User requestUser = userCRUDService.loadUserById(userId);
-    return restrictingUserCRUDService.loadRestrictedLog(requestUser.getId());
+  public List<RestrictedReason> loadRestrictedReason(Long userId) {
+    var user = userCRUDService.loadUserById(userId);
+    return restrictingUserCRUDService.loadRestrictedLog(user.getId());
   }
 
   public void saveFavoriteMajor(Long userId, String majorType) {
@@ -247,7 +240,7 @@ public class UserBusinessService {
     favoriteMajorService.delete(userId, majorType);
   }
 
-  public List<String> executeFavoriteMajorLoad(Long userId) {
+  public List<String> loadAllFavoriteMajors(Long userId) {
     return favoriteMajorService.findMajorTypeByUser(userId);
   }
 

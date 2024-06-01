@@ -7,13 +7,13 @@ import usw.suwiki.core.secure.PasswordEncoder;
 import usw.suwiki.domain.user.User;
 import usw.suwiki.domain.user.blacklist.BlacklistDomain;
 import usw.suwiki.domain.user.blacklist.BlacklistRepository;
+import usw.suwiki.domain.user.dto.UserResponse;
 import usw.suwiki.domain.user.service.BlacklistDomainCRUDService;
 import usw.suwiki.domain.user.service.UserCRUDService;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 import static usw.suwiki.domain.user.dto.UserResponse.BlackedReason;
 
@@ -28,21 +28,20 @@ class BlacklistDomainCRUDServiceImpl implements BlacklistDomainCRUDService {
   private final UserCRUDService userCRUDService;
   private final PasswordEncoder passwordEncoder;
 
-  @Override
-  public List<BlackedReason> loadAllBlacklistLog(Long userIdx) {
-    Optional<BlacklistDomain> loadedDomain = blacklistRepository.findByUserIdx(userIdx);
-    List<BlackedReason> finalResultForm = new ArrayList<>();
-    if (loadedDomain.isPresent()) {
-      BlackedReason blackedReason =
-        BlackedReason.builder()
-          .blackListReason(loadedDomain.get().getBannedReason())
-          .judgement(loadedDomain.get().getJudgement())
-          .createdAt(loadedDomain.get().getCreateDate())
-          .expiredAt(loadedDomain.get().getExpiredAt())
-          .build();
-      finalResultForm.add(blackedReason);
-    }
-    return finalResultForm;
+  @Override // todo: 네이밍은 all 인데 하나만 조회한다..?
+  public List<BlackedReason> loadAllBlacklistLogs(Long userId) {
+    return blacklistRepository.findByUserIdx(userId)
+      .map(this::convert)
+      .orElse(Collections.emptyList());
+  }
+
+  private List<UserResponse.BlackedReason> convert(BlacklistDomain blacklistDomain) {
+    return List.of(BlackedReason.builder()
+      .blackListReason(blacklistDomain.getBannedReason())
+      .judgement(blacklistDomain.getJudgement())
+      .createdAt(blacklistDomain.getCreateDate())
+      .expiredAt(blacklistDomain.getExpiredAt())
+      .build());
   }
 
   @Override

@@ -19,7 +19,7 @@ import java.util.Optional;
 public class UserCRUDService implements UserAdapterService {
   private final UserRepository userRepository;
 
-  public void saveUser(User user) {
+  public void save(User user) {
     userRepository.save(user);
   }
 

@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import usw.suwiki.core.exception.BaseException;
-import usw.suwiki.core.exception.ExceptionType;
 
 import static usw.suwiki.core.exception.ExceptionType.PARAMETER_VALIDATION_FAIL;
 
@@ -21,10 +20,9 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(BaseException.class)
   public ResponseEntity<ErrorResponse> handleBaseException(BaseException exception) {
-    ExceptionType exceptionType = exception.getExceptionType();
-    log.warn("[Base exception] code : {}, message : {}", exceptionType.getCode(), exceptionType.getMessage());
+    log.warn("[Base exception] code : {}, message : {}", exception.getCode(), exception.getMessage());
 
-    return ResponseEntity.status(exceptionType.getStatus()).body(ErrorResponse.from(exceptionType));
+    return ResponseEntity.status(exception.getHttpStatus()).body(ErrorResponse.from(exception));
   }
 
   @ExceptionHandler(Exception.class)

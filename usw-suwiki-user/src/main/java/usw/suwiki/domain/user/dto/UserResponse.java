@@ -3,6 +3,7 @@ package usw.suwiki.domain.user.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 import usw.suwiki.domain.user.User;
 
@@ -10,6 +11,16 @@ import java.time.LocalDateTime;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class UserResponse {
+
+  @Data
+  public static class Success { // legacy
+    private final boolean success;
+  }
+
+  @Data
+  public static class Overlap { // legacy
+    private final boolean overlap;
+  }
 
   @Builder
   public record MyPage(

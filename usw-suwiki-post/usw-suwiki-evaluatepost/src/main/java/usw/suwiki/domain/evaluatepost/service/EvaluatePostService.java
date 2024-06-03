@@ -62,7 +62,7 @@ public class EvaluatePostService {
 
     lectureService.evaluate(lectureId, evaluation);
     evaluatePostRepository.save(evaluatePost);
-    userBusinessService.wroteEvaluation(userId);
+    userBusinessService.evaluate(userId);
   }
 
   private boolean isAlreadyWritten(Long userId, Long lectureId) {

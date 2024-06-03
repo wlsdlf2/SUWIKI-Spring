@@ -19,9 +19,11 @@ import usw.suwiki.domain.user.model.UserClaim;
 import usw.suwiki.infra.jpa.BaseEntity;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 import static usw.suwiki.core.exception.ExceptionType.PASSWORD_ERROR;
 import static usw.suwiki.core.exception.ExceptionType.SAME_PASSWORD_WITH_OLD;
+import static usw.suwiki.core.exception.ExceptionType.USER_NOT_FOUND;
 import static usw.suwiki.core.exception.ExceptionType.USER_POINT_LACK;
 
 @Entity
@@ -140,6 +142,12 @@ public class User extends BaseEntity {
 
   public boolean isAdmin() {
     return this.role.isAdmin();
+  }
+
+  public void validateEmail(String email) {
+    if (!Objects.equals(this.email, email)) {
+      throw new AccountException(USER_NOT_FOUND);
+    }
   }
 
   public boolean isPasswordEquals(PasswordEncoder passwordEncoder, String rawPassword) {

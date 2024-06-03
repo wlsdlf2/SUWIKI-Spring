@@ -16,6 +16,7 @@ import usw.suwiki.auth.core.annotation.Authenticated;
 import usw.suwiki.auth.core.annotation.Authorize;
 import usw.suwiki.common.response.ResponseForm;
 import usw.suwiki.domain.user.dto.UserRequest;
+import usw.suwiki.domain.user.dto.UserResponse;
 import usw.suwiki.domain.user.service.UserBusinessService;
 import usw.suwiki.statistics.annotation.Statistics;
 
@@ -34,50 +35,50 @@ public class UserControllerV2 {
   @Statistics(USER)
   @PostMapping("/loginId/check")
   @ResponseStatus(OK)
-  public ResponseForm overlapId(@Valid @RequestBody UserRequest.CheckLoginId checkLoginId) {
-    var response = userBusinessService.isDuplicatedId(checkLoginId.loginId());
-    return ResponseForm.success(response);
+  public UserResponse.Overlap isOverlapId(@Valid @RequestBody UserRequest.CheckLoginId request) {
+    var isDuplicated = userBusinessService.isDuplicatedId(request.loginId());
+    return new UserResponse.Overlap(isDuplicated);
   }
 
   @Statistics(USER)
   @PostMapping("/email/check")
   @ResponseStatus(OK)
-  public ResponseForm overlapEmail(@Valid @RequestBody UserRequest.CheckEmail checkEmail) {
-    var response = userBusinessService.isDuplicatedEmail(checkEmail.email());
-    return ResponseForm.success(response);
+  public UserResponse.Overlap isOverlapEmail(@Valid @RequestBody UserRequest.CheckEmail request) {
+    var isDuplicated = userBusinessService.isDuplicatedEmail(request.email());
+    return new UserResponse.Overlap(isDuplicated);
   }
 
   @Statistics(USER)
   @PostMapping
   @ResponseStatus(OK)
-  public ResponseForm join(@Valid @RequestBody UserRequest.Join join) {
-    Map<?, ?> response = userBusinessService.join(join.loginId(), join.password(), join.email());
-    return ResponseForm.success(response);
+  public UserResponse.Success join(@Valid @RequestBody UserRequest.Join join) {
+    userBusinessService.join(join.loginId(), join.password(), join.email());
+    return new UserResponse.Success(true);
   }
 
   @Statistics(USER)
   @PostMapping("inquiry-loginId")
   @ResponseStatus(OK)
-  public ResponseForm findId(@Valid @RequestBody UserRequest.FindId findId) {
-    var response = userBusinessService.findId(findId.email());
-    return ResponseForm.success(response);
+  public UserResponse.Success findId(@Valid @RequestBody UserRequest.FindId findId) {
+    userBusinessService.findId(findId.email());
+    return new UserResponse.Success(true);
   }
 
   @Statistics(USER)
   @PostMapping("inquiry-password")
   @ResponseStatus(OK)
-  public ResponseForm findPw(@Valid @RequestBody UserRequest.FindPassword findPassword) {
-    var response = userBusinessService.findPw(findPassword.loginId(), findPassword.email());
-    return ResponseForm.success(response);
+  public UserResponse.Success findPw(@Valid @RequestBody UserRequest.FindPassword findPassword) {
+    userBusinessService.findPw(findPassword.loginId(), findPassword.email());
+    return new UserResponse.Success(true);
   }
 
   @Authorize
   @Statistics(USER)
   @PatchMapping("password")
   @ResponseStatus(OK)
-  public ResponseForm resetPw(@Authenticated Long userId, @Valid @RequestBody UserRequest.EditPassword request) {
-    var response = userBusinessService.editPassword(userId, request.prePassword(), request.newPassword());
-    return ResponseForm.success(response);
+  public UserResponse.Success resetPw(@Authenticated Long userId, @Valid @RequestBody UserRequest.EditPassword request) {
+    userBusinessService.editPassword(userId, request.prePassword(), request.newPassword());
+    return new UserResponse.Success(true);
   }
 
   @Statistics(USER)
@@ -134,7 +135,8 @@ public class UserControllerV2 {
   @Statistics(USER)
   @DeleteMapping
   @ResponseStatus(OK)
-  public ResponseForm quit(@Authenticated Long userId, @Valid @RequestBody UserRequest.Quit quit) {
-    return ResponseForm.success(userBusinessService.quit(userId, quit.password()));
+  public UserResponse.Success quit(@Authenticated Long userId, @Valid @RequestBody UserRequest.Quit quit) {
+    userBusinessService.quit(userId, quit.password());
+    return new UserResponse.Success(true);
   }
 }

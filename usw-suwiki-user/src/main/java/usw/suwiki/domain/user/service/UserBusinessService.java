@@ -18,16 +18,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static usw.suwiki.common.response.ApiResponseFactory.overlapFalseFlag;
-import static usw.suwiki.common.response.ApiResponseFactory.overlapTrueFlag;
-import static usw.suwiki.common.response.ApiResponseFactory.successFlag;
 import static usw.suwiki.core.exception.ExceptionType.EMAIL_NOT_AUTHED;
 import static usw.suwiki.core.exception.ExceptionType.INVALID_EMAIL_FORMAT;
 import static usw.suwiki.core.exception.ExceptionType.LOGIN_ID_OR_EMAIL_OVERLAP;
 import static usw.suwiki.core.exception.ExceptionType.PASSWORD_ERROR;
 import static usw.suwiki.core.exception.ExceptionType.USER_NOT_FOUND;
-import static usw.suwiki.core.exception.ExceptionType.USER_NOT_FOUND_BY_EMAIL;
-import static usw.suwiki.core.exception.ExceptionType.USER_NOT_FOUND_BY_LOGINID;
 import static usw.suwiki.core.mail.MailType.EMAIL_AUTH;
 import static usw.suwiki.core.mail.MailType.FIND_ID;
 import static usw.suwiki.core.mail.MailType.FIND_PASSWORD;
@@ -63,22 +58,16 @@ public class UserBusinessService {
   private final TokenAgent tokenAgent;
 
   @Transactional(readOnly = true)
-  public Map<String, Boolean> isDuplicatedId(String loginId) {
-    if (userCRUDService.findOptionalByLoginId(loginId).isPresent() || userIsolationCRUDService.isIsolatedByLoginId(loginId)) {
-      return overlapTrueFlag();
-    }
-    return overlapFalseFlag();
+  public boolean isDuplicatedId(String loginId) {
+    return userCRUDService.findOptionalByLoginId(loginId).isPresent() || userIsolationCRUDService.isIsolatedByLoginId(loginId);
   }
 
   @Transactional(readOnly = true)
-  public Map<String, Boolean> isDuplicatedEmail(String email) {
-    if (userCRUDService.findOptionalByEmail(email).isPresent() || userIsolationCRUDService.isIsolatedByEmail(email)) {
-      return overlapTrueFlag();
-    }
-    return overlapFalseFlag();
+  public boolean isDuplicatedEmail(String email) {
+    return userCRUDService.findOptionalByEmail(email).isPresent() || userIsolationCRUDService.isIsolatedByEmail(email);
   }
 
-  public void wroteEvaluation(Long userId) {
+  public void evaluate(Long userId) {
     User user = userCRUDService.loadUserById(userId);
     user.writeEvaluatePost();
   }
@@ -103,7 +92,7 @@ public class UserBusinessService {
     user.eraseExamPost();
   }
 
-  public Map<String, Boolean> join(String loginId, String password, String email) {
+  public void join(String loginId, String password, String email) {
     blacklistDomainService.isUserInBlackListThatRequestJoin(email);
 
     if (userCRUDService.findOptionalByLoginId(loginId).isPresent() ||
@@ -119,49 +108,50 @@ public class UserBusinessService {
     }
 
     User user = User.init(loginId, passwordEncoder.encode(password), email);
-    userCRUDService.saveUser(user);
+    userCRUDService.save(user);
 
     emailSender.send(email, EMAIL_AUTH, confirmationTokenCRUDService.save(user.getId()));
-    return successFlag();
   }
 
-  public Map<String, Boolean> findId(String email) {
+  public void findId(String email) {
     Optional<User> requestUser = userCRUDService.findOptionalByEmail(email);
     Optional<String> isolatedLoginId = userIsolationCRUDService.getIsolatedLoginIdByEmail(email);
 
     if (requestUser.isPresent()) {
       emailSender.send(email, FIND_ID, requestUser.get().getLoginId());
-      return successFlag();
+      return;
     } else if (isolatedLoginId.isPresent()) {
       emailSender.send(email, FIND_ID, isolatedLoginId.get());
-      return successFlag();
+      return;
     }
+
     throw new AccountException(USER_NOT_FOUND);
   }
 
   // todo: isoloation user table부터 확인 후 user table 확인하도록 수정
-  public Map<String, Boolean> findPw(String loginId, String email) {
+  public void findPw(String loginId, String email) {
     Optional<User> userByLoginId = userCRUDService.findOptionalByLoginId(loginId);
 
     if (userByLoginId.isEmpty()) {
-      throw new AccountException(USER_NOT_FOUND_BY_LOGINID);
+      throw new AccountException(USER_NOT_FOUND);
     }
 
     Optional<User> userByEmail = userCRUDService.findOptionalByEmail(email);
     if (userByEmail.isEmpty()) {
-      throw new AccountException(USER_NOT_FOUND_BY_EMAIL);
+      throw new AccountException(USER_NOT_FOUND);
     }
 
     if (userByLoginId.equals(userByEmail)) {
       User user = userByLoginId.get();
       emailSender.send(email, FIND_PASSWORD, user.resetPassword(passwordEncoder));
-      return successFlag();
+      return;
     } else if (userIsolationCRUDService.isRetrievedUserEquals(email, loginId)) {
       String newPassword = userIsolationCRUDService.updateIsolatedUserPassword(passwordEncoder, email);
       emailSender.send(email, FIND_PASSWORD, newPassword);
-      return successFlag();
+      return;
     }
-    throw new AccountException(USER_NOT_FOUND_BY_EMAIL);
+
+    throw new AccountException(USER_NOT_FOUND);
   }
 
   public Map<String, String> login(String loginId, String inputPassword) {
@@ -191,10 +181,9 @@ public class UserBusinessService {
   }
 
 
-  public Map<String, Boolean> editPassword(Long userId, String prePassword, String newPassword) {
+  public void editPassword(Long userId, String prePassword, String newPassword) {
     var user = userCRUDService.loadUserById(userId);
     user.changePassword(passwordEncoder, prePassword, newPassword);
-    return successFlag();
   }
 
   public UserResponse.MyPage loadMyPage(Long userId) {
@@ -208,7 +197,7 @@ public class UserBusinessService {
     return reissueJwt(user, refreshToken.getPayload());
   }
 
-  public Map<String, Boolean> quit(Long userId, String inputPassword) {
+  public void quit(Long userId, String inputPassword) {
     var user = userCRUDService.loadUserById(userId);
     user.validatePassword(passwordEncoder, inputPassword);
 
@@ -219,7 +208,6 @@ public class UserBusinessService {
     cleanEvaluatePostsService.clean(user.getId());
 
     user.waitQuit();
-    return successFlag();
   }
 
   public List<BlackedReason> loadBlackListReason(Long id) {

@@ -12,12 +12,10 @@ import usw.suwiki.auth.core.annotation.Authorize;
 import usw.suwiki.domain.evaluatepost.service.EvaluatePostService;
 import usw.suwiki.domain.exampost.service.ExamPostService;
 import usw.suwiki.domain.report.dto.ReportRequest;
+import usw.suwiki.domain.user.dto.UserResponse;
 import usw.suwiki.statistics.annotation.Statistics;
 
-import java.util.Map;
-
 import static org.springframework.http.HttpStatus.OK;
-import static usw.suwiki.common.response.ApiResponseFactory.successFlag;
 import static usw.suwiki.statistics.log.MonitorTarget.USER;
 
 @RestController
@@ -31,23 +29,23 @@ public class ReportController {
   @Statistics(USER)
   @PostMapping("/evaluate")
   @ResponseStatus(OK)
-  public Map<String, Boolean> reportEvaluate(
+  public UserResponse.Success reportEvaluate(
     @Authenticated Long reportingUserId,
     @Valid @RequestBody ReportRequest.Evaluate request
   ) {
     evaluatePostService.report(reportingUserId, request.getEvaluateIdx());
-    return successFlag();
+    return new UserResponse.Success(true);
   }
 
   @Authorize
   @Statistics(USER)
   @PostMapping("/exam")
   @ResponseStatus(OK)
-  public Map<String, Boolean> reportExam(
+  public UserResponse.Success reportExam(
     @Authenticated Long reportingUserId,
     @Valid @RequestBody ReportRequest.Exam request
   ) {
     examPostService.report(reportingUserId, request.getExamIdx());
-    return successFlag();
+    return new UserResponse.Success(true);
   }
 }

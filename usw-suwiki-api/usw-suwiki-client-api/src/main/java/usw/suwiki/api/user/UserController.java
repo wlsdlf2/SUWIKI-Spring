@@ -44,22 +44,25 @@ public class UserController {
   @Statistics(USER)
   @PostMapping("/check-id")
   @ResponseStatus(OK)
-  public Map<String, Boolean> overlapId(@Valid @RequestBody UserRequest.CheckLoginId request) {
-    return userBusinessService.isDuplicatedId(request.loginId());
+  public UserResponse.Overlap isOverlapId(@Valid @RequestBody UserRequest.CheckLoginId request) {
+    var isDuplicated = userBusinessService.isDuplicatedId(request.loginId());
+    return new UserResponse.Overlap(isDuplicated);
   }
 
   @Statistics(USER)
   @PostMapping("/check-email")
   @ResponseStatus(OK)
-  public Map<String, Boolean> overlapEmail(@Valid @RequestBody UserRequest.CheckEmail request) {
-    return userBusinessService.isDuplicatedEmail(request.email());
+  public UserResponse.Overlap isOverlapEmail(@Valid @RequestBody UserRequest.CheckEmail request) {
+    var isDuplicated = userBusinessService.isDuplicatedEmail(request.email());
+    return new UserResponse.Overlap(isDuplicated);
   }
 
   @Statistics(USER)
   @PostMapping("join")
   @ResponseStatus(OK)
-  public Map<String, Boolean> join(@Valid @RequestBody UserRequest.Join request) {
-    return userBusinessService.join(request.loginId(), request.password(), request.email());
+  public UserResponse.Success join(@Valid @RequestBody UserRequest.Join request) {
+    userBusinessService.join(request.loginId(), request.password(), request.email());
+    return new UserResponse.Success(true);
   }
 
   // todo: confirmationControllerV2와 같은 코드
@@ -73,23 +76,26 @@ public class UserController {
   @Statistics(USER)
   @PostMapping("find-id")
   @ResponseStatus(OK)
-  public Map<String, Boolean> findId(@Valid @RequestBody UserRequest.FindId request) {
-    return userBusinessService.findId(request.email());
+  public UserResponse.Success findId(@Valid @RequestBody UserRequest.FindId request) {
+    userBusinessService.findId(request.email());
+    return new UserResponse.Success(true);
   }
 
   @Statistics(USER)
   @PostMapping("find-pw")
   @ResponseStatus(OK)
-  public Map<String, Boolean> findPw(@Valid @RequestBody UserRequest.FindPassword request) {
-    return userBusinessService.findPw(request.loginId(), request.email());
+  public UserResponse.Success findPw(@Valid @RequestBody UserRequest.FindPassword request) {
+    userBusinessService.findPw(request.loginId(), request.email());
+    return new UserResponse.Success(true);
   }
 
   @Authorize
   @Statistics(USER)
   @PostMapping("reset-pw") // TODO (05.31) 이름은 초기화 API 인데 그냥 비밀번호 변경 API
   @ResponseStatus(OK)
-  public Map<String, Boolean> editPassword(@Authenticated Long id, @Valid @RequestBody UserRequest.EditPassword request) {
-    return userBusinessService.editPassword(id, request.prePassword(), request.newPassword());
+  public UserResponse.Success editPassword(@Authenticated Long id, @Valid @RequestBody UserRequest.EditPassword request) {
+    userBusinessService.editPassword(id, request.prePassword(), request.newPassword());
+    return new UserResponse.Success(true);
   }
 
   @Statistics(USER)
@@ -220,7 +226,8 @@ public class UserController {
   @Statistics(USER)
   @DeleteMapping("/quit")
   @ResponseStatus(OK)
-  public Map<String, Boolean> quit(@Authenticated Long userId, @Valid @RequestBody UserRequest.Quit request) {
-    return userBusinessService.quit(userId, request.password());
+  public UserResponse.Success quit(@Authenticated Long userId, @Valid @RequestBody UserRequest.Quit request) {
+    userBusinessService.quit(userId, request.password());
+    return new UserResponse.Success(true);
   }
 }

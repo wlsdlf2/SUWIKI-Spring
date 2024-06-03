@@ -16,11 +16,10 @@ import usw.suwiki.domain.report.ExamPostReport;
 import usw.suwiki.domain.report.service.ReportService;
 import usw.suwiki.domain.user.User;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static usw.suwiki.common.response.ApiResponseFactory.adminLoginResponseForm;
-import static usw.suwiki.common.response.ApiResponseFactory.successCapitalFlag;
 import static usw.suwiki.domain.user.dto.UserAdminRequestDto.EvaluatePostBlacklistForm;
 import static usw.suwiki.domain.user.dto.UserAdminRequestDto.EvaluatePostNoProblemForm;
 import static usw.suwiki.domain.user.dto.UserAdminRequestDto.EvaluatePostRestrictForm;
@@ -57,7 +56,7 @@ public class AdminBusinessService {
         final long totalUserCount = userCount + userIsolationCount;
         var claim = user.toClaim();
 
-        return adminLoginResponseForm(tokenAgent.createAccessToken(user.getId(), claim), String.valueOf(totalUserCount));
+        return adminLoginResponse(tokenAgent.createAccessToken(user.getId(), claim), String.valueOf(totalUserCount));
       }
       throw new AccountException(ExceptionType.USER_RESTRICTED);
     }
@@ -81,12 +80,12 @@ public class AdminBusinessService {
 
   public Map<String, Boolean> executeNoProblemEvaluatePost(EvaluatePostNoProblemForm evaluatePostNoProblemForm) {
     reportService.deleteByEvaluateIdx(evaluatePostNoProblemForm.evaluateIdx());
-    return successCapitalFlag();
+    return success();
   }
 
   public Map<String, Boolean> executeNoProblemExamPost(ExamPostNoProblemForm examPostRestrictForm) {
     reportService.deleteByExamIdx(examPostRestrictForm.examIdx());
-    return successCapitalFlag();
+    return success();
   }
 
   public Map<String, Boolean> executeRestrictEvaluatePost(EvaluatePostRestrictForm request) {
@@ -98,7 +97,7 @@ public class AdminBusinessService {
     restrictingUserService.restrictFromEvaluatePost(request, evaluatePostReport.getReportedUserIdx());
 
     deleteReportedEvaluatePostFromEvaluateIdx(evaluatePostReport.getEvaluateIdx());
-    return successCapitalFlag();
+    return success();
   }
 
   public Map<String, Boolean> executeRestrictExamPost(ExamPostRestrictForm request) {
@@ -110,7 +109,7 @@ public class AdminBusinessService {
     restrictingUserService.restrictFromExamPost(request, examPostReport.getReportedUserIdx());
 
     deleteReportedExamPostFromEvaluateIdx(examPostReport.getExamIdx());
-    return successCapitalFlag();
+    return success();
   }
 
   public Map<String, Boolean> executeBlackListEvaluatePost(EvaluatePostBlacklistForm evaluatePostBlacklistForm) {
@@ -126,7 +125,7 @@ public class AdminBusinessService {
     );
     plusRestrictCount(userIdx);
 
-    return successCapitalFlag();
+    return success();
   }
 
   public Map<String, Boolean> executeBlackListExamPost(ExamPostBlacklistForm examPostBlacklistForm) {
@@ -141,7 +140,7 @@ public class AdminBusinessService {
     );
     plusRestrictCount(userIdx);
 
-    return successCapitalFlag();
+    return success();
   }
 
   private void deleteReportedEvaluatePostFromEvaluateIdx(Long evaluateId) {
@@ -164,5 +163,24 @@ public class AdminBusinessService {
   private void plusReportingUserPoint(Long reportingUserId) {
     User user = userCRUDService.loadUserById(reportingUserId);
     user.report();
+  }
+
+  /**
+   * legacies
+   */
+  private Map<String, String> adminLoginResponse(
+    final String accessToken,
+    final String userCount
+  ) {
+    return new HashMap<>() {{
+      put("AccessToken", accessToken);
+      put("UserCount", userCount);
+    }};
+  }
+
+  private Map<String, Boolean> success() {
+    return new HashMap<>() {{
+      put("Success", true);
+    }};
   }
 }

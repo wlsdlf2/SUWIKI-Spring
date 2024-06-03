@@ -17,6 +17,7 @@ public class ResponseValidator {
   private ResponseValidator() {
   }
 
+  @SafeVarargs
   public static void validate(ResultActions result, ResultMatcher expectedStatus, Pair<String, Object>... expects) throws Exception {
     result.andExpectAll(
       Stream.concat(

@@ -59,6 +59,7 @@ import static usw.suwiki.core.exception.ExceptionType.LOGIN_ID_OR_EMAIL_OVERLAP;
 import static usw.suwiki.core.exception.ExceptionType.PARAMETER_VALIDATION_FAIL;
 import static usw.suwiki.core.exception.ExceptionType.PASSWORD_ERROR;
 import static usw.suwiki.core.exception.ExceptionType.SAME_PASSWORD_WITH_OLD;
+import static usw.suwiki.core.exception.ExceptionType.USER_NOT_FOUND;
 
 @AcceptanceTest
 class UserAcceptanceTest extends AcceptanceTestSupport {
@@ -469,10 +470,10 @@ class UserAcceptanceTest extends AcceptanceTestSupport {
     @Test
     void 비밀번호_찾기_성공() throws Exception {
       // setup
-      var requestBody = new FindPassword(loginId, email);
+      var request = new FindPassword(loginId, email);
 
       // execution
-      var result = post(Uri.of(endpoint), requestBody);
+      var result = post(Uri.of(endpoint), request);
 
       // result validation
       validate(result, status().isOk(), Pair.of("$.success", true));
@@ -482,6 +483,26 @@ class UserAcceptanceTest extends AcceptanceTestSupport {
         RestDocument.builder()
           .summary("비밀번호 찾기 API")
           .description("비밀번호 찾기 API입니다.")
+          .tag(USER)
+          .result(result)
+          .generateDocs()
+      );
+    }
+
+    @Test
+    void 비밀번호_찾기_실패_이메일_아이디_불일치로_유저_조회_불가() throws Exception {
+      // setup
+      var request = new FindPassword(loginId, "wrongEaml@suwon.ac.kr");
+
+      // execution
+      var result = post(Uri.of(endpoint), request);
+
+      // result validation
+      validate(result, status().isNotFound(), USER_NOT_FOUND);
+
+      // docs
+      result.andDo(
+        RestDocument.builder()
           .tag(USER)
           .result(result)
           .generateDocs()

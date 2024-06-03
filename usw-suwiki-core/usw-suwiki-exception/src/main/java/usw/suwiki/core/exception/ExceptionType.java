@@ -59,10 +59,8 @@ public enum ExceptionType {
   /**
    * Domain : BlackListDomain
    */
-  USER_ALREADY_BLACKLISTED("USER014", "이미 블랙리스트인 사용자 입니다.", BAD_REQUEST),
-  USER_IS_BLACKLISTED("USER015", "신고 당한 횟수 3회 누적으로 블랙리스트 조치 되었습니다. 더 이상 서비스를 이용할 수 없습니다.", BAD_REQUEST),
-  USER_NOT_FOUND_BY_EMAIL("USER013", "해당 이메일에 대한 유저를 찾을 수 없습니다.", BAD_REQUEST),
-  USER_NOT_FOUND_BY_LOGINID("USER016", "해당 아이디에 대한 유저를 찾을 수 없습니다.", BAD_REQUEST),
+  ALREADY_BLACK("USER014", "이미 블랙리스트인 사용자 입니다.", BAD_REQUEST),
+  BLACK_USER("USER015", "신고 당한 횟수 3회 누적으로 블랙리스트 조치 되었습니다. 더 이상 서비스를 이용할 수 없습니다.", BAD_REQUEST),
 
   /**
    * Domain : Token

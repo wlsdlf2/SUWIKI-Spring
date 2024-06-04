@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import usw.suwiki.core.exception.AccountException;
 import usw.suwiki.core.exception.ExceptionType;
-import usw.suwiki.core.secure.PasswordEncoder;
+import usw.suwiki.core.secure.Encoder;
 import usw.suwiki.domain.user.User;
 import usw.suwiki.domain.user.isolated.UserIsolation;
 import usw.suwiki.domain.user.isolated.UserIsolationRepository;
@@ -55,16 +55,16 @@ class UserIsolationCRUDServiceImpl implements UserIsolationCRUDService {
 
   @Override
   @Transactional
-  public String updateIsolatedUserPassword(PasswordEncoder passwordEncoder, String email) {
+  public String updateIsolatedUserPassword(Encoder encoder, String email) {
     return userIsolationRepository.findByEmail(email)
-      .map(it -> it.updateRandomPassword(passwordEncoder))
+      .map(it -> it.updateRandomPassword(encoder))
       .orElseThrow(() -> new AccountException(ExceptionType.USER_NOT_FOUND));
   }
 
   @Override
-  public boolean isLoginableIsolatedUser(String loginId, String inputPassword, PasswordEncoder passwordEncoder) {
+  public boolean isLoginable(String loginId, String inputPassword, Encoder encoder) {
     return userIsolationRepository.findByLoginId(loginId)
-      .map(it -> it.validatePassword(passwordEncoder, inputPassword))
+      .map(it -> it.validatePassword(encoder, inputPassword))
       .orElseThrow(() -> new AccountException(ExceptionType.USER_NOT_FOUND));
   }
 

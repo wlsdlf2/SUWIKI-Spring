@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import usw.suwiki.core.exception.AccountException;
 import usw.suwiki.core.exception.ExceptionType;
-import usw.suwiki.core.secure.PasswordEncoder;
+import usw.suwiki.core.secure.Encoder;
 import usw.suwiki.core.secure.TokenAgent;
 import usw.suwiki.domain.evaluatepost.EvaluatePost;
 import usw.suwiki.domain.evaluatepost.service.EvaluatePostService;
@@ -33,7 +33,7 @@ import static usw.suwiki.domain.user.dto.AdminResponse.LoadAllReportedPost;
 public class AdminService {
   private static final long BANNED_PERIOD = 365L;
 
-  private final PasswordEncoder passwordEncoder;
+  private final Encoder encoder;
   private final UserCRUDService userCRUDService;
   private final RestrictingUserService restrictingUserService;
   private final UserIsolationCRUDService userIsolationCRUDService;
@@ -48,7 +48,7 @@ public class AdminService {
   public Map<String, String> adminLogin(String loginId, String password) {
     User user = userCRUDService.loadByLoginId(loginId);
 
-    if (!user.isPasswordEquals(passwordEncoder, password)) {
+    if (!user.isPasswordEquals(encoder, password)) {
       throw new AccountException(ExceptionType.PASSWORD_ERROR);
     }
 

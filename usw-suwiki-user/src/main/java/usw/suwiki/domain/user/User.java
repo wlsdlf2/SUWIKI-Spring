@@ -12,7 +12,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import usw.suwiki.core.exception.AccountException;
-import usw.suwiki.core.secure.PasswordEncoder;
+import usw.suwiki.core.secure.Encoder;
 import usw.suwiki.core.secure.RandomPasswordGenerator;
 import usw.suwiki.domain.user.model.UserAdapter;
 import usw.suwiki.domain.user.model.UserClaim;
@@ -150,31 +150,31 @@ public class User extends BaseEntity {
     }
   }
 
-  public boolean isPasswordEquals(PasswordEncoder passwordEncoder, String rawPassword) {
-    return passwordEncoder.matches(rawPassword, this.password);
+  public boolean isPasswordEquals(Encoder encoder, String rawPassword) {
+    return encoder.matches(rawPassword, this.password);
   }
 
-  public void validatePassword(PasswordEncoder passwordEncoder, String rawPassword) {
-    if (!isPasswordEquals(passwordEncoder, rawPassword)) {
+  public void validatePassword(Encoder encoder, String rawPassword) {
+    if (!isPasswordEquals(encoder, rawPassword)) {
       throw new AccountException(PASSWORD_ERROR);
     }
   }
 
-  private void validateDuplicatedPassword(PasswordEncoder passwordEncoder, String newPassword) {
-    if (isPasswordEquals(passwordEncoder, newPassword)) {
+  private void validateDuplicatedPassword(Encoder encoder, String newPassword) {
+    if (isPasswordEquals(encoder, newPassword)) {
       throw new AccountException(SAME_PASSWORD_WITH_OLD);
     }
   }
 
-  public void changePassword(PasswordEncoder passwordEncoder, String prePassword, String newPassword) {
-    validatePassword(passwordEncoder, prePassword);
-    validateDuplicatedPassword(passwordEncoder, newPassword);
-    this.password = passwordEncoder.encode(newPassword);
+  public void changePassword(Encoder encoder, String prePassword, String newPassword) {
+    validatePassword(encoder, prePassword);
+    validateDuplicatedPassword(encoder, newPassword);
+    this.password = encoder.encode(newPassword);
   }
 
-  public String resetPassword(PasswordEncoder passwordEncoder) {
+  public String resetPassword(Encoder encoder) {
     String newPassword = RandomPasswordGenerator.generate();
-    this.password = passwordEncoder.encode(newPassword);
+    this.password = encoder.encode(newPassword);
     return password;
   }
 

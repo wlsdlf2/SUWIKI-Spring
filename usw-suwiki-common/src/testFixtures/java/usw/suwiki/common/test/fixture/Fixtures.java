@@ -90,11 +90,19 @@ public final class Fixtures {
   }
 
   public User 관리자_생성() {
-    return userRepository.save(UserFixture.admin());
+    return userRepository.save(UserFixture.admin(null, null));
+  }
+
+  public User 관리자_생성(String loginId, String password) {
+    return userRepository.save(UserFixture.admin(loginId, password));
   }
 
   public User 유저_생성() {
-    return userRepository.save(UserFixture.one());
+    return userRepository.save(UserFixture.one(null, null));
+  }
+
+  public User 유저_생성(String loginId, String password) {
+    return userRepository.save(UserFixture.one(loginId, password));
   }
 
   public User 다른_유저_생성() {

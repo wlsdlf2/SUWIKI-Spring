@@ -20,7 +20,7 @@ import usw.suwiki.common.test.annotation.AcceptanceTest;
 import usw.suwiki.common.test.fixture.Fixtures;
 import usw.suwiki.common.test.support.AcceptanceTestSupport;
 import usw.suwiki.common.test.support.Uri;
-import usw.suwiki.core.secure.PasswordEncoder;
+import usw.suwiki.core.secure.Encoder;
 import usw.suwiki.domain.lecture.Major;
 import usw.suwiki.domain.lecture.major.FavoriteMajorRepository;
 import usw.suwiki.domain.user.User;
@@ -73,7 +73,7 @@ class UserAcceptanceTest extends AcceptanceTestSupport {
   private FavoriteMajorRepository favoriteMajorRepository;
 
   @Autowired
-  private PasswordEncoder passwordEncoder;
+  private Encoder encoder;
   @Autowired
   private Fixtures fixtures;
 
@@ -85,7 +85,7 @@ class UserAcceptanceTest extends AcceptanceTestSupport {
 
   @BeforeEach
   public void setup() {
-    user = userRepository.save(User.join(loginId, passwordEncoder.encode(password), email).activate());
+    user = userRepository.save(User.join(loginId, encoder.encode(password), email).activate());
     accessToken = fixtures.토큰_생성(user);
   }
 
@@ -244,7 +244,7 @@ class UserAcceptanceTest extends AcceptanceTestSupport {
       assertAll(
         () -> assertThat(saved).isNotEmpty(),
         () -> assertThat(saved.get().getEmail()).isEqualTo(request.email()),
-        () -> assertTrue(passwordEncoder.matches(request.password(), saved.get().getPassword()))
+        () -> assertTrue(encoder.matches(request.password(), saved.get().getPassword()))
       );
 
       // docs
@@ -572,7 +572,7 @@ class UserAcceptanceTest extends AcceptanceTestSupport {
       Optional<User> diger = userRepository.findByLoginId(loginId);
       assertAll(
         () -> assertThat(diger).isNotEmpty(),
-        () -> assertTrue(passwordEncoder.matches(newPassword, diger.get().getPassword()))
+        () -> assertTrue(encoder.matches(newPassword, diger.get().getPassword()))
       );
 
       // docs

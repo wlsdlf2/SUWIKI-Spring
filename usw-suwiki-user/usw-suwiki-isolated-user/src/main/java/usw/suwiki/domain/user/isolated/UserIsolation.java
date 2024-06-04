@@ -10,7 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import usw.suwiki.core.secure.PasswordEncoder;
+import usw.suwiki.core.secure.Encoder;
 import usw.suwiki.core.secure.RandomPasswordGenerator;
 
 import java.time.LocalDateTime;
@@ -43,13 +43,13 @@ public class UserIsolation {
   @Column
   private LocalDateTime lastLogin;
 
-  public boolean validatePassword(PasswordEncoder passwordEncoder, String inputPassword) {
-    return passwordEncoder.matches(inputPassword, password);
+  public boolean validatePassword(Encoder encoder, String inputPassword) {
+    return encoder.matches(inputPassword, password);
   }
 
-  public String updateRandomPassword(PasswordEncoder passwordEncoder) {
+  public String updateRandomPassword(Encoder encoder) {
     String newPassword = RandomPasswordGenerator.generate();
-    this.password = passwordEncoder.encode(newPassword);
+    this.password = encoder.encode(newPassword);
     return newPassword;
   }
 }

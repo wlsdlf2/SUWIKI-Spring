@@ -1,50 +1,5 @@
 spring:
-  datasource:
-    url: jdbc:h2:mem:test;MODE=MySQL;DB_CLOSE_DELAY=-1
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
-
-  jpa:
-    hibernate:
-      ddl-auto: create-drop
-    properties:
-      hibernate:
-        show_sql: true
-        format_sql: true
-        dialect: org.hibernate.dialect.H2Dialect
-        # todo: 예약어 수정 후 삭제
-        globally_quoted_identifiers: true
-        globally_quoted_identifiers_skip_column_definitions: true
-    open-in-view: false
-
-  flyway:
-    enabled: false
-
-  secret-key: testtesttesttesttesttesttesttesttesttesttesttesttesttesttest
-
-  mail:
-    host: testtesttesttesttesttesttesttesttesttesttesttesttesttesttest
-    port: 587
-    username: testtesttesttesttesttesttesttesttesttesttesttesttesttesttest
-    password: testtesttesttesttesttesttesttesttesttesttesttesttesttesttest
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
-
-jasypt:
-  password: testtesttest
-
-jwt:
-  access-duration: 1000000
-  refresh-duration: 100000000
-
-semester:
-  current: 2024-1
-
-server:
-  port: 8080
-  domain: http://localhost:8080
+  config:
+    import:
+      - classpath:application-test.yml
+      - classpath:application-datasource.yml

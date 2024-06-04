@@ -8,7 +8,7 @@ import usw.suwiki.auth.token.service.ConfirmationTokenCRUDService;
 import usw.suwiki.auth.token.service.RefreshTokenService;
 import usw.suwiki.core.exception.AccountException;
 import usw.suwiki.core.mail.EmailSender;
-import usw.suwiki.core.secure.PasswordEncoder;
+import usw.suwiki.core.secure.Encoder;
 import usw.suwiki.core.secure.TokenAgent;
 import usw.suwiki.domain.user.User;
 import usw.suwiki.domain.user.dto.UserResponse;
@@ -37,7 +37,7 @@ public class UserBusinessService {
   private static final String MAIL_FORMAT = "@suwon.ac.kr";
 
   private final EmailSender emailSender;
-  private final PasswordEncoder passwordEncoder;
+  private final Encoder encoder;
 
   private final UserCRUDService userCRUDService;
   private final BlacklistDomainService blacklistDomainService;
@@ -107,7 +107,7 @@ public class UserBusinessService {
       throw new AccountException(INVALID_EMAIL_FORMAT);
     }
 
-    User user = User.join(loginId, passwordEncoder.encode(password), email);
+    User user = User.join(loginId, encoder.encode(password), email);
     userCRUDService.save(user);
 
     emailSender.send(email, EMAIL_AUTH, confirmationTokenCRUDService.save(user.getId()));
@@ -143,10 +143,10 @@ public class UserBusinessService {
 
     if (userByLoginId.equals(userByEmail)) {
       User user = userByLoginId.get();
-      emailSender.send(email, FIND_PASSWORD, user.resetPassword(passwordEncoder));
+      emailSender.send(email, FIND_PASSWORD, user.resetPassword(encoder));
       return;
     } else if (userIsolationCRUDService.isRetrievedUserEquals(email, loginId)) {
-      String newPassword = userIsolationCRUDService.updateIsolatedUserPassword(passwordEncoder, email);
+      String newPassword = userIsolationCRUDService.updateIsolatedUserPassword(encoder, email);
       emailSender.send(email, FIND_PASSWORD, newPassword);
       return;
     }
@@ -168,11 +168,11 @@ public class UserBusinessService {
         throw new AccountException(EMAIL_NOT_AUTHED);
       }
 
-      if (user.isPasswordEquals(passwordEncoder, inputPassword)) {
+      if (user.isPasswordEquals(encoder, inputPassword)) {
         user.login();
         return generateJwt(user);
       }
-    } else if (userIsolationCRUDService.isLoginableIsolatedUser(loginId, inputPassword, passwordEncoder)) {
+    } else if (userIsolationCRUDService.isLoginable(loginId, inputPassword, encoder)) {
       User user = userIsolationCRUDService.wakeIsolated(userCRUDService, loginId);
       return generateJwt(user);
     }
@@ -183,7 +183,7 @@ public class UserBusinessService {
 
   public void editPassword(Long userId, String prePassword, String newPassword) {
     var user = userCRUDService.loadUserById(userId);
-    user.changePassword(passwordEncoder, prePassword, newPassword);
+    user.changePassword(encoder, prePassword, newPassword);
   }
 
   public UserResponse.MyPage loadMyPage(Long userId) {
@@ -199,7 +199,7 @@ public class UserBusinessService {
 
   public void quit(Long userId, String inputPassword) {
     var user = userCRUDService.loadUserById(userId);
-    user.validatePassword(passwordEncoder, inputPassword);
+    user.validatePassword(encoder, inputPassword);
 
     favoriteMajorService.clean(user.getId());
     cleanReportService.clean(user.getId());

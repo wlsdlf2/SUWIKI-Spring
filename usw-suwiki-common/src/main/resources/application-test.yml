@@ -1,0 +1,31 @@
+spring:
+  flyway:
+    enabled: false
+
+  secret-key: testtesttesttesttesttesttesttesttesttesttesttesttesttesttest
+
+  mail:
+    host: testtesttesttesttesttesttesttesttesttesttesttesttesttesttest
+    port: 587
+    username: testtesttesttesttesttesttesttesttesttesttesttesttesttesttest
+    password: testtesttesttesttesttesttesttesttesttesttesttesttesttesttest
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+jasypt:
+  password: testtesttest
+
+jwt:
+  access-duration: 1000000
+  refresh-duration: 100000000
+
+semester:
+  current: 2024-1
+
+server:
+  port: 8081
+  domain: http://localhost:8081

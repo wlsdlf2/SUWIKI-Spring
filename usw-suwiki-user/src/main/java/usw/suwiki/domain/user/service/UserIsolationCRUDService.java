@@ -1,6 +1,6 @@
 package usw.suwiki.domain.user.service;
 
-import usw.suwiki.core.secure.PasswordEncoder;
+import usw.suwiki.core.secure.Encoder;
 import usw.suwiki.domain.user.User;
 
 import java.time.LocalDateTime;
@@ -16,11 +16,11 @@ public interface UserIsolationCRUDService {
 
   boolean isRetrievedUserEquals(String email, String loginId);
 
-  boolean isLoginableIsolatedUser(String loginId, String inputPassword, PasswordEncoder passwordEncoder);
+  boolean isLoginable(String loginId, String inputPassword, Encoder encoder);
 
   Optional<String> getIsolatedLoginIdByEmail(String email);
 
-  String updateIsolatedUserPassword(PasswordEncoder passwordEncoder, String email); // todo: refactoring 할 것
+  String updateIsolatedUserPassword(Encoder encoder, String email); // todo: refactoring 할 것
 
   User wakeIsolated(UserCRUDService userCRUDService, String loginId);
 

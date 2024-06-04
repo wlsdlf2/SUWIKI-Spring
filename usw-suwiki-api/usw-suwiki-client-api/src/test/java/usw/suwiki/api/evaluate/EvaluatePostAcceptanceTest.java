@@ -14,7 +14,7 @@ import usw.suwiki.domain.evaluatepost.EvaluatePostRepository;
 import usw.suwiki.domain.evaluatepost.dto.EvaluatePostRequest;
 import usw.suwiki.domain.lecture.Lecture;
 import usw.suwiki.domain.user.User;
-import usw.suwiki.test.fixture.Fixtures;
+import usw.suwiki.common.test.fixture.Fixtures;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;

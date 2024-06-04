@@ -21,7 +21,7 @@ import usw.suwiki.domain.lecture.timetable.TimetableDay;
 import usw.suwiki.domain.lecture.timetable.TimetableRepository;
 import usw.suwiki.domain.lecture.timetable.dto.TimetableRequest;
 import usw.suwiki.domain.user.User;
-import usw.suwiki.test.fixture.Fixtures;
+import usw.suwiki.common.test.fixture.Fixtures;
 
 import java.util.Arrays;
 import java.util.List;

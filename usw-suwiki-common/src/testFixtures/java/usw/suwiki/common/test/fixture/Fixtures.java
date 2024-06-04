@@ -1,4 +1,4 @@
-package usw.suwiki.test.fixture;
+package usw.suwiki.common.test.fixture;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

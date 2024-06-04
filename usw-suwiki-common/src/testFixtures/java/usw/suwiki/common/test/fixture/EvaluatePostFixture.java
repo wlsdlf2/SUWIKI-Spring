@@ -1,7 +1,5 @@
-package usw.suwiki.test.fixture;
+package usw.suwiki.common.test.fixture;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 import usw.suwiki.domain.evaluatepost.EvaluatePost;
 import usw.suwiki.domain.evaluatepost.LectureInfo;
 import usw.suwiki.domain.evaluatepost.LectureRating;
@@ -9,8 +7,11 @@ import usw.suwiki.domain.lecture.Lecture;
 
 import java.util.List;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class EvaluatePostFixture {
+  
+  private EvaluatePostFixture() {
+  }
+
   public static EvaluatePost one(Long userId, Lecture lecture) {
     return new EvaluatePost(userId, "강의 평가", lectureInfo(lecture), lectureRating());
   }

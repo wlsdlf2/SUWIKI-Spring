@@ -1,4 +1,4 @@
-package usw.suwiki.test.fixture;
+package usw.suwiki.common.test.fixture;
 
 import java.util.Collection;
 import java.util.List;

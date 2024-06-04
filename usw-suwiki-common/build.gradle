@@ -7,18 +7,38 @@ dependencies {
   implementation('com.fasterxml.jackson.core:jackson-annotations')
   implementation('com.github.ulisesbocchio:jasypt-spring-boot-starter:3.0.4')
 
+  // test fixtures
+  testFixturesImplementation project(':usw-suwiki-user')
+  testFixturesImplementation project(':usw-suwiki-user:usw-suwiki-blacklist')
+  testFixturesImplementation project(':usw-suwiki-user:usw-suwiki-restricted')
+  testFixturesImplementation project(':usw-suwiki-user:usw-suwiki-isolated-user')
+
+  testFixturesImplementation project(':usw-suwiki-lecture')
+  testFixturesImplementation project(':usw-suwiki-lecture:usw-suwiki-major')
+  testFixturesImplementation project(':usw-suwiki-lecture:usw-suwiki-schedule')
+  testFixturesImplementation project(':usw-suwiki-lecture:usw-suwiki-timetable')
+
+  testFixturesImplementation project(':usw-suwiki-post:usw-suwiki-notice')
+  testFixturesImplementation project(':usw-suwiki-post:usw-suwiki-viewexam')
+  testFixturesImplementation project(':usw-suwiki-post:usw-suwiki-exampost')
+  testFixturesImplementation project(':usw-suwiki-post:usw-suwiki-evaluatepost')
+
+  testFixturesImplementation project(':usw-suwiki-report')
+
+  testFixturesImplementation project(':usw-suwiki-auth:usw-suwiki-auth-token')
+
   // test supports
+  testFixturesImplementation project(':usw-suwiki-infra:usw-suwiki-db')
+  testFixturesImplementation project(':usw-suwiki-core:usw-suwiki-secure')
   testFixturesImplementation project(':usw-suwiki-core:usw-suwiki-exception')
 
+  testFixturesImplementation('com.h2database:h2')
   testFixturesImplementation('org.springframework.boot:spring-boot-starter')
   testFixturesImplementation('org.springframework.boot:spring-boot-starter-web')
   testFixturesImplementation('org.springframework.boot:spring-boot-starter-test')
-  testFixturesImplementation('org.springframework.boot:spring-boot-starter-data-jpa')
 
   testFixturesApi("com.epages:restdocs-api-spec-mockmvc:${restdocsApiSpecVersion}")
   testFixturesApi('org.springframework.restdocs:spring-restdocs-mockmvc')
   testFixturesApi('org.springframework.security:spring-security-test')
   testFixturesApi('io.github.hejow:easy-restdocs-generator:0.0.8')
-
-  testFixturesRuntimeOnly('com.h2database:h2')
 }

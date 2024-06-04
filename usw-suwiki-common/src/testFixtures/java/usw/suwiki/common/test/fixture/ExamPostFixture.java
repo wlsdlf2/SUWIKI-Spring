@@ -1,7 +1,5 @@
-package usw.suwiki.test.fixture;
+package usw.suwiki.common.test.fixture;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 import usw.suwiki.domain.exampost.ExamDetail;
 import usw.suwiki.domain.exampost.ExamPost;
 import usw.suwiki.domain.exampost.LectureInfo;
@@ -9,11 +7,14 @@ import usw.suwiki.domain.lecture.Lecture;
 
 import java.util.List;
 
-import static usw.suwiki.test.fixture.FixtureUtils.generate;
-import static usw.suwiki.test.fixture.FixtureUtils.randomIds;
+import static usw.suwiki.common.test.fixture.FixtureUtils.generate;
+import static usw.suwiki.common.test.fixture.FixtureUtils.randomIds;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ExamPostFixture {
+
+  private ExamPostFixture() {
+  }
+
   public static ExamPost one(Long userId, Lecture lecture) {
     return new ExamPost(userId, "시험 평가", lectureInfo(lecture), examDetail());
   }

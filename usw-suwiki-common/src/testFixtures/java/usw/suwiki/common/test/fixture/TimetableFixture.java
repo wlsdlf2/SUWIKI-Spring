@@ -1,15 +1,16 @@
-package usw.suwiki.test.fixture;
+package usw.suwiki.common.test.fixture;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 import usw.suwiki.domain.lecture.timetable.Timetable;
 import usw.suwiki.domain.lecture.timetable.TimetableCell;
 import usw.suwiki.domain.lecture.timetable.TimetableCellColor;
 
-import static usw.suwiki.test.fixture.FixtureUtils.random;
+import static usw.suwiki.common.test.fixture.FixtureUtils.random;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class TimetableFixture {
+
+  private TimetableFixture() {
+  }
+
   public static Timetable one(Long userId) {
     return new Timetable(userId, "시간표", 2023, "first");
   }

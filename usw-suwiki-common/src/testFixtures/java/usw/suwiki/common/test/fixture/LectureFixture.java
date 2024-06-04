@@ -1,7 +1,5 @@
-package usw.suwiki.test.fixture;
+package usw.suwiki.common.test.fixture;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 import usw.suwiki.domain.lecture.Lecture;
 import usw.suwiki.domain.lecture.LectureDetail;
 import usw.suwiki.domain.lecture.schedule.LectureSchedule;
@@ -9,11 +7,13 @@ import usw.suwiki.domain.lecture.schedule.LectureSchedule;
 import java.util.List;
 import java.util.stream.IntStream;
 
-import static usw.suwiki.test.fixture.FixtureUtils.random;
+import static usw.suwiki.common.test.fixture.FixtureUtils.random;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class LectureFixture {
   private static final List<String> SEMESTERS = List.of("2021-2", "2022-1", "2022-2", "2023-1", "2023-2", "2024-1");
+
+  private LectureFixture() {
+  }
 
   public static Lecture one() {
     return Lecture.builder()

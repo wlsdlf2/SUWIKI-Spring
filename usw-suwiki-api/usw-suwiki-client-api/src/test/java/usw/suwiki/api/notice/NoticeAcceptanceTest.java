@@ -11,7 +11,7 @@ import usw.suwiki.common.test.support.AcceptanceTestSupport;
 import usw.suwiki.common.test.support.Uri;
 import usw.suwiki.domain.notice.NoticeRepository;
 import usw.suwiki.domain.notice.dto.NoticeRequest;
-import usw.suwiki.test.fixture.Fixtures;
+import usw.suwiki.common.test.fixture.Fixtures;
 
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;

@@ -1,12 +1,12 @@
-package usw.suwiki.test.fixture;
+package usw.suwiki.common.test.fixture;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 import usw.suwiki.domain.user.Role;
 import usw.suwiki.domain.user.User;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class UserFixture {
+
+  private UserFixture() {
+  }
 
   public static User unconfirmed() {
     return User.join("loginId", "password", "test@suwiki.kr");

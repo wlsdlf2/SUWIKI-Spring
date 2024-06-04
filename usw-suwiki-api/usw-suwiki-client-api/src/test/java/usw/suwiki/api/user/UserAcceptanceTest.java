@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import usw.suwiki.auth.token.ConfirmationToken;
 import usw.suwiki.auth.token.ConfirmationTokenRepository;
 import usw.suwiki.common.test.annotation.AcceptanceTest;
+import usw.suwiki.common.test.fixture.Fixtures;
 import usw.suwiki.common.test.support.AcceptanceTestSupport;
 import usw.suwiki.common.test.support.Uri;
 import usw.suwiki.core.secure.PasswordEncoder;
@@ -32,7 +33,6 @@ import usw.suwiki.domain.user.dto.UserRequest.EditPassword;
 import usw.suwiki.domain.user.dto.UserRequest.FindId;
 import usw.suwiki.domain.user.dto.UserRequest.FindPassword;
 import usw.suwiki.domain.user.dto.UserRequest.Join;
-import usw.suwiki.test.fixture.Fixtures;
 
 import java.util.Optional;
 import java.util.stream.Stream;

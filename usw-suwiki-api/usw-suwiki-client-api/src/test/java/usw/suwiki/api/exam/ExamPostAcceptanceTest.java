@@ -14,7 +14,7 @@ import usw.suwiki.domain.lecture.Lecture;
 import usw.suwiki.domain.user.User;
 import usw.suwiki.domain.user.UserRepository;
 import usw.suwiki.domain.viewexam.ViewExamRepository;
-import usw.suwiki.test.fixture.Fixtures;
+import usw.suwiki.common.test.fixture.Fixtures;
 
 import java.time.format.DateTimeFormatter;
 

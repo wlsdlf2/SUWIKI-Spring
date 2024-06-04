@@ -32,10 +32,34 @@ import static usw.suwiki.statistics.log.MonitorTarget.ADMIN;
 public class AdminController {
   private final AdminService adminService;
 
+  @Authorize(Role.ADMIN)
+  @Statistics(ADMIN)
+  @GetMapping("/report/list")
+  @ResponseStatus(OK)
+  public AdminResponse.LoadAllReportedPost loadReportedPost() {
+    return adminService.loadAllReportedPosts();
+  }
+
+  @Authorize(Role.ADMIN)
+  @Statistics(ADMIN)
+  @GetMapping("/report/evaluate/")
+  @ResponseStatus(OK)  // todo: domain dependency
+  public EvaluatePostReport loadDetailReportedEvaluatePost(@Valid @RequestParam Long target) {
+    return adminService.loadDetailReportedEvaluatePost(target);
+  }
+
+  @Authorize(Role.ADMIN)
+  @Statistics(ADMIN)
+  @GetMapping("/report/exam/")
+  @ResponseStatus(OK)
+  public ExamPostReport loadDetailReportedExamPost(@Valid @RequestParam Long target) {
+    return adminService.loadDetailReportedExamPost(target);
+  }
+
   @Statistics(ADMIN)
   @PostMapping("/login")
   @ResponseStatus(OK)
-  public Map<String, String> adminLogin(@Valid @RequestBody UserRequest.Login request) {
+  public AdminResponse.Login adminLogin(@Valid @RequestBody UserRequest.Login request) {
     return adminService.adminLogin(request.loginId(), request.password());
   }
 
@@ -43,8 +67,8 @@ public class AdminController {
   @Statistics(ADMIN)
   @PostMapping("/restrict/evaluate-posts")
   @ResponseStatus(OK)
-  public Map<String, Boolean> restrictEvaluatePost(@Valid @RequestBody AdminRequest.EvaluatePostRestricted request) {
-    adminService.restrictEvaluatePost(request);
+  public Map<String, Boolean> restrictEvaluatePost(@Valid @RequestBody AdminRequest.RestrictEvaluatePost request) {
+    adminService.restrictReport(request);
     return success();
   }
 
@@ -52,8 +76,8 @@ public class AdminController {
   @Statistics(ADMIN)
   @PostMapping("/restrict/exam-post")
   @ResponseStatus(OK)
-  public Map<String, Boolean> restrictExamPost(@Valid @RequestBody AdminRequest.ExamPostRestricted request) {
-    adminService.restrictExamPost(request);
+  public Map<String, Boolean> restrictExamPost(@Valid @RequestBody AdminRequest.RestrictExamPost request) {
+    adminService.restrictReport(request);
     return success();
   }
 
@@ -80,7 +104,7 @@ public class AdminController {
   @DeleteMapping("/no-problem/evaluate-post")
   @ResponseStatus(OK)
   public Map<String, Boolean> noProblemEvaluatePost(@Valid @RequestBody AdminRequest.EvaluatePostNoProblem request) {
-    adminService.deleteNoProblemEvaluatePost(request);
+    adminService.dismissEvaluateReport(request.evaluateIdx());
     return success();
   }
 
@@ -89,32 +113,8 @@ public class AdminController {
   @DeleteMapping("/no-problem/exam-post")
   @ResponseStatus(OK)
   public Map<String, Boolean> noProblemExamPost(@Valid @RequestBody AdminRequest.ExamPostNoProblem request) {
-    adminService.deleteNoProblemExamPost(request);
+    adminService.dismissExamReport(request.examIdx());
     return success();
-  }
-
-  @Authorize(Role.ADMIN)
-  @Statistics(ADMIN)
-  @GetMapping("/report/list")
-  @ResponseStatus(OK)
-  public AdminResponse.LoadAllReportedPost loadReportedPost() {
-    return adminService.loadAllReportedPosts();
-  }
-
-  @Authorize(Role.ADMIN)
-  @Statistics(ADMIN)
-  @GetMapping("/report/evaluate/")
-  @ResponseStatus(OK)  // todo: domain dependency
-  public EvaluatePostReport loadDetailReportedEvaluatePost(@Valid @RequestParam Long target) {
-    return adminService.loadDetailReportedEvaluatePost(target);
-  }
-
-  @Authorize(Role.ADMIN)
-  @Statistics(ADMIN)
-  @GetMapping("/report/exam/")
-  @ResponseStatus(OK)
-  public ExamPostReport loadDetailReportedExamPost(@Valid @RequestParam Long target) {
-    return adminService.loadDetailReportedExamPost(target);
   }
 
   private Map<String, Boolean> success() { // legacy

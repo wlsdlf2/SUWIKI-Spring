@@ -21,6 +21,8 @@ import usw.suwiki.domain.lecture.timetable.TimetableCell;
 import usw.suwiki.domain.lecture.timetable.TimetableRepository;
 import usw.suwiki.domain.notice.Notice;
 import usw.suwiki.domain.notice.NoticeRepository;
+import usw.suwiki.domain.report.EvaluateReportRepository;
+import usw.suwiki.domain.report.ExamReportRepository;
 import usw.suwiki.domain.user.User;
 import usw.suwiki.domain.user.UserRepository;
 import usw.suwiki.domain.user.blacklist.BlacklistDomain;
@@ -32,7 +34,6 @@ import usw.suwiki.domain.user.restricted.RestrictingUserRepository;
 import usw.suwiki.domain.viewexam.ViewExam;
 import usw.suwiki.domain.viewexam.ViewExamRepository;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -67,6 +68,11 @@ public final class Fixtures {
   private UserIsolationRepository userIsolationRepository;
   @Autowired
   private RestrictingUserRepository restrictingUserRepository;
+
+  @Autowired
+  private EvaluateReportRepository evaluateReportRepository;
+  @Autowired
+  private ExamReportRepository examReportRepository;
 
   @Autowired
   private TokenAgent tokenAgent;
@@ -216,7 +222,7 @@ public final class Fixtures {
 
   public BlacklistDomain 블랙_리스트_생성(Long userId) {
     var user = userRepository.findById(userId).orElseThrow();
-    var blacklist = new BlacklistDomain(userId, user.getEmail(), "그냥", "사형", LocalDateTime.now().plusYears(1));
+    var blacklist = BlacklistDomain.overRestrict(userId, user.getEmail());
 
     user.restrict();
 
@@ -226,11 +232,19 @@ public final class Fixtures {
 
   public RestrictingUser 이용제한_내역_생성(Long userId) {
     var user = userRepository.findById(userId).orElseThrow();
-    var restricted = new RestrictingUser(userId, LocalDateTime.now(), "그냥", "사형");
+    var restricted = RestrictingUser.of(userId, 100L, "그냥", "사형");
 
     user.restrict();
 
     userRepository.save(user);
     return restrictingUserRepository.save(restricted);
+  }
+
+  public void 강의평가_신고_생성(Long reporter, EvaluatePost evaluatePost) {
+    evaluateReportRepository.save(ReportFixture.evaluate(reporter, evaluatePost.getUserIdx(), evaluatePost.getId()));
+  }
+
+  public void 시험평가_신고_생성(Long reporter, ExamPost examPost) {
+    examReportRepository.save(ReportFixture.exam(reporter, examPost.getUserIdx(), examPost.getId()));
   }
 }

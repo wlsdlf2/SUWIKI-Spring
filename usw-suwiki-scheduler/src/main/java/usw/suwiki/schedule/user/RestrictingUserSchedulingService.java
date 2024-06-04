@@ -6,7 +6,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import usw.suwiki.domain.user.User;
-import usw.suwiki.domain.user.service.RestrictingUserService;
+import usw.suwiki.domain.user.service.RestrictService;
 import usw.suwiki.domain.user.service.UserCRUDService;
 
 import java.time.LocalDateTime;
@@ -17,15 +17,15 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class RestrictingUserSchedulingService {
   private final UserCRUDService userCRUDService;
-  private final RestrictingUserService restrictingUserService;
+  private final RestrictService restrictService;
 
   @Scheduled(cron = "0 0 * * * *")
   public void isUnrestrictedTarget() {
     log.info("{} - 정지 유저 출소 시작", LocalDateTime.now());
-    for (Long restrictedId : restrictingUserService.loadAllRestrictedUntilNow()) {
+    for (Long restrictedId : restrictService.loadAllRestrictedUntilNow()) {
       User user = userCRUDService.loadUserById(restrictedId);
       user.released();
-      restrictingUserService.release(restrictedId);
+      restrictService.release(restrictedId);
     }
 
     log.info("{} - 정지 유저 출소 종료", LocalDateTime.now());

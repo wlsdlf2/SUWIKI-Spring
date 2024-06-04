@@ -6,7 +6,7 @@ public enum Role {
   ;
 
   public boolean isAdmin() {
-    return this.equals(ADMIN);
+    return this == ADMIN;
   }
 
   public static boolean isAdmin(String key) {

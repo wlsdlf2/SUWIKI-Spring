@@ -27,6 +27,9 @@ public class UserFixture {
       .email("admin@suwiki.kr")
       .role(Role.ADMIN)
       .restricted(false)
+      .point(0)
+      .viewExamCount(0)
+      .writtenEvaluation(0)
       .build();
   }
 }

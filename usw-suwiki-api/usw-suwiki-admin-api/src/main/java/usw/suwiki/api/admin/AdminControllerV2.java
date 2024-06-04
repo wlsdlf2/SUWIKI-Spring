@@ -35,7 +35,7 @@ public class AdminControllerV2 {
   @Statistics(ADMIN)
   @PostMapping("/login")
   @ResponseStatus(OK)
-  public Map<String, String> adminLogin(@Valid @RequestBody UserRequest.Login request) {
+  public AdminResponse.Login adminLogin(@Valid @RequestBody UserRequest.Login request) {
     return adminService.adminLogin(request.loginId(), request.password());
   }
 
@@ -43,8 +43,8 @@ public class AdminControllerV2 {
   @Statistics(ADMIN)
   @PostMapping("/evaluate-posts/restrict")
   @ResponseStatus(OK)
-  public Map<String, Boolean> restrictEvaluatePost(@Valid @RequestBody AdminRequest.EvaluatePostRestricted request) {
-    adminService.restrictEvaluatePost(request);
+  public Map<String, Boolean> restrictEvaluatePost(@Valid @RequestBody AdminRequest.RestrictEvaluatePost request) {
+    adminService.restrictReport(request);
     return success();
   }
 
@@ -52,8 +52,8 @@ public class AdminControllerV2 {
   @ResponseStatus(OK)
   @Statistics(ADMIN)
   @PostMapping("/exam-post/restrict")
-  public Map<String, Boolean> restrictExamPost(@Valid @RequestBody AdminRequest.ExamPostRestricted request) {
-    adminService.restrictExamPost(request);
+  public Map<String, Boolean> restrictExamPost(@Valid @RequestBody AdminRequest.RestrictExamPost request) {
+    adminService.restrictReport(request);
     return success();
   }
 
@@ -80,7 +80,7 @@ public class AdminControllerV2 {
   @Statistics(ADMIN)
   @DeleteMapping("/evaluate-post")
   public Map<String, Boolean> noProblemEvaluatePost(@Valid @RequestBody AdminRequest.EvaluatePostNoProblem request) {
-    adminService.deleteNoProblemEvaluatePost(request);
+    adminService.dismissEvaluateReport(request.evaluateIdx());
     return success();
   }
 
@@ -89,7 +89,7 @@ public class AdminControllerV2 {
   @Statistics(ADMIN)
   @DeleteMapping("/exam-post")
   public Map<String, Boolean> noProblemExamPost(@Valid @RequestBody AdminRequest.ExamPostNoProblem request) {
-    adminService.deleteNoProblemExamPost(request);
+    adminService.dismissExamReport(request.examIdx());
     return success();
   }
 

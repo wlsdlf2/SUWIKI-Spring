@@ -40,10 +40,9 @@ public class UserBusinessService {
   private final Encoder encoder;
 
   private final UserCRUDService userCRUDService;
-  private final BlacklistDomainService blacklistDomainService;
+  private final BlacklistService blacklistService;
   private final UserIsolationCRUDService userIsolationCRUDService;
-  private final BlacklistDomainCRUDService blacklistDomainCRUDService;
-  private final RestrictingUserCRUDService restrictingUserCRUDService;
+  private final RestrictService restrictService;
 
   private final FavoriteMajorService favoriteMajorService;
 
@@ -65,6 +64,11 @@ public class UserBusinessService {
   @Transactional(readOnly = true)
   public boolean isDuplicatedEmail(String email) {
     return userCRUDService.findOptionalByEmail(email).isPresent() || userIsolationCRUDService.isIsolatedByEmail(email);
+  }
+
+  public void rewardReport(Long id) {
+    var user = userCRUDService.loadUserById(id);
+    user.report();
   }
 
   public void evaluate(Long userId) {
@@ -93,7 +97,7 @@ public class UserBusinessService {
   }
 
   public void join(String loginId, String password, String email) {
-    blacklistDomainService.isUserInBlackListThatRequestJoin(email);
+    blacklistService.validateNotBlack(email);
 
     if (userCRUDService.findOptionalByLoginId(loginId).isPresent() ||
         userIsolationCRUDService.isIsolatedByLoginId(loginId) ||
@@ -212,12 +216,12 @@ public class UserBusinessService {
 
   public List<BlackedReason> loadBlackListReason(Long id) {
     var user = userCRUDService.loadUserById(id);
-    return blacklistDomainCRUDService.loadAllBlacklistLogs(user.getId());
+    return blacklistService.loadAllBlacklistLogs(user.getId());
   }
 
   public List<RestrictedReason> loadRestrictedReason(Long userId) {
     var user = userCRUDService.loadUserById(userId);
-    return restrictingUserCRUDService.loadRestrictedLog(user.getId());
+    return restrictService.loadRestrictedLog(user.getId());
   }
 
   public void saveFavoriteMajor(Long userId, String majorType) {

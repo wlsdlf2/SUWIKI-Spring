@@ -225,7 +225,7 @@ public class User extends BaseEntity {
     this.point++;
   }
 
-  public boolean isAboutToArrest() {
-    return this.restrictedCount == ARREST_LIMIT;
+  public boolean isArrestable() {
+    return this.restrictedCount >= ARREST_LIMIT;
   }
 }

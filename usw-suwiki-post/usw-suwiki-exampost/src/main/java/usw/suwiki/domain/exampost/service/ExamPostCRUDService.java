@@ -16,8 +16,8 @@ import java.util.List;
 public class ExamPostCRUDService {
   private final ExamPostRepository examPostRepository;
 
-  public ExamPost loadExamPostFromExamPostIdx(Long examIdx) {
-    return examPostRepository.findById(examIdx)
+  public ExamPost loadExamPostById(Long examId) {
+    return examPostRepository.findById(examId)
       .orElseThrow(() -> new ExamPostException(ExceptionType.EXAM_POST_NOT_FOUND));
   }
 

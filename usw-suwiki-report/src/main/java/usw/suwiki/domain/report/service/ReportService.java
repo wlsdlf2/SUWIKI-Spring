@@ -43,28 +43,28 @@ public class ReportService {
     return examReportRepository.findAll();
   }
 
-  public EvaluatePostReport loadEvaluateReportByEvaluateId(Long evaluateId) {
+  public EvaluatePostReport loadEvaluateReportById(Long evaluateId) {
     return evaluateReportRepository.findById(evaluateId)
       .orElseThrow(() -> new ReportedPostException(ExceptionType.REPORTED_POST_NOT_FOUND));
   }
 
-  public ExamPostReport loadExamReportByExamId(Long examId) {
+  public ExamPostReport loadExamReportById(Long examId) {
     return examReportRepository.findById(examId)
       .orElseThrow(() -> new ReportedPostException(ExceptionType.REPORTED_POST_NOT_FOUND));
   }
 
-  public void deleteFromUserIdx(Long userId) {
+  public void clearReportHistories(Long userId) {
     examReportRepository.deleteByReportedUserIdx(userId);
     examReportRepository.deleteByReportingUserIdx(userId);
     evaluateReportRepository.deleteAllByReportedUserIdx(userId);
     evaluateReportRepository.deleteAllByReportingUserIdx(userId);
   }
 
-  public void deleteByEvaluateIdx(Long evaluateId) {
+  public void deleteByEvaluateId(Long evaluateId) {
     evaluateReportRepository.deleteByEvaluateIdx(evaluateId);
   }
 
-  public void deleteByExamIdx(Long examId) {
+  public void deleteByExamId(Long examId) {
     examReportRepository.deleteByExamIdx(examId);
   }
 }

@@ -9,7 +9,7 @@ public enum Tag implements ApiTag {
   EVALUATE_POST("강의 평가 API"),
   EXAM_POST("시험 평가 API"),
   NOTICE("공지 API"),
-  ;
+  REPORT("신고 API");
 
   private final String description;
 

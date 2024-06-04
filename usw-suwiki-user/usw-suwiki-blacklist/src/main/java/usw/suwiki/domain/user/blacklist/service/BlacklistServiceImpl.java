@@ -3,41 +3,38 @@ package usw.suwiki.domain.user.blacklist.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import usw.suwiki.core.exception.AccountException;
+import usw.suwiki.core.exception.ExceptionType;
 import usw.suwiki.core.secure.Encoder;
 import usw.suwiki.domain.user.User;
 import usw.suwiki.domain.user.blacklist.BlacklistDomain;
 import usw.suwiki.domain.user.blacklist.BlacklistRepository;
 import usw.suwiki.domain.user.dto.UserResponse;
-import usw.suwiki.domain.user.service.BlacklistDomainCRUDService;
+import usw.suwiki.domain.user.service.BlacklistService;
 import usw.suwiki.domain.user.service.UserCRUDService;
 
-import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
-
-import static usw.suwiki.domain.user.dto.UserResponse.BlackedReason;
 
 @Service
 @Transactional
 @RequiredArgsConstructor
-class BlacklistDomainCRUDServiceImpl implements BlacklistDomainCRUDService {
-  private static final Integer NESTED_RESTRICTED_TIME = 3;
-  private static final Long BANNED_PERIOD = 365L;
-
+class BlacklistServiceImpl implements BlacklistService {
   private final BlacklistRepository blacklistRepository;
   private final UserCRUDService userCRUDService;
+
   private final Encoder encoder;
 
   @Override // todo: 네이밍은 all 인데 하나만 조회한다..?
-  public List<BlackedReason> loadAllBlacklistLogs(Long userId) {
+  public List<UserResponse.BlackedReason> loadAllBlacklistLogs(Long userId) {
     return blacklistRepository.findByUserIdx(userId)
       .map(this::convert)
       .orElse(Collections.emptyList());
   }
 
   private List<UserResponse.BlackedReason> convert(BlacklistDomain blacklistDomain) {
-    return List.of(BlackedReason.builder()
-      .blackListReason(blacklistDomain.getBannedReason())
+    return List.of(UserResponse.BlackedReason.builder()
+      .blackListReason(blacklistDomain.getReason())
       .judgement(blacklistDomain.getJudgement())
       .createdAt(blacklistDomain.getCreateDate())
       .expiredAt(blacklistDomain.getExpiredAt())
@@ -45,23 +42,26 @@ class BlacklistDomainCRUDServiceImpl implements BlacklistDomainCRUDService {
   }
 
   @Override
-  public void saveBlackListDomain(Long userIdx, Long bannedPeriod, String bannedReason, String judgement) {
-    User user = userCRUDService.loadUserById(userIdx);
-    user.restrict();
-
-    String hashTargetEmail = encoder.encode(user.getEmail());
-    if (user.getRestrictedCount() >= NESTED_RESTRICTED_TIME) {
-      bannedPeriod += BANNED_PERIOD;
+  public void validateNotBlack(String email) {
+    for (BlacklistDomain blackListUser : blacklistRepository.findAll()) {
+      if (encoder.matches(email, blackListUser.getHashedEmail())) {
+        throw new AccountException(ExceptionType.YOU_ARE_IN_BLACKLIST);
+      }
     }
+  }
 
-    BlacklistDomain blacklistDomain = BlacklistDomain.builder()
-      .userIdx(user.getId())
-      .bannedReason(bannedReason)
-      .hashedEmail(hashTargetEmail)
-      .judgement(judgement)
-      .expiredAt(LocalDateTime.now().plusDays(bannedPeriod))
-      .build();
+  @Override
+  public void black(Long userId, String reason, String judgement) {
+    User user = userCRUDService.loadUserById(userId);
+    user.reported();
 
-    blacklistRepository.save(blacklistDomain);
+    var blacklist = BlacklistDomain.permanent(userId, encoder.encode(user.getEmail()), reason, judgement);
+    blacklistRepository.save(blacklist);
+  }
+
+  @Override
+  public void overRestricted(Long userId, String email) {
+    var blacklist = BlacklistDomain.overRestrict(userId, encoder.encode(email));
+    blacklistRepository.save(blacklist);
   }
 }

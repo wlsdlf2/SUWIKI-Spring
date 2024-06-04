@@ -14,7 +14,7 @@ import usw.suwiki.domain.report.service.ReportService;
 import usw.suwiki.domain.user.User;
 import usw.suwiki.domain.user.service.CleanViewExamService;
 import usw.suwiki.domain.user.service.FavoriteMajorService;
-import usw.suwiki.domain.user.service.RestrictingUserService;
+import usw.suwiki.domain.user.service.RestrictService;
 import usw.suwiki.domain.user.service.UserCRUDService;
 import usw.suwiki.domain.user.service.UserIsolationCRUDService;
 
@@ -31,7 +31,7 @@ public class UserIsolationSchedulingService {
   private final EmailSender emailSender;
 
   private final UserCRUDService userCRUDService;
-  private final RestrictingUserService restrictingUserService;
+  private final RestrictService restrictService;
   private final UserIsolationCRUDService userIsolationCRUDService;
   private final CleanViewExamService cleanViewExamService;
   private final FavoriteMajorService favoriteMajorService;
@@ -100,11 +100,11 @@ public class UserIsolationSchedulingService {
       Long userIdx = user.getId();
       cleanViewExamService.clean(userIdx);
       refreshTokenService.deleteByUserId(userIdx);
-      reportService.deleteFromUserIdx(userIdx);
+      reportService.clearReportHistories(userIdx);
       evaluatePostService.deleteAllByUserId(userIdx);
       examPostCRUDService.deleteFromUserIdx(userIdx);
       favoriteMajorService.clean(userIdx);
-      restrictingUserService.release(userIdx);
+      restrictService.release(userIdx);
       confirmationTokenCRUDService.deleteFromUserIdx(userIdx);
       userIsolationCRUDService.deleteByUserIdx(userIdx);
       userCRUDService.deleteById(userIdx);

@@ -15,7 +15,7 @@ import usw.suwiki.domain.user.User;
 import usw.suwiki.domain.user.UserRepository;
 import usw.suwiki.domain.user.service.CleanViewExamService;
 import usw.suwiki.domain.user.service.FavoriteMajorService;
-import usw.suwiki.domain.user.service.RestrictingUserService;
+import usw.suwiki.domain.user.service.RestrictService;
 import usw.suwiki.domain.user.service.UserIsolationCRUDService;
 
 import java.time.LocalDateTime;
@@ -32,7 +32,7 @@ public class UserSchedulingService {
   private final UserRepository userRepository;
   private final CleanViewExamService cleanViewExamService;
   private final FavoriteMajorService favoriteMajorService;
-  private final RestrictingUserService restrictingUserService;
+  private final RestrictService restrictService;
   private final UserIsolationCRUDService userIsolationCRUDService;
 
   private final RefreshTokenRepository refreshTokenRepository;
@@ -66,11 +66,11 @@ public class UserSchedulingService {
         Long userId = user.getId();
         cleanViewExamService.clean(userId);
         refreshTokenRepository.deleteByUserIdx(userId);
-        reportService.deleteFromUserIdx(userId);
+        reportService.clearReportHistories(userId);
         evaluatePostService.deleteAllByUserId(userId);
         examPostCRUDService.deleteFromUserIdx(userId);
         favoriteMajorService.clean(userId);
-        restrictingUserService.release(userId);
+        restrictService.release(userId);
         confirmationTokenRepository.deleteByUserIdx(userId);
         userRepository.deleteById(userId);
       }
@@ -78,11 +78,11 @@ public class UserSchedulingService {
       for (Long isolatedUserId : isolatedUserIds) {
         cleanViewExamService.clean(isolatedUserId);
         refreshTokenRepository.deleteByUserIdx(isolatedUserId);
-        reportService.deleteFromUserIdx(isolatedUserId);
+        reportService.clearReportHistories(isolatedUserId);
         evaluatePostService.deleteAllByUserId(isolatedUserId);
         examPostCRUDService.deleteFromUserIdx(isolatedUserId);
         favoriteMajorService.clean(isolatedUserId);
-        restrictingUserService.release(isolatedUserId);
+        restrictService.release(isolatedUserId);
         confirmationTokenRepository.deleteByUserIdx(isolatedUserId);
         userIsolationCRUDService.deleteByUserIdx(isolatedUserId);
       }

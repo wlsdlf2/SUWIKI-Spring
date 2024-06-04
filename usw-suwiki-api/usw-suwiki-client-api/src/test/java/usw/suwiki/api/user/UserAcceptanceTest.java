@@ -1064,7 +1064,7 @@ class UserAcceptanceTest extends AcceptanceTestSupport {
       result.andExpectAll(
         status().isOk(),
         jsonPath("$.[0]").exists(),
-        jsonPath("$.[0].restrictedReason").value(restrictingUser.getRestrictingReason()),
+        jsonPath("$.[0].restrictedReason").value(restrictingUser.getReason()),
         jsonPath("$.[0].judgement").value(restrictingUser.getJudgement())
       );
 

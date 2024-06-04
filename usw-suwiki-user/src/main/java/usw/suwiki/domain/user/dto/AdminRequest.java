@@ -11,7 +11,7 @@ public final class AdminRequest {
   public record ExamPostNoProblem(@NotNull Long examIdx) {
   }
 
-  public record EvaluatePostRestricted(
+  public record RestrictEvaluatePost(
     @NotNull Long evaluateIdx,
     @NotNull Long restrictingDate,
     @NotBlank String restrictingReason,
@@ -19,7 +19,7 @@ public final class AdminRequest {
   ) {
   }
 
-  public record ExamPostRestricted(
+  public record RestrictExamPost(
     @NotNull Long examIdx,
     @NotNull Long restrictingDate,
     @NotBlank String restrictingReason,

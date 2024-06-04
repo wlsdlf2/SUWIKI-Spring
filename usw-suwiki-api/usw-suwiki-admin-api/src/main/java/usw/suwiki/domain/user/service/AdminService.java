@@ -7,37 +7,31 @@ import usw.suwiki.core.exception.AccountException;
 import usw.suwiki.core.exception.ExceptionType;
 import usw.suwiki.core.secure.Encoder;
 import usw.suwiki.core.secure.TokenAgent;
-import usw.suwiki.domain.evaluatepost.EvaluatePost;
 import usw.suwiki.domain.evaluatepost.service.EvaluatePostService;
-import usw.suwiki.domain.exampost.ExamPost;
 import usw.suwiki.domain.exampost.service.ExamPostCRUDService;
 import usw.suwiki.domain.report.EvaluatePostReport;
 import usw.suwiki.domain.report.ExamPostReport;
 import usw.suwiki.domain.report.service.ReportService;
 import usw.suwiki.domain.user.User;
-
-import java.util.HashMap;
-import java.util.Map;
+import usw.suwiki.domain.user.dto.AdminResponse;
 
 import static usw.suwiki.domain.user.dto.AdminRequest.EvaluatePostBlacklist;
-import static usw.suwiki.domain.user.dto.AdminRequest.EvaluatePostNoProblem;
-import static usw.suwiki.domain.user.dto.AdminRequest.EvaluatePostRestricted;
 import static usw.suwiki.domain.user.dto.AdminRequest.ExamPostBlacklist;
-import static usw.suwiki.domain.user.dto.AdminRequest.ExamPostNoProblem;
-import static usw.suwiki.domain.user.dto.AdminRequest.ExamPostRestricted;
+import static usw.suwiki.domain.user.dto.AdminRequest.RestrictEvaluatePost;
+import static usw.suwiki.domain.user.dto.AdminRequest.RestrictExamPost;
 import static usw.suwiki.domain.user.dto.AdminResponse.LoadAllReportedPost;
 
 @Service
 @Transactional
 @RequiredArgsConstructor
 public class AdminService {
-  private static final long BANNED_PERIOD = 365L;
-
   private final Encoder encoder;
+
   private final UserCRUDService userCRUDService;
-  private final RestrictingUserService restrictingUserService;
+  private final UserBusinessService userBusinessService;
+  private final BlacklistService blacklistService;
+  private final RestrictService restrictService;
   private final UserIsolationCRUDService userIsolationCRUDService;
-  private final BlacklistDomainCRUDService blacklistDomainCRUDService;
 
   private final ReportService reportService;
   private final ExamPostCRUDService examPostCRUDService;
@@ -45,7 +39,7 @@ public class AdminService {
 
   private final TokenAgent tokenAgent;
 
-  public Map<String, String> adminLogin(String loginId, String password) {
+  public AdminResponse.Login adminLogin(String loginId, String password) {
     User user = userCRUDService.loadByLoginId(loginId);
 
     if (!user.isPasswordEquals(encoder, password)) {
@@ -59,10 +53,7 @@ public class AdminService {
     final long userCount = userCRUDService.countAllUsers();
     final long userIsolationCount = userIsolationCRUDService.countAllIsolatedUsers();
 
-    return new HashMap<>() {{
-      put("AccessToken", tokenAgent.createAccessToken(user.getId(), user.toClaim()));
-      put("UserCount", String.valueOf(userCount + userIsolationCount));
-    }};
+    return new AdminResponse.Login(tokenAgent.createAccessToken(user.getId(), user.toClaim()), userCount + userIsolationCount);
   }
 
   public LoadAllReportedPost loadAllReportedPosts() {
@@ -73,89 +64,66 @@ public class AdminService {
   }
 
   public EvaluatePostReport loadDetailReportedEvaluatePost(Long evaluatePostId) {
-    return reportService.loadEvaluateReportByEvaluateId(evaluatePostId);
+    return reportService.loadEvaluateReportById(evaluatePostId);
   }
 
   public ExamPostReport loadDetailReportedExamPost(Long examPostReportId) {
-    return reportService.loadExamReportByExamId(examPostReportId);
+    return reportService.loadExamReportById(examPostReportId);
   }
 
-  public void deleteNoProblemEvaluatePost(EvaluatePostNoProblem evaluatePostNoProblem) {
-    reportService.deleteByEvaluateIdx(evaluatePostNoProblem.evaluateIdx());
+  public void restrictReport(RestrictEvaluatePost request) {
+    var evaluatePostReport = reportService.loadEvaluateReportById(request.evaluateIdx());
+
+    userBusinessService.rewardReport(evaluatePostReport.getReportingUserIdx());
+
+    restrictService.restrict(evaluatePostReport.getReportedUserIdx(), request.restrictingDate(), request.restrictingReason(), request.judgement());
+
+    resolvedEvaluateReport(evaluatePostReport.getEvaluateIdx());
   }
 
-  public void deleteNoProblemExamPost(ExamPostNoProblem examPostRestrictForm) {
-    reportService.deleteByExamIdx(examPostRestrictForm.examIdx());
+  public void restrictReport(RestrictExamPost request) {
+    var examPostReport = reportService.loadExamReportById(request.examIdx());
+
+    userBusinessService.rewardReport(examPostReport.getReportingUserIdx());
+
+    restrictService.restrict(examPostReport.getReportedUserIdx(), request.restrictingDate(), request.restrictingReason(), request.judgement());
+
+    resolveExamReport(examPostReport.getExamIdx());
   }
 
-  public void restrictEvaluatePost(EvaluatePostRestricted request) {
-    EvaluatePostReport evaluatePostReport = reportService.loadEvaluateReportByEvaluateId(request.evaluateIdx());
+  public void blackEvaluatePost(EvaluatePostBlacklist request) {
+    Long userId = evaluatePostService.loadEvaluatePostById(request.evaluateIdx()).getUserIdx();
 
-    plusReportingUserPoint(evaluatePostReport.getReportingUserIdx());
-    plusRestrictCount(evaluatePostReport.getReportedUserIdx());
+    resolvedEvaluateReport(request.evaluateIdx());
 
-    restrictingUserService.restrictFromEvaluatePost(request, evaluatePostReport.getReportedUserIdx());
-
-    deleteReportedEvaluatePostByEvaluateId(evaluatePostReport.getEvaluateIdx());
+    blacklistService.black(userId, request.bannedReason(), request.judgement());
   }
 
-  public void restrictExamPost(ExamPostRestricted request) {
-    ExamPostReport examPostReport = reportService.loadExamReportByExamId(request.examIdx());
+  public void blackListExamPost(ExamPostBlacklist request) {
+    Long userIdx = examPostCRUDService.loadExamPostById(request.examIdx()).getUserIdx();
 
-    plusReportingUserPoint(examPostReport.getReportingUserIdx());
-    plusRestrictCount(examPostReport.getReportedUserIdx());
+    resolveExamReport(request.examIdx());
 
-    restrictingUserService.restrictFromExamPost(request, examPostReport.getReportedUserIdx());
-
-    deleteReportedExamPostByEvaluateId(examPostReport.getExamIdx());
+    blacklistService.black(userIdx, request.bannedReason(), request.judgement());
   }
 
-  public void blackEvaluatePost(EvaluatePostBlacklist evaluatePostBlacklist) {
-    Long userIdx = evaluatePostService.loadEvaluatePostById(evaluatePostBlacklist.evaluateIdx()).getUserIdx();
-
-    deleteReportedEvaluatePostByEvaluateId(evaluatePostBlacklist.evaluateIdx());
-
-    blacklistDomainCRUDService.saveBlackListDomain(
-      userIdx,
-      BANNED_PERIOD,
-      evaluatePostBlacklist.bannedReason(),
-      evaluatePostBlacklist.judgement()
-    );
-    plusRestrictCount(userIdx);
-  }
-
-  public void blackListExamPost(ExamPostBlacklist examPostBlacklist) {
-    Long userIdx = examPostCRUDService.loadExamPostFromExamPostIdx(examPostBlacklist.examIdx()).getUserIdx();
-
-    deleteReportedExamPostByEvaluateId(examPostBlacklist.examIdx());
-    blacklistDomainCRUDService.saveBlackListDomain(
-      userIdx,
-      BANNED_PERIOD,
-      examPostBlacklist.bannedReason(),
-      examPostBlacklist.judgement()
-    );
-    plusRestrictCount(userIdx);
-  }
-
-  private void deleteReportedEvaluatePostByEvaluateId(Long evaluateId) {
-    EvaluatePost evaluatePost = evaluatePostService.loadEvaluatePostById(evaluateId);
-    reportService.deleteByEvaluateIdx(evaluateId);
+  private void resolvedEvaluateReport(Long evaluateId) {
+    var evaluatePost = evaluatePostService.loadEvaluatePostById(evaluateId);
     evaluatePostService.delete(evaluatePost);
+    dismissEvaluateReport(evaluateId);
   }
 
-  private void deleteReportedExamPostByEvaluateId(Long examPostId) {
-    ExamPost examPost = examPostCRUDService.loadExamPostFromExamPostIdx(examPostId);
-    reportService.deleteByEvaluateIdx(examPostId);
+  private void resolveExamReport(Long examPostId) {
+    var examPost = examPostCRUDService.loadExamPostById(examPostId);
     examPostCRUDService.delete(examPost);
+    dismissExamReport(examPostId);
   }
 
-  private void plusRestrictCount(Long userId) {
-    User user = userCRUDService.loadUserById(userId);
-    user.reported();
+  public void dismissEvaluateReport(Long evaluatePostId) {
+    reportService.deleteByEvaluateId(evaluatePostId);
   }
 
-  private void plusReportingUserPoint(Long reportingUserId) {
-    User user = userCRUDService.loadUserById(reportingUserId);
-    user.report();
+  public void dismissExamReport(Long examId) {
+    reportService.deleteByExamId(examId);
   }
 }

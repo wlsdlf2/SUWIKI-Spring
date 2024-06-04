@@ -70,7 +70,7 @@ public class UserSchedulingService {
         evaluatePostService.deleteAllByUserId(userId);
         examPostCRUDService.deleteFromUserIdx(userId);
         favoriteMajorService.clean(userId);
-        restrictingUserService.releaseByUserId(userId);
+        restrictingUserService.release(userId);
         confirmationTokenRepository.deleteByUserIdx(userId);
         userRepository.deleteById(userId);
       }
@@ -82,7 +82,7 @@ public class UserSchedulingService {
         evaluatePostService.deleteAllByUserId(isolatedUserId);
         examPostCRUDService.deleteFromUserIdx(isolatedUserId);
         favoriteMajorService.clean(isolatedUserId);
-        restrictingUserService.releaseByUserId(isolatedUserId);
+        restrictingUserService.release(isolatedUserId);
         confirmationTokenRepository.deleteByUserIdx(isolatedUserId);
         userIsolationCRUDService.deleteByUserIdx(isolatedUserId);
       }

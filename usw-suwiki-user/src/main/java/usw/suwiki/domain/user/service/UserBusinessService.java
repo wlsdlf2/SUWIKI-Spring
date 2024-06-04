@@ -107,7 +107,7 @@ public class UserBusinessService {
       throw new AccountException(INVALID_EMAIL_FORMAT);
     }
 
-    User user = User.init(loginId, passwordEncoder.encode(password), email);
+    User user = User.join(loginId, passwordEncoder.encode(password), email);
     userCRUDService.save(user);
 
     emailSender.send(email, EMAIL_AUTH, confirmationTokenCRUDService.save(user.getId()));

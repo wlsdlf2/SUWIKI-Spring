@@ -5,9 +5,9 @@ import usw.suwiki.domain.report.ExamPostReport;
 
 import java.util.List;
 
-public class UserAdminResponseDto {
+public final class AdminResponse {
 
-  public record LoadAllReportedPostForm(
+  public record LoadAllReportedPost(
     List<ExamPostReport> examPostReports,
     List<EvaluatePostReport> evaluatePostReports
   ) {

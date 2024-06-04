@@ -85,7 +85,7 @@ class UserAcceptanceTest extends AcceptanceTestSupport {
 
   @BeforeEach
   public void setup() {
-    user = userRepository.save(User.init(loginId, passwordEncoder.encode(password), email).activate());
+    user = userRepository.save(User.join(loginId, passwordEncoder.encode(password), email).activate());
     accessToken = fixtures.토큰_생성(user);
   }
 

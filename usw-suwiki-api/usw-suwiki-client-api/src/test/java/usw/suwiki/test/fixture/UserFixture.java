@@ -9,11 +9,11 @@ import usw.suwiki.domain.user.User;
 public class UserFixture {
 
   public static User unconfirmed() {
-    return User.init("loginId", "password", "test@suwiki.kr");
+    return User.join("loginId", "password", "test@suwiki.kr");
   }
 
   public static User anotherUnconfirmed() {
-    return User.init("loginId2", "password", "test2@suwiki.kr");
+    return User.join("loginId2", "password", "test2@suwiki.kr");
   }
 
   public static User one() {

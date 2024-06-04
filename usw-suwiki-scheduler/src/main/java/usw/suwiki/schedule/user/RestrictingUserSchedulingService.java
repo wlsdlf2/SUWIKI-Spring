@@ -25,7 +25,7 @@ public class RestrictingUserSchedulingService {
     for (Long restrictedId : restrictingUserService.loadAllRestrictedUntilNow()) {
       User user = userCRUDService.loadUserById(restrictedId);
       user.released();
-      restrictingUserService.releaseByUserId(restrictedId);
+      restrictingUserService.release(restrictedId);
     }
 
     log.info("{} - 정지 유저 출소 종료", LocalDateTime.now());

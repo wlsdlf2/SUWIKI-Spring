@@ -29,7 +29,7 @@ public final class AssertExtension {
   public static class CustomThrowableTypeAssert extends ThrowableTypeAssert<BaseException> {
     private final ExceptionType exceptionType;
 
-    public CustomThrowableTypeAssert(Class<? extends BaseException> throwableType, ExceptionType exceptionType) {
+    private CustomThrowableTypeAssert(Class<? extends BaseException> throwableType, ExceptionType exceptionType) {
       super(throwableType);
       this.exceptionType = exceptionType;
     }

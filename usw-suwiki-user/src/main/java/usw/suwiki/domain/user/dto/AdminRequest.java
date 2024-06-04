@@ -3,19 +3,15 @@ package usw.suwiki.domain.user.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-public class UserAdminRequestDto {
+public final class AdminRequest {
 
-  public record EvaluatePostNoProblemForm(
-    @NotNull Long evaluateIdx
-  ) {
+  public record EvaluatePostNoProblem(@NotNull Long evaluateIdx) {
   }
 
-  public record ExamPostNoProblemForm(
-    @NotNull Long examIdx
-  ) {
+  public record ExamPostNoProblem(@NotNull Long examIdx) {
   }
 
-  public record EvaluatePostRestrictForm(
+  public record EvaluatePostRestricted(
     @NotNull Long evaluateIdx,
     @NotNull Long restrictingDate,
     @NotBlank String restrictingReason,
@@ -23,7 +19,7 @@ public class UserAdminRequestDto {
   ) {
   }
 
-  public record ExamPostRestrictForm(
+  public record ExamPostRestricted(
     @NotNull Long examIdx,
     @NotNull Long restrictingDate,
     @NotBlank String restrictingReason,
@@ -31,14 +27,14 @@ public class UserAdminRequestDto {
   ) {
   }
 
-  public record EvaluatePostBlacklistForm(
+  public record EvaluatePostBlacklist(
     @NotNull Long evaluateIdx,
     @NotBlank String bannedReason,
     @NotBlank String judgement
   ) {
   }
 
-  public record ExamPostBlacklistForm(
+  public record ExamPostBlacklist(
     @NotNull Long examIdx,
     @NotBlank String bannedReason,
     @NotBlank String judgement

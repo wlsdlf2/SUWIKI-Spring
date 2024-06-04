@@ -104,7 +104,7 @@ public class UserIsolationSchedulingService {
       evaluatePostService.deleteAllByUserId(userIdx);
       examPostCRUDService.deleteFromUserIdx(userIdx);
       favoriteMajorService.clean(userIdx);
-      restrictingUserService.releaseByUserId(userIdx);
+      restrictingUserService.release(userIdx);
       confirmationTokenCRUDService.deleteFromUserIdx(userIdx);
       userIsolationCRUDService.deleteByUserIdx(userIdx);
       userCRUDService.deleteById(userIdx);

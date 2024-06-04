@@ -14,8 +14,8 @@ import usw.suwiki.domain.user.service.UserCRUDService;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static usw.suwiki.domain.user.dto.UserAdminRequestDto.EvaluatePostRestrictForm;
-import static usw.suwiki.domain.user.dto.UserAdminRequestDto.ExamPostRestrictForm;
+import static usw.suwiki.domain.user.dto.AdminRequest.EvaluatePostRestricted;
+import static usw.suwiki.domain.user.dto.AdminRequest.ExamPostRestricted;
 
 @Slf4j
 @Service
@@ -39,12 +39,12 @@ class RestrictingUserServiceImpl implements RestrictingUserService {
   }
 
   @Override
-  public void releaseByUserId(Long userId) {
+  public void release(Long userId) {
     restrictingUserRepository.deleteByUserIdx(userId);
   }
 
   @Override
-  public void restrictFromEvaluatePost(EvaluatePostRestrictForm evaluatePostRestrictForm, Long reportedUserId) {
+  public void restrictFromEvaluatePost(EvaluatePostRestricted request, Long reportedUserId) {
     User user = userCRUDService.loadUserById(reportedUserId);
 
     if (user.isAboutToArrest()) {
@@ -55,15 +55,15 @@ class RestrictingUserServiceImpl implements RestrictingUserService {
     restrictingUserRepository.save(
       RestrictingUser.builder()
         .userIdx(user.getId())
-        .restrictingDate(LocalDateTime.now().plusDays(evaluatePostRestrictForm.restrictingDate()))
-        .restrictingReason(evaluatePostRestrictForm.restrictingReason())
-        .judgement(evaluatePostRestrictForm.judgement())
+        .restrictingDate(LocalDateTime.now().plusDays(request.restrictingDate()))
+        .restrictingReason(request.restrictingReason())
+        .judgement(request.judgement())
         .build()
     );
   }
 
   @Override
-  public void restrictFromExamPost(ExamPostRestrictForm examPostRestrictForm, Long reportedUserId) {
+  public void restrictFromExamPost(ExamPostRestricted request, Long reportedUserId) {
     User user = userCRUDService.loadUserById(reportedUserId);
     if (user.isAboutToArrest()) {
       blacklistDomainCRUDService.saveBlackListDomain(user.getId(), BANNED_PERIOD, BANNED_REASON, JUDGEMENT);
@@ -73,9 +73,9 @@ class RestrictingUserServiceImpl implements RestrictingUserService {
     restrictingUserRepository.save(
       RestrictingUser.builder()
         .userIdx(user.getId())
-        .restrictingDate(LocalDateTime.now().plusDays(examPostRestrictForm.restrictingDate()))
-        .restrictingReason(examPostRestrictForm.restrictingReason())
-        .judgement(examPostRestrictForm.judgement())
+        .restrictingDate(LocalDateTime.now().plusDays(request.restrictingDate()))
+        .restrictingReason(request.restrictingReason())
+        .judgement(request.judgement())
         .build()
     );
   }

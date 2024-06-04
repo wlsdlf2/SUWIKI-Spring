@@ -78,7 +78,7 @@ public class User extends BaseEntity {
   @Column
   private LocalDateTime requestedQuitDate;
 
-  public static User init(String loginId, String password, String email) {
+  public static User join(String loginId, String password, String email) {
     return builder()
       .loginId(loginId)
       .password(password)

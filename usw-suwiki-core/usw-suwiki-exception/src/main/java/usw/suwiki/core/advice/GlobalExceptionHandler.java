@@ -12,8 +12,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import usw.suwiki.core.exception.BaseException;
 
-import static usw.suwiki.core.exception.ExceptionType.PARAMETER_VALIDATION_FAIL;
-
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -30,7 +28,7 @@ public class GlobalExceptionHandler {
   public ErrorResponse handleException(Exception exception) {
     log.error("[Unexpected Exception] exception : {}, message : {}", exception.getClass().getName(), exception.getMessage());
     // todo: webhook 추가하기
-    return ErrorResponse.internal(exception.getMessage());
+    return ErrorResponse.internal();
   }
 
   @ExceptionHandler({
@@ -42,6 +40,6 @@ public class GlobalExceptionHandler {
   public ErrorResponse handleRequestValidationFailException(HttpServletRequest request) {
     log.warn("[Parameter validation fail] on : {}", request.getRequestURI());
 
-    return ErrorResponse.from(PARAMETER_VALIDATION_FAIL);
+    return ErrorResponse.parameter();
   }
 }

@@ -11,8 +11,9 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import usw.suwiki.auth.core.annotation.Authorize;
 import usw.suwiki.auth.core.jwt.JwtAgent;
 import usw.suwiki.core.exception.AccountException;
-import usw.suwiki.core.exception.ExceptionType;
 import usw.suwiki.domain.user.Role;
+
+import static usw.suwiki.core.exception.ExceptionCode.USER_RESTRICTED;
 
 @Component
 @RequiredArgsConstructor
@@ -38,7 +39,7 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
 
   private void validateAccessIfAdmin(Role request, String token) {
     if (request.isAdmin() && jwtAgent.isNotAdmin(token)) {
-      throw new AccountException(ExceptionType.USER_RESTRICTED);
+      throw new AccountException(USER_RESTRICTED);
     }
   }
 

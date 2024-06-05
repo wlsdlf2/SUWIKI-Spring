@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import usw.suwiki.core.exception.AccountException;
-import usw.suwiki.core.exception.ExceptionType;
+import usw.suwiki.core.exception.ExceptionCode;
 import usw.suwiki.core.secure.Encoder;
 import usw.suwiki.domain.user.User;
 import usw.suwiki.domain.user.isolated.UserIsolation;
@@ -59,21 +59,21 @@ class UserIsolationServiceImpl implements UserIsolationService {
   public String updateIsolatedUserPassword(Encoder encoder, String email) {
     return userIsolationRepository.findByEmail(email)
       .map(it -> it.updateRandomPassword(encoder))
-      .orElseThrow(() -> new AccountException(ExceptionType.USER_NOT_FOUND));
+      .orElseThrow(() -> new AccountException(ExceptionCode.USER_NOT_FOUND));
   }
 
   @Override
   public boolean isLoginable(String loginId, String inputPassword, Encoder encoder) {
     return userIsolationRepository.findByLoginId(loginId)
       .map(it -> it.isPasswordEquals(encoder, inputPassword))
-      .orElseThrow(() -> new AccountException(ExceptionType.USER_NOT_FOUND));
+      .orElseThrow(() -> new AccountException(ExceptionCode.USER_NOT_FOUND));
   }
 
   @Override
   @Transactional
   public User wake(UserService userService, String loginId) {
     var userIsolation = userIsolationRepository.findByLoginId(loginId)
-      .orElseThrow(() -> new AccountException(ExceptionType.USER_NOT_FOUND));
+      .orElseThrow(() -> new AccountException(ExceptionCode.USER_NOT_FOUND));
 
     User user = userService.loadUserById(userIsolation.getUserIdx());
     user.wake(userIsolation.getLoginId(), userIsolation.getPassword(), userIsolation.getEmail());

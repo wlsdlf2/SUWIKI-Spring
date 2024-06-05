@@ -3,7 +3,6 @@ package usw.suwiki.domain.lecture.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import usw.suwiki.core.exception.ExceptionType;
 import usw.suwiki.core.exception.LectureException;
 import usw.suwiki.domain.lecture.Lecture;
 import usw.suwiki.domain.lecture.LectureQueryRepository;
@@ -14,6 +13,8 @@ import usw.suwiki.domain.lecture.model.Evaluation;
 import usw.suwiki.domain.lecture.model.Lectures;
 
 import java.util.List;
+
+import static usw.suwiki.core.exception.ExceptionCode.LECTURE_NOT_FOUND;
 
 @Service
 @Transactional(readOnly = true)
@@ -28,7 +29,7 @@ public class LectureService {
 
   public Lecture findLectureById(Long id) {
     return lectureRepository.findById(id)
-      .orElseThrow(() -> new LectureException(ExceptionType.LECTURE_NOT_FOUND));
+      .orElseThrow(() -> new LectureException(LECTURE_NOT_FOUND));
   }
 
   public LectureResponse.Detail loadLectureDetail(Long lectureId) {
@@ -71,6 +72,6 @@ public class LectureService {
 
   private Lecture loadLectureFromIdPessimisticLock(Long id) {
     return lectureRepository.findForUpdateById(id)
-      .orElseThrow(() -> new LectureException(ExceptionType.LECTURE_NOT_FOUND));
+      .orElseThrow(() -> new LectureException(LECTURE_NOT_FOUND));
   }
 }

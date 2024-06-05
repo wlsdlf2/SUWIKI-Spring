@@ -1,23 +1,23 @@
 package usw.suwiki.core.exception;
 
 public class BaseException extends RuntimeException {
-  private final ExceptionType exceptionType;
+  private final ExceptionCode exceptionCode;
 
-  public BaseException(ExceptionType exceptionType) {
-    super(exceptionType.getMessage());
-    this.exceptionType = exceptionType;
+  public BaseException(ExceptionCode exceptionCode) {
+    super(exceptionCode.getMessage());
+    this.exceptionCode = exceptionCode;
   }
 
-  public BaseException(ExceptionType exceptionType, String message) {
+  public BaseException(ExceptionCode exceptionCode, String message) {
     super(message);
-    this.exceptionType = exceptionType;
+    this.exceptionCode = exceptionCode;
   }
 
   public String getCode() {
-    return this.exceptionType.getCode();
+    return this.exceptionCode.getCode();
   }
 
   public int getHttpStatus() {
-    return this.exceptionType.getStatus();
+    return this.exceptionCode.getStatus();
   }
 }

@@ -14,7 +14,6 @@ import usw.suwiki.domain.lecture.Lecture;
 import usw.suwiki.domain.user.User;
 import usw.suwiki.domain.user.UserRepository;
 import usw.suwiki.domain.viewexam.ViewExamRepository;
-import usw.suwiki.common.test.fixture.Fixtures;
 
 import java.time.format.DateTimeFormatter;
 
@@ -25,12 +24,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static usw.suwiki.common.test.Tag.EXAM_POST;
 import static usw.suwiki.common.test.extension.AssertExtension.expectExceptionJsonPath;
 import static usw.suwiki.common.test.support.Pair.parameter;
-import static usw.suwiki.core.exception.ExceptionType.ALREADY_WROTE_EXAM_POST;
-import static usw.suwiki.core.exception.ExceptionType.EXAM_POST_ALREADY_PURCHASE;
-import static usw.suwiki.core.exception.ExceptionType.EXAM_POST_NOT_FOUND;
-import static usw.suwiki.core.exception.ExceptionType.LECTURE_NOT_FOUND;
-import static usw.suwiki.core.exception.ExceptionType.NOT_AN_AUTHOR;
-import static usw.suwiki.core.exception.ExceptionType.USER_POINT_LACK;
+import static usw.suwiki.core.exception.ExceptionCode.ALREADY_PURCHASED;
+import static usw.suwiki.core.exception.ExceptionCode.ALREADY_WROTE_EXAM_POST;
+import static usw.suwiki.core.exception.ExceptionCode.EXAM_POST_NOT_FOUND;
+import static usw.suwiki.core.exception.ExceptionCode.LECTURE_NOT_FOUND;
+import static usw.suwiki.core.exception.ExceptionCode.NOT_AN_AUTHOR;
+import static usw.suwiki.core.exception.ExceptionCode.OUT_OF_POINT;
 
 @AcceptanceTest
 public class ExamPostAcceptanceTest extends AcceptanceTestSupport {
@@ -40,9 +39,6 @@ public class ExamPostAcceptanceTest extends AcceptanceTestSupport {
   private ViewExamRepository viewExamRepository;
   @Autowired
   private UserRepository userRepository;
-
-  @Autowired
-  private Fixtures fixtures;
 
   private User user;
   private Lecture lecture;
@@ -284,7 +280,7 @@ public class ExamPostAcceptanceTest extends AcceptanceTestSupport {
       // then
       result.andExpectAll(
         status().isBadRequest(),
-        expectExceptionJsonPath(result, USER_POINT_LACK)
+        expectExceptionJsonPath(result, OUT_OF_POINT)
       );
 
       // docs
@@ -392,7 +388,7 @@ public class ExamPostAcceptanceTest extends AcceptanceTestSupport {
       // then
       result.andExpectAll(
         status().isBadRequest(),
-        expectExceptionJsonPath(result, USER_POINT_LACK)
+        expectExceptionJsonPath(result, OUT_OF_POINT)
       );
 
       // docs
@@ -415,7 +411,7 @@ public class ExamPostAcceptanceTest extends AcceptanceTestSupport {
       // then
       result.andExpectAll(
         status().isBadRequest(),
-        expectExceptionJsonPath(result, EXAM_POST_ALREADY_PURCHASE)
+        expectExceptionJsonPath(result, ALREADY_PURCHASED)
       );
 
       // docs

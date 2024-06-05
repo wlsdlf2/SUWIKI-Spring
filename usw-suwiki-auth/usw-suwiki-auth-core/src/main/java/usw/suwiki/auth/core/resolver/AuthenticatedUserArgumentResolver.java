@@ -11,10 +11,11 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 import usw.suwiki.auth.core.annotation.Authenticated;
 import usw.suwiki.auth.core.annotation.Authorize;
 import usw.suwiki.core.exception.BaseException;
-import usw.suwiki.core.exception.ExceptionType;
 
 import java.lang.reflect.Method;
 import java.util.Objects;
+
+import static usw.suwiki.core.exception.ExceptionCode.AUTHORIZATION_NOT_PROCESSED;
 
 @Component
 public class AuthenticatedUserArgumentResolver implements HandlerMethodArgumentResolver {
@@ -39,7 +40,7 @@ public class AuthenticatedUserArgumentResolver implements HandlerMethodArgumentR
     Method method = Objects.requireNonNull(parameter.getMethod());
 
     if (method.getAnnotation(Authorize.class) == null) {
-      throw new BaseException(ExceptionType.AUTHORIZATION_NOT_PROCESSED);
+      throw new BaseException(AUTHORIZATION_NOT_PROCESSED);
     }
   }
 

@@ -6,9 +6,10 @@ import org.springframework.transaction.annotation.Transactional;
 import usw.suwiki.auth.token.RefreshToken;
 import usw.suwiki.auth.token.RefreshTokenRepository;
 import usw.suwiki.core.exception.AccountException;
-import usw.suwiki.core.exception.ExceptionType;
 
 import java.util.Optional;
+
+import static usw.suwiki.core.exception.ExceptionCode.INVALID_TOKEN;
 
 @Service
 @Transactional(readOnly = true)
@@ -33,6 +34,6 @@ public class RefreshTokenService {
 
   public RefreshToken loadByPayload(String payload) {
     return refreshTokenRepository.findByPayload(payload)
-      .orElseThrow(() -> new AccountException(ExceptionType.INVALID_TOKEN));
+      .orElseThrow(() -> new AccountException(INVALID_TOKEN));
   }
 }

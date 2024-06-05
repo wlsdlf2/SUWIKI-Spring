@@ -6,7 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import usw.suwiki.common.pagination.PageOption;
 import usw.suwiki.core.exception.AccountException;
 import usw.suwiki.core.exception.ExamPostException;
-import usw.suwiki.core.exception.ExceptionType;
+import usw.suwiki.core.exception.ExceptionCode;
 import usw.suwiki.domain.exampost.ExamPost;
 import usw.suwiki.domain.exampost.ExamPostQueryRepository;
 import usw.suwiki.domain.exampost.ExamPostRepository;
@@ -21,8 +21,8 @@ import usw.suwiki.domain.viewexam.service.ViewExamService;
 
 import java.util.List;
 
-import static usw.suwiki.core.exception.ExceptionType.ALREADY_WROTE_EXAM_POST;
-import static usw.suwiki.core.exception.ExceptionType.EXAM_POST_ALREADY_PURCHASE;
+import static usw.suwiki.core.exception.ExceptionCode.ALREADY_PURCHASED;
+import static usw.suwiki.core.exception.ExceptionCode.ALREADY_WROTE_EXAM_POST;
 import static usw.suwiki.domain.exampost.dto.ExamPostResponse.Detail;
 import static usw.suwiki.domain.exampost.dto.ExamPostResponse.Details;
 import static usw.suwiki.domain.exampost.dto.ExamPostResponse.MyPost;
@@ -72,7 +72,7 @@ public class ExamPostService {
 
   public ExamPost loadExamPostById(Long examId) {
     return examPostRepository.findById(examId)
-      .orElseThrow(() -> new ExamPostException(ExceptionType.EXAM_POST_NOT_FOUND));
+      .orElseThrow(() -> new ExamPostException(ExceptionCode.EXAM_POST_NOT_FOUND));
   }
 
   public void report(Long reportingUserId, Long examId) {
@@ -104,7 +104,7 @@ public class ExamPostService {
 
   public void purchaseExamPost(Long userId, Long lectureId) {
     if (isAlreadyPurchased(userId, lectureId)) {
-      throw new ExamPostException(EXAM_POST_ALREADY_PURCHASE);
+      throw new ExamPostException(ALREADY_PURCHASED);
     }
 
     lectureService.findLectureById(lectureId); // todo: 존재하는지 확인하는 용도. 나중에 유의미한 메서드로 수정할 것

@@ -3,7 +3,6 @@ package usw.suwiki.domain.report.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import usw.suwiki.core.exception.ExceptionType;
 import usw.suwiki.core.exception.ReportedPostException;
 import usw.suwiki.domain.report.EvaluatePostReport;
 import usw.suwiki.domain.report.EvaluateReportRepository;
@@ -14,6 +13,8 @@ import usw.suwiki.domain.report.model.Report;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
+
+import static usw.suwiki.core.exception.ExceptionCode.REPORTED_POST_NOT_FOUND;
 
 @Service
 @Transactional
@@ -45,12 +46,12 @@ public class ReportService {
 
   public EvaluatePostReport loadEvaluateReportById(Long evaluateId) {
     return evaluateReportRepository.findById(evaluateId)
-      .orElseThrow(() -> new ReportedPostException(ExceptionType.REPORTED_POST_NOT_FOUND));
+      .orElseThrow(() -> new ReportedPostException(REPORTED_POST_NOT_FOUND));
   }
 
   public ExamPostReport loadExamReportById(Long examId) {
     return examReportRepository.findById(examId)
-      .orElseThrow(() -> new ReportedPostException(ExceptionType.REPORTED_POST_NOT_FOUND));
+      .orElseThrow(() -> new ReportedPostException(REPORTED_POST_NOT_FOUND));
   }
 
   public void clean(Long userId) {

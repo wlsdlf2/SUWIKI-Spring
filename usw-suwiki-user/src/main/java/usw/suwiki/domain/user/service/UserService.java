@@ -21,11 +21,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static usw.suwiki.core.exception.ExceptionType.DUPLICATED_ID_OR_EMAIL;
-import static usw.suwiki.core.exception.ExceptionType.EMAIL_NOT_AUTHED;
-import static usw.suwiki.core.exception.ExceptionType.INVALID_EMAIL_FORMAT;
-import static usw.suwiki.core.exception.ExceptionType.PASSWORD_ERROR;
-import static usw.suwiki.core.exception.ExceptionType.USER_NOT_FOUND;
+import static usw.suwiki.core.exception.ExceptionCode.DUPLICATED_ID_OR_EMAIL;
+import static usw.suwiki.core.exception.ExceptionCode.INVALID_EMAIL_FORMAT;
+import static usw.suwiki.core.exception.ExceptionCode.LOGIN_FAIL;
+import static usw.suwiki.core.exception.ExceptionCode.USER_NOT_FOUND;
 import static usw.suwiki.core.mail.MailType.EMAIL_AUTH;
 import static usw.suwiki.core.mail.MailType.FIND_ID;
 import static usw.suwiki.core.mail.MailType.FIND_PASSWORD;
@@ -194,7 +193,7 @@ public class UserService {
       return generateJwt(user);
     }
 
-    throw new AccountException(PASSWORD_ERROR);
+    throw new AccountException(LOGIN_FAIL);
   }
 
   // legacy

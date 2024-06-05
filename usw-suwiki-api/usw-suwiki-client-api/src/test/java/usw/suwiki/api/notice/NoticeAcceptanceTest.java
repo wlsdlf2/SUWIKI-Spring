@@ -11,7 +11,6 @@ import usw.suwiki.common.test.support.AcceptanceTestSupport;
 import usw.suwiki.common.test.support.Uri;
 import usw.suwiki.domain.notice.NoticeRepository;
 import usw.suwiki.domain.notice.dto.NoticeRequest;
-import usw.suwiki.common.test.fixture.Fixtures;
 
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
@@ -23,16 +22,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static usw.suwiki.common.test.Tag.NOTICE;
 import static usw.suwiki.common.test.extension.AssertExtension.expectExceptionJsonPath;
 import static usw.suwiki.common.test.support.Pair.parameter;
-import static usw.suwiki.core.exception.ExceptionType.NOTICE_NOT_FOUND;
-import static usw.suwiki.core.exception.ExceptionType.USER_RESTRICTED;
+import static usw.suwiki.core.exception.ExceptionCode.NOTICE_NOT_FOUND;
+import static usw.suwiki.core.exception.ExceptionCode.USER_RESTRICTED;
 
 @AcceptanceTest
 public class NoticeAcceptanceTest extends AcceptanceTestSupport {
   @Autowired
   private NoticeRepository noticeRepository;
-
-  @Autowired
-  private Fixtures fixtures;
 
   private String accessToken;
 

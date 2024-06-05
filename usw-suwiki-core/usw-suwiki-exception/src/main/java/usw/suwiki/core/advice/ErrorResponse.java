@@ -1,9 +1,10 @@
 package usw.suwiki.core.advice;
 
 import usw.suwiki.core.exception.BaseException;
-import usw.suwiki.core.exception.ExceptionType;
+import usw.suwiki.core.exception.ExceptionCode;
 
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static usw.suwiki.core.exception.ExceptionCode.PARAMETER_VALIDATION_FAIL;
 
 public record ErrorResponse(String code, String message, Integer status) {
 
@@ -11,11 +12,11 @@ public record ErrorResponse(String code, String message, Integer status) {
     return new ErrorResponse(baseException.getCode(), baseException.getMessage(), baseException.getHttpStatus());
   }
 
-  static ErrorResponse from(ExceptionType exceptionType) {
-    return new ErrorResponse(exceptionType.getCode(), exceptionType.getMessage(), exceptionType.getStatus());
+  static ErrorResponse parameter() {
+    return new ErrorResponse(PARAMETER_VALIDATION_FAIL.getCode(), PARAMETER_VALIDATION_FAIL.getMessage(), PARAMETER_VALIDATION_FAIL.getStatus());
   }
 
-  static ErrorResponse internal(String message) {
-    return new ErrorResponse(INTERNAL_SERVER_ERROR.name(), message, INTERNAL_SERVER_ERROR.value());
+  static ErrorResponse internal() {
+    return new ErrorResponse(INTERNAL_SERVER_ERROR.name(), ExceptionCode.SERVER_ERROR.getMessage(), INTERNAL_SERVER_ERROR.value());
   }
 }

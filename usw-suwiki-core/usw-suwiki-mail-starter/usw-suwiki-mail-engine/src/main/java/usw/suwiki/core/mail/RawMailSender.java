@@ -8,10 +8,10 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.thymeleaf.TemplateEngine;
-import usw.suwiki.core.exception.ExceptionType;
 import usw.suwiki.core.exception.MailException;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static usw.suwiki.core.exception.ExceptionCode.SEND_MAIL_FAILED;
 
 @Component
 @RequiredArgsConstructor
@@ -39,7 +39,7 @@ class RawMailSender {
       messageHelper.setTo(mail.to());
       messageHelper.setFrom(FROM);
     } catch (MessagingException e) {
-      throw new MailException(ExceptionType.SEND_MAIL_FAILED);
+      throw new MailException(SEND_MAIL_FAILED);
     }
   }
 }

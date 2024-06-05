@@ -9,9 +9,10 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import usw.suwiki.core.exception.AccountException;
-import usw.suwiki.core.exception.ExceptionType;
 
 import java.util.Objects;
+
+import static usw.suwiki.core.exception.ExceptionCode.INVALID_TOKEN;
 
 @Entity
 @Getter
@@ -39,7 +40,7 @@ public class RefreshToken {
 
   public void validatePayload(String payload) {
     if (!Objects.equals(this.payload, payload)) {
-      throw new AccountException(ExceptionType.INVALID_TOKEN);
+      throw new AccountException(INVALID_TOKEN);
     }
   }
 }

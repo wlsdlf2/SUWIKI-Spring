@@ -3,8 +3,9 @@ package usw.suwiki.core.version.v2;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import usw.suwiki.core.exception.ExceptionType;
 import usw.suwiki.core.exception.VersionException;
+
+import static usw.suwiki.core.exception.ExceptionCode.SERVER_ERROR;
 
 @Service
 @Transactional(readOnly = true)
@@ -16,7 +17,7 @@ public class ClientAppVersionService {
     ClientOS clientOS = ClientOS.from(os);
 
     ClientAppVersion clientAppVersion = clientAppVersionRepository.findFirstByOsAndIsVitalTrueOrderByVersionCodeDesc(clientOS)
-      .orElseThrow(() -> new VersionException(ExceptionType.SERVER_ERROR));
+      .orElseThrow(() -> new VersionException(SERVER_ERROR));
 
     return new CheckUpdateMandatoryResponse(clientAppVersion.isUpdateMandatory(clientOS, versionCode));
   }

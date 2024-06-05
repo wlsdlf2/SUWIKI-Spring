@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import usw.suwiki.core.exception.AccountException;
-import usw.suwiki.core.exception.ExceptionType;
 import usw.suwiki.core.secure.Encoder;
 import usw.suwiki.domain.user.blacklist.BlacklistDomain;
 import usw.suwiki.domain.user.blacklist.BlacklistRepository;
@@ -13,6 +12,8 @@ import usw.suwiki.domain.user.service.BlacklistService;
 
 import java.util.Collections;
 import java.util.List;
+
+import static usw.suwiki.core.exception.ExceptionCode.BLACKLIST;
 
 @Service
 @Transactional
@@ -42,7 +43,7 @@ class BlacklistServiceImpl implements BlacklistService {
   public void validateNotBlack(String email) {
     for (BlacklistDomain blackListUser : blacklistRepository.findAll()) {
       if (encoder.matches(email, blackListUser.getHashedEmail())) {
-        throw new AccountException(ExceptionType.YOU_ARE_IN_BLACKLIST);
+        throw new AccountException(BLACKLIST);
       }
     }
   }

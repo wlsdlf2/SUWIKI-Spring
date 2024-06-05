@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import usw.suwiki.core.exception.AccountException;
-import usw.suwiki.core.exception.ExceptionType;
+import usw.suwiki.core.exception.ExceptionCode;
 import usw.suwiki.core.secure.Encoder;
 import usw.suwiki.core.secure.TokenAgent;
 import usw.suwiki.domain.evaluatepost.service.EvaluatePostService;
@@ -38,11 +38,11 @@ public class AdminService {
     User user = userService.loadByLoginId(loginId);
 
     if (!user.isPasswordEquals(encoder, password)) {
-      throw new AccountException(ExceptionType.PASSWORD_ERROR);
+      throw new AccountException(ExceptionCode.LOGIN_FAIL);
     }
 
     if (!user.isAdmin()) {
-      throw new AccountException(ExceptionType.USER_RESTRICTED);
+      throw new AccountException(ExceptionCode.USER_RESTRICTED);
     }
 
     return new AdminResponse.Login(tokenAgent.createAccessToken(user.getId(), user.toClaim()), userService.countAllUsers());

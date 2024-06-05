@@ -18,6 +18,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import usw.suwiki.common.test.HttpMethod;
+import usw.suwiki.common.test.fixture.Fixtures;
 
 import java.util.Arrays;
 
@@ -35,6 +36,9 @@ public abstract class AcceptanceTestSupport {
   private ObjectMapper objectMapper;
   @Autowired
   private MockMvc mockMvc;
+
+  @Autowired
+  protected Fixtures fixtures;
 
   public ResultActions get(Uri uri, String accessToken) throws Exception {
     return perform(uri, accessToken, null);

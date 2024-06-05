@@ -4,13 +4,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import usw.suwiki.common.pagination.PageOption;
-import usw.suwiki.core.exception.ExceptionType;
 import usw.suwiki.core.exception.NoticeException;
 import usw.suwiki.domain.notice.Notice;
 import usw.suwiki.domain.notice.NoticeRepository;
 import usw.suwiki.domain.notice.dto.NoticeResponse;
 
 import java.util.List;
+
+import static usw.suwiki.core.exception.ExceptionCode.NOTICE_NOT_FOUND;
 
 @Service
 @Transactional(readOnly = true)
@@ -54,6 +55,6 @@ public class NoticeService {
 
   private Notice findNoticeById(Long noticeId) {
     return noticeRepository.findById(noticeId)
-      .orElseThrow(() -> new NoticeException(ExceptionType.NOTICE_NOT_FOUND));
+      .orElseThrow(() -> new NoticeException(NOTICE_NOT_FOUND));
   }
 }

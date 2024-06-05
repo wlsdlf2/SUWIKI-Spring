@@ -11,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 import usw.suwiki.auth.token.RefreshToken;
 import usw.suwiki.auth.token.service.RefreshTokenService;
 import usw.suwiki.core.exception.AccountException;
-import usw.suwiki.core.exception.ExceptionType;
 import usw.suwiki.core.secure.TokenAgent;
 import usw.suwiki.core.secure.model.Claim;
 import usw.suwiki.domain.user.Role;
@@ -21,10 +20,11 @@ import java.util.Optional;
 
 import static java.lang.Boolean.TRUE;
 import static usw.suwiki.auth.core.jwt.RawParser.Content;
+import static usw.suwiki.core.exception.ExceptionCode.USER_RESTRICTED;
 
 @Component
 @RequiredArgsConstructor
-public class JwtAgent implements TokenAgent { // todo: public 이지만 외부로 노출을 감출 것.
+public class JwtAgent implements TokenAgent { // todo: public 이지만 외부로 노출을 감출 것. auth-token 쪽으로 감추자
   private final RefreshTokenService refreshTokenService;
 
   private final UserDetailsService userDetailsService;
@@ -40,7 +40,7 @@ public class JwtAgent implements TokenAgent { // todo: public 이지만 외부�
 
   private void validateRestricted(String token) {
     if (TRUE.equals(rawParser.parse(token, Content.RESTRICTED, Boolean.class))) {
-      throw new AccountException(ExceptionType.USER_RESTRICTED);
+      throw new AccountException(USER_RESTRICTED);
     }
   }
 

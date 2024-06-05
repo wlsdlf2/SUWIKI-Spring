@@ -10,9 +10,9 @@ import io.jsonwebtoken.security.SignatureException;
 import org.springframework.stereotype.Component;
 import usw.suwiki.core.exception.AccountException;
 
-import static usw.suwiki.core.exception.ExceptionType.INVALID_TOKEN;
-import static usw.suwiki.core.exception.ExceptionType.LOGIN_REQUIRED;
-import static usw.suwiki.core.exception.ExceptionType.TOKEN_IS_EXPIRED;
+import static usw.suwiki.core.exception.ExceptionCode.EXPIRED_TOKEN;
+import static usw.suwiki.core.exception.ExceptionCode.INVALID_TOKEN;
+import static usw.suwiki.core.exception.ExceptionCode.LOGIN_REQUIRED;
 
 @Component
 class RawParser {
@@ -34,7 +34,7 @@ class RawParser {
     } catch (MalformedJwtException | IllegalArgumentException exception) {
       throw new AccountException(LOGIN_REQUIRED);
     } catch (ExpiredJwtException exception) {
-      throw new AccountException(TOKEN_IS_EXPIRED);
+      throw new AccountException(EXPIRED_TOKEN);
     } catch (SignatureException exception) {
       throw new AccountException(INVALID_TOKEN);
     }

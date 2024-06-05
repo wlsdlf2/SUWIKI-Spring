@@ -2,13 +2,13 @@ package usw.suwiki.domain.lecture.service;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import usw.suwiki.core.exception.ExceptionType;
 import usw.suwiki.core.exception.TimetableException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static usw.suwiki.core.exception.ExceptionCode.INVALID_TIMETABLE_CELL_DAY;
 import static usw.suwiki.domain.lecture.dto.LectureResponse.LectureCell;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -88,7 +88,7 @@ public class LectureStringConverter {
       case "금" -> "FRI";
       case "토" -> "SAT";
       case "일" -> "SUN";
-      default -> throw new TimetableException(ExceptionType.INVALID_TIMETABLE_CELL_DAY);
+      default -> throw new TimetableException(INVALID_TIMETABLE_CELL_DAY);
     };
   }
 }

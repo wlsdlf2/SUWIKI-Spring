@@ -8,7 +8,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.springframework.beans.factory.annotation.Autowired;
 import usw.suwiki.common.test.annotation.AcceptanceTest;
-import usw.suwiki.common.test.fixture.Fixtures;
 import usw.suwiki.common.test.support.AcceptanceTestSupport;
 import usw.suwiki.common.test.support.Uri;
 import usw.suwiki.core.secure.Encoder;
@@ -30,9 +29,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static usw.suwiki.common.test.Tag.REPORT;
 import static usw.suwiki.common.test.Tag.USER;
 import static usw.suwiki.common.test.support.ResponseValidator.validate;
-import static usw.suwiki.core.exception.ExceptionType.PARAMETER_VALIDATION_FAIL;
-import static usw.suwiki.core.exception.ExceptionType.PASSWORD_ERROR;
-import static usw.suwiki.core.exception.ExceptionType.USER_RESTRICTED;
+import static usw.suwiki.core.exception.ExceptionCode.LOGIN_FAIL;
+import static usw.suwiki.core.exception.ExceptionCode.PARAMETER_VALIDATION_FAIL;
+import static usw.suwiki.core.exception.ExceptionCode.USER_RESTRICTED;
 
 @AcceptanceTest
 class AdminAcceptanceTest extends AcceptanceTestSupport {
@@ -55,8 +54,6 @@ class AdminAcceptanceTest extends AcceptanceTestSupport {
 
   @Autowired
   private Encoder encoder;
-  @Autowired
-  private Fixtures fixtures;
 
   private static final String loginId = "admin";
   private static final String password = "password";
@@ -112,7 +109,7 @@ class AdminAcceptanceTest extends AcceptanceTestSupport {
       var result = post(Uri.of(endpoint), request);
 
       // then
-      validate(result, status().isBadRequest(), PASSWORD_ERROR);
+      validate(result, status().isBadRequest(), LOGIN_FAIL);
 
       // docs
       result.andDo(

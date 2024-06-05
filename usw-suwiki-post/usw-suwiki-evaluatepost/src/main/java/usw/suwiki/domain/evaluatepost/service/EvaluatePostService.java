@@ -5,7 +5,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import usw.suwiki.common.pagination.PageOption;
 import usw.suwiki.core.exception.EvaluatePostException;
-import usw.suwiki.core.exception.ExceptionType;
 import usw.suwiki.domain.evaluatepost.EvaluatePost;
 import usw.suwiki.domain.evaluatepost.EvaluatePostQueryRepository;
 import usw.suwiki.domain.evaluatepost.EvaluatePostRepository;
@@ -17,6 +16,9 @@ import usw.suwiki.domain.report.service.ReportService;
 import usw.suwiki.domain.user.service.UserService;
 
 import java.util.List;
+
+import static usw.suwiki.core.exception.ExceptionCode.ALREADY_WROTE_EXAM_POST;
+import static usw.suwiki.core.exception.ExceptionCode.EVALUATE_POST_NOT_FOUND;
 
 @Service
 @Transactional
@@ -45,7 +47,7 @@ public class EvaluatePostService {
 
   public EvaluatePost loadEvaluatePostById(Long evaluateId) {
     return evaluatePostRepository.findById(evaluateId)
-      .orElseThrow(() -> new EvaluatePostException(ExceptionType.EVALUATE_POST_NOT_FOUND));
+      .orElseThrow(() -> new EvaluatePostException(EVALUATE_POST_NOT_FOUND));
   }
 
   public void report(Long reportingUserId, Long evaluateId) {
@@ -61,7 +63,7 @@ public class EvaluatePostService {
 
   public void write(Long userId, Long lectureId, EvaluatePostRequest.Create request) {
     if (isAlreadyWritten(userId, lectureId)) {
-      throw new EvaluatePostException(ExceptionType.ALREADY_WROTE_EXAM_POST);
+      throw new EvaluatePostException(ALREADY_WROTE_EXAM_POST);
     }
 
     var evaluatePost = EvaluatePostMapper.toEntity(userId, lectureId, request);

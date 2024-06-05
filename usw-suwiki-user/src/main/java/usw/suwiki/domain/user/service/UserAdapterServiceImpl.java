@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import usw.suwiki.core.exception.AccountException;
-import usw.suwiki.core.exception.ExceptionType;
+import usw.suwiki.core.exception.ExceptionCode;
 import usw.suwiki.domain.user.User;
 import usw.suwiki.domain.user.UserRepository;
 import usw.suwiki.domain.user.model.UserAdapter;
@@ -19,6 +19,6 @@ class UserAdapterServiceImpl implements UserAdapterService {
   public UserAdapter findByUsername(String username) {
     return userRepository.findByLoginId(username)
       .map(User::toAdapter)
-      .orElseThrow(() -> new AccountException(ExceptionType.USER_NOT_FOUND));
+      .orElseThrow(() -> new AccountException(ExceptionCode.USER_NOT_FOUND));
   }
 }

@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 import usw.suwiki.core.exception.EvaluatePostException;
 import usw.suwiki.infra.jpa.BaseEntity;
 
-import static usw.suwiki.core.exception.ExceptionType.NOT_AN_AUTHOR;
+import static usw.suwiki.core.exception.ExceptionCode.NOT_AN_AUTHOR;
 
 @Getter
 @Entity

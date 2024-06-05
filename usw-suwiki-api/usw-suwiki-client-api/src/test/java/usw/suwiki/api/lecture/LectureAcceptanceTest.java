@@ -3,23 +3,19 @@ package usw.suwiki.api.lecture;
 import io.github.hejow.restdocs.generator.RestDocument;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import usw.suwiki.common.test.Tag;
 import usw.suwiki.common.test.annotation.AcceptanceTest;
 import usw.suwiki.common.test.support.AcceptanceTestSupport;
 import usw.suwiki.common.test.support.Uri;
-import usw.suwiki.common.test.fixture.Fixtures;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static usw.suwiki.common.test.extension.AssertExtension.expectExceptionJsonPath;
 import static usw.suwiki.common.test.support.Pair.parameter;
-import static usw.suwiki.core.exception.ExceptionType.USER_RESTRICTED;
+import static usw.suwiki.core.exception.ExceptionCode.USER_RESTRICTED;
 
 @AcceptanceTest
 class LectureAcceptanceTest extends AcceptanceTestSupport {
-  @Autowired
-  private Fixtures fixtures;
 
   @Nested
   class 강의_검색_테스트 {

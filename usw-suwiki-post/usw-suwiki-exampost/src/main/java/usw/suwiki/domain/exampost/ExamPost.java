@@ -9,8 +9,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import usw.suwiki.core.exception.ExamPostException;
-import usw.suwiki.core.exception.ExceptionType;
 import usw.suwiki.infra.jpa.BaseEntity;
+
+import static usw.suwiki.core.exception.ExceptionCode.NOT_AN_AUTHOR;
 
 @Getter
 @Entity
@@ -32,7 +33,7 @@ public class ExamPost extends BaseEntity {
 
   public void validateAuthor(Long userId) {
     if (!userIdx.equals(userId)) {
-      throw new ExamPostException(ExceptionType.NOT_AN_AUTHOR);
+      throw new ExamPostException(NOT_AN_AUTHOR);
     }
   }
 

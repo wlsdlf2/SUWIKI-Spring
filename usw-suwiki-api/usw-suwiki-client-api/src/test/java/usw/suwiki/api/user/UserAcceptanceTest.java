@@ -17,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 import usw.suwiki.auth.token.ConfirmationToken;
 import usw.suwiki.auth.token.ConfirmationTokenRepository;
 import usw.suwiki.common.test.annotation.AcceptanceTest;
-import usw.suwiki.common.test.fixture.Fixtures;
 import usw.suwiki.common.test.support.AcceptanceTestSupport;
 import usw.suwiki.common.test.support.Uri;
 import usw.suwiki.core.secure.Encoder;
@@ -53,14 +52,15 @@ import static usw.suwiki.common.test.Tag.USER;
 import static usw.suwiki.common.test.support.Pair.parameter;
 import static usw.suwiki.common.test.support.ResponseValidator.validate;
 import static usw.suwiki.common.test.support.ResponseValidator.validateHtml;
-import static usw.suwiki.core.exception.ExceptionType.DUPLICATED_ID_OR_EMAIL;
-import static usw.suwiki.core.exception.ExceptionType.EMAIL_NOT_AUTHED;
-import static usw.suwiki.core.exception.ExceptionType.INVALID_EMAIL_FORMAT;
-import static usw.suwiki.core.exception.ExceptionType.INVALID_TOKEN;
-import static usw.suwiki.core.exception.ExceptionType.PARAMETER_VALIDATION_FAIL;
-import static usw.suwiki.core.exception.ExceptionType.PASSWORD_ERROR;
-import static usw.suwiki.core.exception.ExceptionType.SAME_PASSWORD_WITH_OLD;
-import static usw.suwiki.core.exception.ExceptionType.USER_NOT_FOUND;
+import static usw.suwiki.core.exception.ExceptionCode.DUPLICATED_ID_OR_EMAIL;
+import static usw.suwiki.core.exception.ExceptionCode.EMAIL_NOT_AUTHED;
+import static usw.suwiki.core.exception.ExceptionCode.INVALID_EMAIL_FORMAT;
+import static usw.suwiki.core.exception.ExceptionCode.INVALID_TOKEN;
+import static usw.suwiki.core.exception.ExceptionCode.LOGIN_FAIL;
+import static usw.suwiki.core.exception.ExceptionCode.PARAMETER_VALIDATION_FAIL;
+import static usw.suwiki.core.exception.ExceptionCode.PASSWORD_ERROR;
+import static usw.suwiki.core.exception.ExceptionCode.SAME_PASSWORD_WITH_OLD;
+import static usw.suwiki.core.exception.ExceptionCode.USER_NOT_FOUND;
 
 @AcceptanceTest
 class UserAcceptanceTest extends AcceptanceTestSupport {
@@ -75,8 +75,6 @@ class UserAcceptanceTest extends AcceptanceTestSupport {
 
   @Autowired
   private Encoder encoder;
-  @Autowired
-  private Fixtures fixtures;
 
   @SpyBean
   private ConfirmationTokenRepository confirmationTokenRepository;
@@ -690,7 +688,7 @@ class UserAcceptanceTest extends AcceptanceTestSupport {
       var result = post(Uri.of(webEndpoint), request);
 
       // then
-      validate(result, status().isBadRequest(), PASSWORD_ERROR);
+      validate(result, status().isBadRequest(), LOGIN_FAIL);
 
       // docs
       result.andDo(
@@ -754,7 +752,7 @@ class UserAcceptanceTest extends AcceptanceTestSupport {
       var result = post(Uri.of(mobileEndpoint), request);
 
       // then
-      validate(result, status().isBadRequest(), PASSWORD_ERROR);
+      validate(result, status().isBadRequest(), LOGIN_FAIL);
 
       // docs
       result.andDo(

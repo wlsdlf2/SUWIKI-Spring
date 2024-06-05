@@ -4,7 +4,7 @@ import org.springframework.data.util.Pair;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
 import usw.suwiki.common.test.extension.AssertExtension;
-import usw.suwiki.core.exception.ExceptionType;
+import usw.suwiki.core.exception.ExceptionCode;
 
 import java.util.Arrays;
 import java.util.stream.Stream;
@@ -27,7 +27,7 @@ public class ResponseValidator {
     );
   }
 
-  public static void validate(ResultActions result, ResultMatcher expectedStatus, ExceptionType expectedException) throws Exception {
+  public static void validate(ResultActions result, ResultMatcher expectedStatus, ExceptionCode expectedException) throws Exception {
     result.andExpectAll(
       expectedStatus,
       AssertExtension.expectExceptionJsonPath(result, expectedException)

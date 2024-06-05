@@ -12,9 +12,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import usw.suwiki.core.exception.ExceptionType;
 import usw.suwiki.core.exception.VersionException;
 import usw.suwiki.infra.jpa.BaseEntity;
+
+import static usw.suwiki.core.exception.ExceptionCode.SERVER_ERROR;
 
 @Entity
 @Getter
@@ -37,7 +38,7 @@ public class ClientAppVersion extends BaseEntity {
 
   public boolean isUpdateMandatory(ClientOS os, Integer versionCode) {
     if (this.os != os) {
-      throw new VersionException(ExceptionType.SERVER_ERROR);
+      throw new VersionException(SERVER_ERROR);
     }
 
     return this.isVital && this.versionCode > versionCode;

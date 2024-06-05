@@ -21,7 +21,6 @@ import usw.suwiki.domain.lecture.timetable.TimetableDay;
 import usw.suwiki.domain.lecture.timetable.TimetableRepository;
 import usw.suwiki.domain.lecture.timetable.dto.TimetableRequest;
 import usw.suwiki.domain.user.User;
-import usw.suwiki.common.test.fixture.Fixtures;
 
 import java.util.Arrays;
 import java.util.List;
@@ -32,19 +31,16 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static usw.suwiki.common.test.extension.AssertExtension.expectExceptionJsonPath;
-import static usw.suwiki.core.exception.ExceptionType.INVALID_TIMETABLE_SEMESTER;
-import static usw.suwiki.core.exception.ExceptionType.INVALID_TOKEN;
-import static usw.suwiki.core.exception.ExceptionType.NOT_AN_AUTHOR;
-import static usw.suwiki.core.exception.ExceptionType.OVERLAPPED_TIMETABLE_CELL_SCHEDULE;
-import static usw.suwiki.core.exception.ExceptionType.PARAMETER_VALIDATION_FAIL;
+import static usw.suwiki.core.exception.ExceptionCode.INVALID_TIMETABLE_SEMESTER;
+import static usw.suwiki.core.exception.ExceptionCode.INVALID_TOKEN;
+import static usw.suwiki.core.exception.ExceptionCode.NOT_AN_AUTHOR;
+import static usw.suwiki.core.exception.ExceptionCode.OVERLAPPED_TIMETABLE_CELL_SCHEDULE;
+import static usw.suwiki.core.exception.ExceptionCode.PARAMETER_VALIDATION_FAIL;
 
 @AcceptanceTest
 class TimetableAcceptanceTest extends AcceptanceTestSupport {
   @Autowired
   private TimetableRepository timetableRepository;
-
-  @Autowired
-  private Fixtures fixtures;
 
   private User user;
   private String accessToken;

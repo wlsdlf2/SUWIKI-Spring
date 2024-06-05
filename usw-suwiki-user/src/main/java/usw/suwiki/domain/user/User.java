@@ -21,10 +21,10 @@ import usw.suwiki.infra.jpa.BaseEntity;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-import static usw.suwiki.core.exception.ExceptionType.PASSWORD_ERROR;
-import static usw.suwiki.core.exception.ExceptionType.SAME_PASSWORD_WITH_OLD;
-import static usw.suwiki.core.exception.ExceptionType.USER_NOT_FOUND;
-import static usw.suwiki.core.exception.ExceptionType.USER_POINT_LACK;
+import static usw.suwiki.core.exception.ExceptionCode.OUT_OF_POINT;
+import static usw.suwiki.core.exception.ExceptionCode.PASSWORD_ERROR;
+import static usw.suwiki.core.exception.ExceptionCode.SAME_PASSWORD_WITH_OLD;
+import static usw.suwiki.core.exception.ExceptionCode.USER_NOT_FOUND;
 
 @Entity
 @Getter
@@ -212,7 +212,7 @@ public class User extends BaseEntity {
 
   private void validatePointLimit(int required) {
     if (this.point < required) {
-      throw new AccountException(USER_POINT_LACK);
+      throw new AccountException(OUT_OF_POINT);
     }
   }
 

@@ -9,7 +9,6 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import usw.suwiki.core.exception.ExceptionType;
 import usw.suwiki.core.exception.LectureException;
 import usw.suwiki.domain.lecture.Lecture;
 import usw.suwiki.domain.lecture.LectureQueryRepository;
@@ -28,6 +27,8 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.List;
 import java.util.Optional;
+
+import static usw.suwiki.core.exception.ExceptionCode.SERVER_ERROR;
 
 @Service
 @Transactional(readOnly = true)
@@ -63,7 +64,7 @@ public class LectureScheduleService {
       return (JSONArray) parser.parse(reader);
     } catch (IOException | ParseException ex) {
       ex.printStackTrace();
-      throw new LectureException(ExceptionType.SERVER_ERROR); // todo: do not throw server error
+      throw new LectureException(SERVER_ERROR); // todo: do not throw server error
     }
   }
 

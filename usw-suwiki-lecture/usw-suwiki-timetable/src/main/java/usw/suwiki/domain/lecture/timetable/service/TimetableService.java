@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import usw.suwiki.core.exception.ExceptionType;
+import usw.suwiki.core.exception.ExceptionCode;
 import usw.suwiki.core.exception.TimetableException;
 import usw.suwiki.domain.lecture.timetable.Timetable;
 import usw.suwiki.domain.lecture.timetable.TimetableCell;
@@ -49,7 +49,7 @@ public class TimetableService {
     var timetables = requests.stream()
       .map(request -> TimetableMapper.toTimetable(userId, request))
       .toList();
-    
+
     timetableRepository.saveAll(timetables);
   }
 
@@ -83,6 +83,6 @@ public class TimetableService {
 
   private Timetable loadById(Long timetableId) {
     return timetableRepository.findById(timetableId)
-      .orElseThrow(() -> new TimetableException(ExceptionType.TIMETABLE_NOT_FOUND));
+      .orElseThrow(() -> new TimetableException(ExceptionCode.TIMETABLE_NOT_FOUND));
   }
 }

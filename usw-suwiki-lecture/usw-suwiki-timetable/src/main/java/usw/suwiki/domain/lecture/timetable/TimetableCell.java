@@ -8,8 +8,9 @@ import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import usw.suwiki.core.exception.ExceptionType;
 import usw.suwiki.core.exception.TimetableException;
+
+import static usw.suwiki.core.exception.ExceptionCode.INVALID_TIMETABLE_CELL_SCHEDULE;
 
 @Getter
 @Embeddable
@@ -50,7 +51,7 @@ public class TimetableCell {
 
   private void validatePeriod(Integer startPeriod, Integer endPeriod) {
     if (startPeriod > endPeriod) {
-      throw new TimetableException(ExceptionType.INVALID_TIMETABLE_CELL_SCHEDULE);
+      throw new TimetableException(INVALID_TIMETABLE_CELL_SCHEDULE);
     }
   }
 

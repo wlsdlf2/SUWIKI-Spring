@@ -14,7 +14,6 @@ import usw.suwiki.domain.evaluatepost.EvaluatePostRepository;
 import usw.suwiki.domain.evaluatepost.dto.EvaluatePostRequest;
 import usw.suwiki.domain.lecture.Lecture;
 import usw.suwiki.domain.user.User;
-import usw.suwiki.common.test.fixture.Fixtures;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -23,20 +22,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static usw.suwiki.common.test.Tag.EVALUATE_POST;
 import static usw.suwiki.common.test.extension.AssertExtension.expectExceptionJsonPath;
 import static usw.suwiki.common.test.support.Pair.parameter;
-import static usw.suwiki.core.exception.ExceptionType.ALREADY_WROTE_EXAM_POST;
-import static usw.suwiki.core.exception.ExceptionType.EVALUATE_POST_NOT_FOUND;
-import static usw.suwiki.core.exception.ExceptionType.LECTURE_NOT_FOUND;
-import static usw.suwiki.core.exception.ExceptionType.NOT_AN_AUTHOR;
-import static usw.suwiki.core.exception.ExceptionType.PARAMETER_VALIDATION_FAIL;
-import static usw.suwiki.core.exception.ExceptionType.USER_POINT_LACK;
+import static usw.suwiki.core.exception.ExceptionCode.ALREADY_WROTE_EXAM_POST;
+import static usw.suwiki.core.exception.ExceptionCode.EVALUATE_POST_NOT_FOUND;
+import static usw.suwiki.core.exception.ExceptionCode.LECTURE_NOT_FOUND;
+import static usw.suwiki.core.exception.ExceptionCode.NOT_AN_AUTHOR;
+import static usw.suwiki.core.exception.ExceptionCode.OUT_OF_POINT;
+import static usw.suwiki.core.exception.ExceptionCode.PARAMETER_VALIDATION_FAIL;
 
 @AcceptanceTest
 public class EvaluatePostAcceptanceTest extends AcceptanceTestSupport {
   @Autowired
   private EvaluatePostRepository evaluatePostRepository;
-
-  @Autowired
-  private Fixtures fixtures;
 
   private User user;
   private Lecture lecture;
@@ -422,7 +418,7 @@ public class EvaluatePostAcceptanceTest extends AcceptanceTestSupport {
       // then
       result.andExpectAll(
         status().isBadRequest(),
-        expectExceptionJsonPath(result, USER_POINT_LACK)
+        expectExceptionJsonPath(result, OUT_OF_POINT)
       );
 
       // docs

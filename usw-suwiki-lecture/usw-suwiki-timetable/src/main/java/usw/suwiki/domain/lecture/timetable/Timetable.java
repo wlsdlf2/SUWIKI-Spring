@@ -12,12 +12,14 @@ import jakarta.persistence.OrderColumn;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import usw.suwiki.core.exception.ExceptionType;
 import usw.suwiki.core.exception.TimetableException;
 import usw.suwiki.infra.jpa.BaseEntity;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static usw.suwiki.core.exception.ExceptionCode.NOT_AN_AUTHOR;
+import static usw.suwiki.core.exception.ExceptionCode.OVERLAPPED_TIMETABLE_CELL_SCHEDULE;
 
 @Entity
 @Getter
@@ -65,7 +67,7 @@ public class Timetable extends BaseEntity {
 
   public void validateAuthor(Long userId) {
     if (!this.userId.equals(userId)) {
-      throw new TimetableException(ExceptionType.NOT_AN_AUTHOR);
+      throw new TimetableException(NOT_AN_AUTHOR);
     }
   }
 
@@ -90,7 +92,7 @@ public class Timetable extends BaseEntity {
 
   private void validateOverlap(TimetableCell cell) {
     if (cells.stream().anyMatch(cell::isOverlap)) {
-      throw new TimetableException(ExceptionType.OVERLAPPED_TIMETABLE_CELL_SCHEDULE);
+      throw new TimetableException(OVERLAPPED_TIMETABLE_CELL_SCHEDULE);
     }
   }
 }

@@ -7,7 +7,7 @@ import usw.suwiki.auth.token.service.ConfirmUserService;
 import usw.suwiki.core.exception.AccountException;
 import usw.suwiki.domain.user.UserRepository;
 
-import static usw.suwiki.core.exception.ExceptionType.USER_NOT_FOUND;
+import static usw.suwiki.core.exception.ExceptionCode.USER_NOT_FOUND;
 
 @Service
 @Transactional

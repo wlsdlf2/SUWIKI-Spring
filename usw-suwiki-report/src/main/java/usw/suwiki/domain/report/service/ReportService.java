@@ -24,14 +24,14 @@ public class ReportService {
   private final ExamReportRepository examReportRepository;
 
   public void reportEvaluatePost(Report report) {
-    save(report, EvaluatePostReport::from, evaluateReportRepository::save);
+    report(report, EvaluatePostReport::from, evaluateReportRepository::save);
   }
 
   public void reportExamPost(Report report) {
-    save(report, ExamPostReport::from, examReportRepository::save);
+    report(report, ExamPostReport::from, examReportRepository::save);
   }
 
-  private <T> void save(Report report, Function<Report, T> mapper, Consumer<T> repository) {
+  private <T> void report(Report report, Function<Report, T> mapper, Consumer<T> repository) {
     T entity = mapper.apply(report);
     repository.accept(entity);
   }
@@ -44,13 +44,13 @@ public class ReportService {
     return examReportRepository.findAll();
   }
 
-  public EvaluatePostReport loadEvaluateReportById(Long evaluateId) {
-    return evaluateReportRepository.findById(evaluateId)
+  public EvaluatePostReport loadEvaluateReportById(Long evaluateReportId) {
+    return evaluateReportRepository.findById(evaluateReportId)
       .orElseThrow(() -> new ReportedPostException(REPORTED_POST_NOT_FOUND));
   }
 
-  public ExamPostReport loadExamReportById(Long examId) {
-    return examReportRepository.findById(examId)
+  public ExamPostReport loadExamReportById(Long examReportId) {
+    return examReportRepository.findById(examReportId)
       .orElseThrow(() -> new ReportedPostException(REPORTED_POST_NOT_FOUND));
   }
 

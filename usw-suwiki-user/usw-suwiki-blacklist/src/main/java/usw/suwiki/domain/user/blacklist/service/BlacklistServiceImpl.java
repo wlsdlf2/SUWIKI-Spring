@@ -49,14 +49,14 @@ class BlacklistServiceImpl implements BlacklistService {
   }
 
   @Override
-  public void black(Long userId, String email, String reason, String judgement) {
-    var blacklist = BlacklistDomain.permanent(userId, encoder.encode(email), reason, judgement);
+  public void black(Long reportedId, String email, String reason, String judgement) {
+    var blacklist = BlacklistDomain.permanent(reportedId, encoder.encode(email), reason, judgement);
     blacklistRepository.save(blacklist);
   }
 
   @Override
-  public void overRestricted(Long userId, String email) {
-    var blacklist = BlacklistDomain.overRestrict(userId, encoder.encode(email));
+  public void overRestricted(Long reportedId, String email) {
+    var blacklist = BlacklistDomain.overRestrict(reportedId, encoder.encode(email));
     blacklistRepository.save(blacklist);
   }
 }

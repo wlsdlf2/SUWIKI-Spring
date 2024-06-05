@@ -5,10 +5,14 @@ import jakarta.validation.constraints.NotNull;
 
 public final class AdminRequest {
 
-  public record EvaluatePostNoProblem(@NotNull Long evaluateIdx) {
+  public record EvaluatePostNoProblem(
+    @NotNull Long evaluateIdx
+  ) {
   }
 
-  public record ExamPostNoProblem(@NotNull Long examIdx) {
+  public record ExamPostNoProblem(
+    @NotNull Long examIdx
+  ) {
   }
 
   public record RestrictEvaluatePost(

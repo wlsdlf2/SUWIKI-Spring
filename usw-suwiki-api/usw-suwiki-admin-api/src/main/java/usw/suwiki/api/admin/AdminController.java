@@ -44,7 +44,7 @@ public class AdminController {
   @Statistics(ADMIN)
   @GetMapping("/report/evaluate/")
   @ResponseStatus(OK)  // todo: domain dependency
-  public EvaluatePostReport loadDetailReportedEvaluatePost(@Valid @RequestParam Long target) {
+  public EvaluatePostReport loadDetailReportedEvaluatePost(@RequestParam Long target) {
     return adminService.loadDetailReportedEvaluatePost(target);
   }
 
@@ -52,7 +52,7 @@ public class AdminController {
   @Statistics(ADMIN)
   @GetMapping("/report/exam/")
   @ResponseStatus(OK)
-  public ExamPostReport loadDetailReportedExamPost(@Valid @RequestParam Long target) {
+  public ExamPostReport loadDetailReportedExamPost(@RequestParam Long target) {
     return adminService.loadDetailReportedExamPost(target);
   }
 

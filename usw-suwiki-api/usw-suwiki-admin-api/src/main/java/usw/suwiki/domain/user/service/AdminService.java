@@ -55,14 +55,15 @@ public class AdminService {
     );
   }
 
-  public EvaluatePostReport loadDetailReportedEvaluatePost(Long evaluatePostId) {
-    return reportService.loadEvaluateReportById(evaluatePostId);
+  public EvaluatePostReport loadDetailReportedEvaluatePost(Long evaluateReportId) {
+    return reportService.loadEvaluateReportById(evaluateReportId);
   }
 
   public ExamPostReport loadDetailReportedExamPost(Long examPostReportId) {
     return reportService.loadExamReportById(examPostReportId);
   }
 
+  // todo: (06.05) 비슷한 로직들 해결하기
   public void restrict(RestrictEvaluatePost request) {
     var evaluatePostReport = reportService.loadEvaluateReportById(request.evaluateIdx());
 
@@ -82,14 +83,20 @@ public class AdminService {
   }
 
   public void black(EvaluatePostBlacklist request) {
-    Long userId = evaluatePostService.loadEvaluatePostById(request.evaluateIdx()).getUserIdx();
-    userService.black(userId, request.bannedReason(), request.judgement());
+    var evaluatePostReport = reportService.loadEvaluateReportById(request.evaluateIdx());
+
+    userService.rewardReport(evaluatePostReport.getReportingUserIdx());
+    userService.black(evaluatePostReport.getReportedUserIdx(), request.bannedReason(), request.judgement());
+
     resolveEvaluateReport(request.evaluateIdx());
   }
 
   public void black(ExamPostBlacklist request) {
-    Long userId = examPostService.loadExamPostById(request.examIdx()).getUserIdx();
-    userService.black(userId, request.bannedReason(), request.judgement());
+    var examPostReport = reportService.loadExamReportById(request.examIdx());
+
+    userService.rewardReport(examPostReport.getReportingUserIdx());
+    userService.black(examPostReport.getReportedUserIdx(), request.bannedReason(), request.judgement());
+
     resolveExamReport(request.examIdx());
   }
 

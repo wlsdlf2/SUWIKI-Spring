@@ -263,11 +263,11 @@ public class UserService {
     restrictService.restrict(reportedId, banPeriod, reason, judgement);
   }
 
-  public void black(Long userId, String reason, String judgement) {
-    var user = loadUserById(userId);
+  public void black(Long reportedId, String reason, String judgement) {
+    var user = loadUserById(reportedId);
     user.reported();
 
-    blacklistService.black(userId, user.getEmail(), reason, judgement);
+    blacklistService.black(reportedId, user.getEmail(), reason, judgement);
   }
 
   public void saveFavoriteMajor(Long userId, String majorType) {

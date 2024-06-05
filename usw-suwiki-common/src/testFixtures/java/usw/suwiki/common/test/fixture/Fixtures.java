@@ -21,7 +21,9 @@ import usw.suwiki.domain.lecture.timetable.TimetableCell;
 import usw.suwiki.domain.lecture.timetable.TimetableRepository;
 import usw.suwiki.domain.notice.Notice;
 import usw.suwiki.domain.notice.NoticeRepository;
+import usw.suwiki.domain.report.EvaluatePostReport;
 import usw.suwiki.domain.report.EvaluateReportRepository;
+import usw.suwiki.domain.report.ExamPostReport;
 import usw.suwiki.domain.report.ExamReportRepository;
 import usw.suwiki.domain.user.User;
 import usw.suwiki.domain.user.UserRepository;
@@ -195,7 +197,7 @@ public final class Fixtures {
   public ConfirmationToken 가입_인증된_토큰_생성(Long userId) {
     var token = new ConfirmationToken(userId);
     token.confirm();
-    
+
     return confirmationTokenRepository.save(token);
   }
 
@@ -242,11 +244,11 @@ public final class Fixtures {
     return restrictingUserRepository.save(restricted);
   }
 
-  public void 강의평가_신고_생성(Long reporter, EvaluatePost evaluatePost) {
-    evaluateReportRepository.save(ReportFixture.evaluate(reporter, evaluatePost.getUserIdx(), evaluatePost.getId()));
+  public EvaluatePostReport 강의평가_신고_생성(Long reporter, EvaluatePost evaluatePost) {
+    return evaluateReportRepository.save(ReportFixture.evaluate(reporter, evaluatePost.getUserIdx(), evaluatePost.getId()));
   }
 
-  public void 시험평가_신고_생성(Long reporter, ExamPost examPost) {
-    examReportRepository.save(ReportFixture.exam(reporter, examPost.getUserIdx(), examPost.getId()));
+  public ExamPostReport 시험평가_신고_생성(Long reporter, ExamPost examPost) {
+    return examReportRepository.save(ReportFixture.exam(reporter, examPost.getUserIdx(), examPost.getId()));
   }
 }

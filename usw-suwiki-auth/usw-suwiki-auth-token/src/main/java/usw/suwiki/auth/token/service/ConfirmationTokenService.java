@@ -19,6 +19,12 @@ public class ConfirmationTokenService {
   private final ConfirmationTokenRepository confirmationTokenRepository;
   private final ConfirmUserService confirmUserService;
 
+  public void validateEmailAuthorized(Long userId) {
+    confirmationTokenRepository.findByUserIdx(userId)
+      .orElseThrow(() -> new AccountException(EMAIL_NOT_AUTHED))
+      .validateVerified();
+  }
+
   public String requestConfirm(Long userId) {
     var confirmationToken = confirmationTokenRepository.save(new ConfirmationToken(userId));
     return confirmationToken.getToken();
@@ -26,7 +32,7 @@ public class ConfirmationTokenService {
 
   public String confirm(String token) {
     return confirmationTokenRepository.findByToken(token)
-      .map(it -> it.isExpired() ? expired(it) : confirm(it))
+      .map(it -> it.isExpired() ? expire(it) : confirm(it))
       .orElse(ERROR.getContent());
   }
 
@@ -36,16 +42,10 @@ public class ConfirmationTokenService {
     return SUCCESS.getContent();
   }
 
-  private String expired(ConfirmationToken token) {
+  private String expire(ConfirmationToken token) {
     confirmationTokenRepository.deleteById(token.getId());
     confirmUserService.delete(token.getUserIdx());
     return EXPIRED.getContent();
-  }
-
-  public void validateEmailAuthorized(Long userId) {
-    confirmationTokenRepository.findByUserIdx(userId)
-      .orElseThrow(() -> new AccountException(EMAIL_NOT_AUTHED))
-      .validateVerified();
   }
 
   public void deleteByUserIdx(Long userIdx) {

@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import usw.suwiki.auth.token.service.ConfirmationTokenCRUDService;
+import usw.suwiki.auth.token.service.ConfirmationTokenService;
 import usw.suwiki.auth.token.service.RefreshTokenService;
 import usw.suwiki.core.mail.EmailSender;
 import usw.suwiki.domain.evaluatepost.service.EvaluatePostService;
@@ -43,7 +43,7 @@ public class UserIsolationSchedulingService { // todo: (06.05) 스케쥴러 쪽 
   private final ExamPostService examPostService;
 
   private final RefreshTokenService refreshTokenService;
-  private final ConfirmationTokenCRUDService confirmationTokenCRUDService;
+  private final ConfirmationTokenService confirmationTokenService;
 
   @Scheduled(cron = "2 0 0 * * *")
   public void sendEmailAboutSleeping() {
@@ -97,18 +97,17 @@ public class UserIsolationSchedulingService { // todo: (06.05) 스케쥴러 쪽 
     LocalDateTime startTime = LocalDateTime.now().minusMonths(100);
     LocalDateTime endTime = LocalDateTime.now().minusMonths(36);
 
-    for (User user : userService.loadUsersLastLoginBetween(startTime, endTime)) {
-      Long userIdx = user.getId();
-      viewExamService.clean(userIdx);
-      refreshTokenService.deleteByUserId(userIdx);
-      reportService.clean(userIdx);
-      evaluatePostService.clean(userIdx);
-      examPostService.clean(userIdx);
-      favoriteMajorService.clean(userIdx);
-      restrictService.release(userIdx);
-      confirmationTokenCRUDService.deleteFromUserIdx(userIdx);
-      userIsolationService.deleteByUserId(userIdx);
-      userService.deleteById(userIdx);
+    for (var userId : userService.loadUsersLastLoginBetween(startTime, endTime).stream().map(User::getId).toList()) {
+      viewExamService.clean(userId);
+      refreshTokenService.deleteByUserId(userId);
+      reportService.clean(userId);
+      evaluatePostService.clean(userId);
+      examPostService.clean(userId);
+      favoriteMajorService.clean(userId);
+      restrictService.release(userId);
+      confirmationTokenService.deleteByUserIdx(userId);
+      userIsolationService.deleteByUserId(userId);
+      userService.deleteById(userId);
     }
 
     log.info("{} - 자동 삭제 종료", LocalDateTime.now());

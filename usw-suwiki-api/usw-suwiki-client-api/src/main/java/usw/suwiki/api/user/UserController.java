@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import usw.suwiki.auth.core.annotation.Authenticated;
 import usw.suwiki.auth.core.annotation.Authorize;
-import usw.suwiki.auth.token.service.ConfirmationTokenBusinessService;
+import usw.suwiki.auth.token.service.ConfirmationTokenService;
 import usw.suwiki.common.response.ResponseForm;
 import usw.suwiki.domain.user.dto.MajorRequest;
 import usw.suwiki.domain.user.dto.UserRequest;
@@ -39,7 +39,7 @@ import static usw.suwiki.statistics.log.MonitorTarget.USER;
 @RequiredArgsConstructor
 public class UserController {
   private final UserService userService;
-  private final ConfirmationTokenBusinessService confirmationTokenBusinessService;
+  private final ConfirmationTokenService confirmationTokenService;
 
   @Statistics(USER)
   @PostMapping("/check-id")
@@ -70,7 +70,7 @@ public class UserController {
   @GetMapping(value = "verify-email", produces = MediaType.TEXT_HTML_VALUE + ";charset=UTF-8")
   @ResponseStatus(OK)
   public String confirmEmail(@RequestParam("token") String token) {
-    return confirmationTokenBusinessService.confirmToken(token);
+    return confirmationTokenService.confirm(token);
   }
 
   @Statistics(USER)

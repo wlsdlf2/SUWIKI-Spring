@@ -193,7 +193,9 @@ public final class Fixtures {
   }
 
   public ConfirmationToken 가입_인증된_토큰_생성(Long userId) {
-    var token = new ConfirmationToken(userId).confirm();
+    var token = new ConfirmationToken(userId);
+    token.confirm();
+    
     return confirmationTokenRepository.save(token);
   }
 

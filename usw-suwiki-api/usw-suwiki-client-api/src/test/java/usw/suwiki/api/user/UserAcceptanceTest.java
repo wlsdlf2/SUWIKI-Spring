@@ -350,7 +350,7 @@ class UserAcceptanceTest extends AcceptanceTestSupport {
 
       assertAll(
         () -> assertThat(confirmationToken).isNotEmpty(),
-        () -> assertTrue(confirmationToken.get().isVerified())
+        () -> assertThat(confirmationToken.get().getConfirmedAt()).isNotNull()
       );
 
       result.andDo(document("test"));

@@ -4,10 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import usw.suwiki.auth.token.RefreshToken;
-import usw.suwiki.auth.token.service.ConfirmationTokenCRUDService;
+import usw.suwiki.auth.token.service.ConfirmationTokenService;
 import usw.suwiki.auth.token.service.RefreshTokenService;
 import usw.suwiki.core.exception.AccountException;
-import usw.suwiki.core.exception.ExceptionType;
 import usw.suwiki.core.mail.EmailSender;
 import usw.suwiki.core.secure.Encoder;
 import usw.suwiki.core.secure.TokenAgent;
@@ -50,7 +49,7 @@ public class UserService {
   private final FavoriteMajorService favoriteMajorService;
 
   private final RefreshTokenService refreshTokenService;
-  private final ConfirmationTokenCRUDService confirmationTokenCRUDService;
+  private final ConfirmationTokenService confirmationTokenService;
 
   private final TokenAgent tokenAgent;
 
@@ -104,12 +103,12 @@ public class UserService {
 
   public User loadByLoginId(String loginId) {
     return userRepository.findByLoginId(loginId)
-      .orElseThrow(() -> new AccountException(ExceptionType.USER_NOT_FOUND));
+      .orElseThrow(() -> new AccountException(USER_NOT_FOUND));
   }
 
   public User loadUserById(Long userId) {
     return userRepository.findById(userId)
-      .orElseThrow(() -> new AccountException(ExceptionType.USER_NOT_FOUND));
+      .orElseThrow(() -> new AccountException(USER_NOT_FOUND));
   }
 
   public void join(String loginId, String password, String email) {
@@ -126,7 +125,7 @@ public class UserService {
     var user = User.join(loginId, encoder.encode(password), email);
     userRepository.save(user);
 
-    emailSender.send(email, EMAIL_AUTH, confirmationTokenCRUDService.save(user.getId()));
+    emailSender.send(email, EMAIL_AUTH, confirmationTokenService.requestConfirm(user.getId()));
   }
 
   public void findId(String email) {
@@ -171,18 +170,10 @@ public class UserService {
   }
 
   public Map<String, String> login(String loginId, String inputPassword) {
-    if (userRepository.findByLoginId(loginId).isPresent()) {
+    if (userRepository.existsByLoginId(loginId)) {
       User user = loadByLoginId(loginId);
 
-      var optionalConfirmationToken = confirmationTokenCRUDService.findOptionalTokenByUserId(user.getId());
-
-      if (optionalConfirmationToken.isEmpty()) {
-        throw new AccountException(EMAIL_NOT_AUTHED);
-      }
-
-      if (!optionalConfirmationToken.get().isVerified()) {
-        throw new AccountException(EMAIL_NOT_AUTHED);
-      }
+      confirmationTokenService.validateEmailAuthorized(user.getId());
 
       if (user.isPasswordEquals(encoder, inputPassword)) {
         user.login();

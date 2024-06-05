@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import usw.suwiki.auth.token.service.ConfirmationTokenBusinessService;
+import usw.suwiki.auth.token.service.ConfirmationTokenService;
 import usw.suwiki.statistics.annotation.Statistics;
 
 import static org.springframework.http.HttpStatus.OK;
@@ -17,12 +17,12 @@ import static usw.suwiki.statistics.log.MonitorTarget.USER;
 @RequestMapping("/v2/confirmation-token")
 @RequiredArgsConstructor
 public class ConfirmationTokenControllerV2 {
-  private final ConfirmationTokenBusinessService confirmationTokenBusinessService;
+  private final ConfirmationTokenService confirmationTokenService;
 
   @Statistics(USER)
   @GetMapping(value = "verify", produces = MediaType.TEXT_HTML_VALUE + ";charset=UTF-8")
   @ResponseStatus(OK)
   public String confirmEmail(@RequestParam("token") String token) {
-    return confirmationTokenBusinessService.confirmToken(token);
+    return confirmationTokenService.confirm(token);
   }
 }

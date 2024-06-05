@@ -8,7 +8,7 @@ import usw.suwiki.core.exception.ExceptionType;
 import usw.suwiki.core.secure.Encoder;
 import usw.suwiki.core.secure.TokenAgent;
 import usw.suwiki.domain.evaluatepost.service.EvaluatePostService;
-import usw.suwiki.domain.exampost.service.ExamPostCRUDService;
+import usw.suwiki.domain.exampost.service.ExamPostService;
 import usw.suwiki.domain.report.EvaluatePostReport;
 import usw.suwiki.domain.report.ExamPostReport;
 import usw.suwiki.domain.report.service.ReportService;
@@ -25,22 +25,17 @@ import static usw.suwiki.domain.user.dto.AdminResponse.LoadAllReportedPost;
 @Transactional
 @RequiredArgsConstructor
 public class AdminService {
-  private final Encoder encoder;
-
-  private final UserCRUDService userCRUDService;
-  private final UserBusinessService userBusinessService;
-  private final BlacklistService blacklistService;
-  private final RestrictService restrictService;
-  private final UserIsolationCRUDService userIsolationCRUDService;
+  private final UserService userService;
 
   private final ReportService reportService;
-  private final ExamPostCRUDService examPostCRUDService;
+  private final ExamPostService examPostService;
   private final EvaluatePostService evaluatePostService;
 
+  private final Encoder encoder;
   private final TokenAgent tokenAgent;
 
   public AdminResponse.Login adminLogin(String loginId, String password) {
-    User user = userCRUDService.loadByLoginId(loginId);
+    User user = userService.loadByLoginId(loginId);
 
     if (!user.isPasswordEquals(encoder, password)) {
       throw new AccountException(ExceptionType.PASSWORD_ERROR);
@@ -50,10 +45,7 @@ public class AdminService {
       throw new AccountException(ExceptionType.USER_RESTRICTED);
     }
 
-    final long userCount = userCRUDService.countAllUsers();
-    final long userIsolationCount = userIsolationCRUDService.countAllIsolatedUsers();
-
-    return new AdminResponse.Login(tokenAgent.createAccessToken(user.getId(), user.toClaim()), userCount + userIsolationCount);
+    return new AdminResponse.Login(tokenAgent.createAccessToken(user.getId(), user.toClaim()), userService.countAllUsers());
   }
 
   public LoadAllReportedPost loadAllReportedPosts() {
@@ -71,51 +63,43 @@ public class AdminService {
     return reportService.loadExamReportById(examPostReportId);
   }
 
-  public void restrictReport(RestrictEvaluatePost request) {
+  public void restrict(RestrictEvaluatePost request) {
     var evaluatePostReport = reportService.loadEvaluateReportById(request.evaluateIdx());
 
-    userBusinessService.rewardReport(evaluatePostReport.getReportingUserIdx());
+    userService.rewardReport(evaluatePostReport.getReportingUserIdx());
+    userService.restrict(evaluatePostReport.getReportedUserIdx(), request.restrictingDate(), request.restrictingReason(), request.judgement());
 
-    restrictService.restrict(evaluatePostReport.getReportedUserIdx(), request.restrictingDate(), request.restrictingReason(), request.judgement());
-
-    resolvedEvaluateReport(evaluatePostReport.getEvaluateIdx());
+    resolveEvaluateReport(evaluatePostReport.getEvaluateIdx());
   }
 
-  public void restrictReport(RestrictExamPost request) {
+  public void restrict(RestrictExamPost request) {
     var examPostReport = reportService.loadExamReportById(request.examIdx());
 
-    userBusinessService.rewardReport(examPostReport.getReportingUserIdx());
-
-    restrictService.restrict(examPostReport.getReportedUserIdx(), request.restrictingDate(), request.restrictingReason(), request.judgement());
+    userService.rewardReport(examPostReport.getReportingUserIdx());
+    userService.restrict(examPostReport.getReportedUserIdx(), request.restrictingDate(), request.restrictingReason(), request.judgement());
 
     resolveExamReport(examPostReport.getExamIdx());
   }
 
-  public void blackEvaluatePost(EvaluatePostBlacklist request) {
+  public void black(EvaluatePostBlacklist request) {
     Long userId = evaluatePostService.loadEvaluatePostById(request.evaluateIdx()).getUserIdx();
-
-    resolvedEvaluateReport(request.evaluateIdx());
-
-    blacklistService.black(userId, request.bannedReason(), request.judgement());
+    userService.black(userId, request.bannedReason(), request.judgement());
+    resolveEvaluateReport(request.evaluateIdx());
   }
 
-  public void blackListExamPost(ExamPostBlacklist request) {
-    Long userIdx = examPostCRUDService.loadExamPostById(request.examIdx()).getUserIdx();
-
+  public void black(ExamPostBlacklist request) {
+    Long userId = examPostService.loadExamPostById(request.examIdx()).getUserIdx();
+    userService.black(userId, request.bannedReason(), request.judgement());
     resolveExamReport(request.examIdx());
-
-    blacklistService.black(userIdx, request.bannedReason(), request.judgement());
   }
 
-  private void resolvedEvaluateReport(Long evaluateId) {
-    var evaluatePost = evaluatePostService.loadEvaluatePostById(evaluateId);
-    evaluatePostService.delete(evaluatePost);
+  private void resolveEvaluateReport(Long evaluateId) {
+    evaluatePostService.reported(evaluateId);
     dismissEvaluateReport(evaluateId);
   }
 
   private void resolveExamReport(Long examPostId) {
-    var examPost = examPostCRUDService.loadExamPostById(examPostId);
-    examPostCRUDService.delete(examPost);
+    examPostService.reported(examPostId);
     dismissExamReport(examPostId);
   }
 

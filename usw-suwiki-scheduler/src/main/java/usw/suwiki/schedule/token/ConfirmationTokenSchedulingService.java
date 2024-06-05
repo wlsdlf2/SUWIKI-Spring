@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import usw.suwiki.auth.token.ConfirmationToken;
 import usw.suwiki.auth.token.ConfirmationTokenRepository;
-import usw.suwiki.domain.user.service.UserCRUDService;
+import usw.suwiki.domain.user.service.UserService;
 
 import java.time.LocalDateTime;
 
@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @Transactional
 @RequiredArgsConstructor
 public class ConfirmationTokenSchedulingService {
-  private final UserCRUDService userCRUDService;
+  private final UserService userService;
   private final ConfirmationTokenRepository confirmationTokenRepository;
 
   @Scheduled(cron = "0 0 * * * * ")
@@ -25,7 +25,7 @@ public class ConfirmationTokenSchedulingService {
     // TODO web hook
     var tokens = confirmationTokenRepository.findAllByExpiresAtBeforeAndConfirmedAtIsNull(LocalDateTime.now().minusMinutes(30));
 
-    userCRUDService.deleteAllInBatch(tokens.stream().map(ConfirmationToken::getUserIdx).toList());
+    userService.deleteAllInBatch(tokens.stream().map(ConfirmationToken::getUserIdx).toList());
     confirmationTokenRepository.deleteAllInBatch(tokens);
 
     log.info("{} - 이메일 인증을 수행하지 않은 유저 검증 종료", LocalDateTime.now());

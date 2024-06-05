@@ -34,6 +34,7 @@ import usw.suwiki.domain.user.dto.UserRequest.FindId;
 import usw.suwiki.domain.user.dto.UserRequest.FindPassword;
 import usw.suwiki.domain.user.dto.UserRequest.Join;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -52,10 +53,10 @@ import static usw.suwiki.common.test.Tag.USER;
 import static usw.suwiki.common.test.support.Pair.parameter;
 import static usw.suwiki.common.test.support.ResponseValidator.validate;
 import static usw.suwiki.common.test.support.ResponseValidator.validateHtml;
+import static usw.suwiki.core.exception.ExceptionType.DUPLICATED_ID_OR_EMAIL;
 import static usw.suwiki.core.exception.ExceptionType.EMAIL_NOT_AUTHED;
 import static usw.suwiki.core.exception.ExceptionType.INVALID_EMAIL_FORMAT;
 import static usw.suwiki.core.exception.ExceptionType.INVALID_TOKEN;
-import static usw.suwiki.core.exception.ExceptionType.LOGIN_ID_OR_EMAIL_OVERLAP;
 import static usw.suwiki.core.exception.ExceptionType.PARAMETER_VALIDATION_FAIL;
 import static usw.suwiki.core.exception.ExceptionType.PASSWORD_ERROR;
 import static usw.suwiki.core.exception.ExceptionType.SAME_PASSWORD_WITH_OLD;
@@ -271,7 +272,7 @@ class UserAcceptanceTest extends AcceptanceTestSupport {
       var result = post(Uri.of(endpoint), requestBody);
 
       // result validation
-      validate(result, status().isBadRequest(), LOGIN_ID_OR_EMAIL_OVERLAP);
+      validate(result, status().isBadRequest(), DUPLICATED_ID_OR_EMAIL);
 
       // docs
       result.andDo(
@@ -1091,7 +1092,7 @@ class UserAcceptanceTest extends AcceptanceTestSupport {
       result.andExpectAll(
         status().isOk(),
         jsonPath("$.[0]").exists(),
-        jsonPath("$.[0].blackListReason").value(blacklistDomain.getBannedReason()),
+        jsonPath("$.[0].blackListReason").value(blacklistDomain.getReason()),
         jsonPath("$.[0].judgement").value(blacklistDomain.getJudgement())
       );
 
@@ -1109,20 +1110,12 @@ class UserAcceptanceTest extends AcceptanceTestSupport {
 
   @Nested
   class 회원탈퇴_테스트 {
-
     private final String endpoint = "/user/quit";
 
-    @Transactional
     @Test
     void 회원탈퇴_성공() throws Exception {
       // given
       var request = new UserRequest.Quit(loginId, password);
-
-      var lecture = fixtures.강의_생성();
-
-      fixtures.전공_즐겨찾기_생성(user.getId());
-      fixtures.강의평가_생성(user.getId(), lecture);
-      fixtures.시험평가_생성(user.getId(), lecture);
 
       // when
       var result = delete(Uri.of(endpoint), accessToken, request);
@@ -1131,13 +1124,12 @@ class UserAcceptanceTest extends AcceptanceTestSupport {
       result.andExpect(status().isOk());
 
       var saved = userRepository.findById(user.getId()).orElseThrow();
-      var majors = favoriteMajorRepository.findAllByUser(user.getId());
 
       assertAll(
-        () -> assertThat(majors).isEmpty(),
         () -> assertThat(saved).isNotNull(),
         () -> assertThat(saved.getRole()).isNull(),
-        () -> assertThat(saved.isRestricted()).isTrue()
+        () -> assertThat(saved.isRestricted()).isTrue(),
+        () -> assertThat(saved.getRequestedQuitDate()).isBefore(LocalDateTime.now())
       );
 
       // docs

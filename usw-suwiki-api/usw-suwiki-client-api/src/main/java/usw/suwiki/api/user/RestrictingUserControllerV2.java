@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 import usw.suwiki.auth.core.annotation.Authenticated;
 import usw.suwiki.auth.core.annotation.Authorize;
 import usw.suwiki.common.response.ResponseForm;
-import usw.suwiki.domain.user.service.UserBusinessService;
+import usw.suwiki.domain.user.service.UserService;
 import usw.suwiki.statistics.annotation.Statistics;
 
 import static org.springframework.http.HttpStatus.OK;
@@ -18,14 +18,14 @@ import static usw.suwiki.statistics.log.MonitorTarget.USER;
 @RequestMapping("/v2/user/restricted-reason")
 @RequiredArgsConstructor
 public class RestrictingUserControllerV2 {
-  private final UserBusinessService userBusinessService;
+  private final UserService userService;
 
   @Authorize
   @Statistics(USER)
   @GetMapping
   @ResponseStatus(OK)
   public ResponseForm loadRestrictedReasons(@Authenticated Long userId) {
-    var response = userBusinessService.loadRestrictedReason(userId);
+    var response = userService.loadRestrictedReason(userId);
     return ResponseForm.success(response);
   }
 }

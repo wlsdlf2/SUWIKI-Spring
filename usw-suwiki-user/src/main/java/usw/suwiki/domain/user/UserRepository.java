@@ -7,16 +7,17 @@ import java.util.List;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
+  boolean existsByLoginId(String loginId);
 
-    Optional<User> findById(Long userIdx);
+  boolean existsByEmail(String email);
 
-    Optional<User> findByLoginId(String loginId);
+  Optional<User> findById(Long userId);
 
-    Optional<User> findByEmail(String email);
+  Optional<User> findByLoginId(String loginId);
 
-    List<User> findByLastLoginBefore(LocalDateTime localDateTime);
+  Optional<User> findByEmail(String email);
 
-    List<User> findByLastLoginBetween(LocalDateTime startTime, LocalDateTime endTime);
+  List<User> findByLastLoginBetween(LocalDateTime startTime, LocalDateTime endTime);
 
-    List<User> findByRequestedQuitDateBefore(LocalDateTime localDateTime);
+  List<User> findByRequestedQuitDateBefore(LocalDateTime localDateTime);
 }

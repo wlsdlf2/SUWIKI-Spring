@@ -43,7 +43,7 @@ public class UserIsolation {
   @Column
   private LocalDateTime lastLogin;
 
-  public boolean validatePassword(Encoder encoder, String inputPassword) {
+  public boolean isPasswordEquals(Encoder encoder, String inputPassword) {
     return encoder.matches(inputPassword, password);
   }
 

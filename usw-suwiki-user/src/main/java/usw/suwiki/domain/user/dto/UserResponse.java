@@ -2,10 +2,8 @@ package usw.suwiki.domain.user.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import usw.suwiki.domain.user.User;
 
 import java.time.LocalDateTime;
 
@@ -22,7 +20,6 @@ public class UserResponse {
     private final boolean overlap;
   }
 
-  @Builder
   public record MyPage(
     String loginId,
     String email,
@@ -31,19 +28,8 @@ public class UserResponse {
     Integer writtenExam,
     Integer viewExam
   ) {
-    public static MyPage from(User user) {
-      return builder()
-        .loginId(user.getLoginId())
-        .email(user.getEmail())
-        .point(user.getPoint())
-        .writtenEvaluation(user.getWrittenEvaluation())
-        .writtenExam(user.getWrittenExam())
-        .viewExam(user.getViewExamCount())
-        .build();
-    }
   }
 
-  @Builder
   public record RestrictedReason(
     String restrictedReason,
     String judgement,
@@ -54,7 +40,6 @@ public class UserResponse {
   ) {
   }
 
-  @Builder
   public record BlackedReason(
     String blackListReason,
     String judgement,

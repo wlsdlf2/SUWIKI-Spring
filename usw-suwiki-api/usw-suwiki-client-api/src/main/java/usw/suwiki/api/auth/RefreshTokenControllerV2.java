@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import usw.suwiki.common.response.ResponseForm;
-import usw.suwiki.domain.user.service.UserBusinessService;
+import usw.suwiki.domain.user.service.UserService;
 import usw.suwiki.statistics.annotation.Statistics;
 
 import java.util.HashMap;
@@ -23,7 +23,7 @@ import static usw.suwiki.statistics.log.MonitorTarget.USER;
 @RequestMapping("/v2/refreshtoken")
 @RequiredArgsConstructor
 public class RefreshTokenControllerV2 {
-  private final UserBusinessService userBusinessService;
+  private final UserService userService;
 
   @Statistics(USER)
   @PostMapping("/web-client/refresh")
@@ -32,7 +32,7 @@ public class RefreshTokenControllerV2 {
     @CookieValue(value = "refreshToken") Cookie cookie,
     HttpServletResponse response
   ) {
-    Map<String, String> tokenPair = userBusinessService.reissue(cookie.getValue());
+    Map<String, String> tokenPair = userService.reissue(cookie.getValue());
 
     Cookie refreshCookie = new Cookie("refreshToken", tokenPair.get("RefreshToken"));
     refreshCookie.setMaxAge(14 * 24 * 60 * 60);
@@ -49,6 +49,6 @@ public class RefreshTokenControllerV2 {
   @PostMapping("/mobile-client/refresh")
   @ResponseStatus(OK)
   public ResponseForm tokenRefresh(@RequestHeader String Authorization) {
-    return ResponseForm.success(userBusinessService.reissue(Authorization));
+    return ResponseForm.success(userService.reissue(Authorization));
   }
 }

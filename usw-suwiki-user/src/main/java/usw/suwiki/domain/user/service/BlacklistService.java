@@ -10,7 +10,7 @@ public interface BlacklistService {
 
   void validateNotBlack(String email);
 
-  void black(Long userId, String reason, String judgement);
+  void black(Long userId, String email, String reason, String judgement);
 
   void overRestricted(Long userId, String email);
 }

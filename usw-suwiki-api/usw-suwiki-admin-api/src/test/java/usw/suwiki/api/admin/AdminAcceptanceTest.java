@@ -416,6 +416,17 @@ class AdminAcceptanceTest extends AcceptanceTestSupport {
   @Nested
   class 신고_블랙_등록_테스트 {
 
+
+    @Test
+    void 강의평가_신고_블랙_등록_성공() {
+      // given
+
+      // when
+
+      // then
+
+      // docs
+    }
   }
 
 }

@@ -181,7 +181,7 @@ public final class Fixtures {
     var user = userRepository.findById(userId).orElseThrow();
 
     for (int i = 0; i < 10; i++) {
-      user.writeEvaluatePost();
+      user.evaluate();
       user.writeExamPost();
     }
 

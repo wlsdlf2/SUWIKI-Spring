@@ -68,7 +68,7 @@ public class AdminController {
   @PostMapping("/restrict/evaluate-posts")
   @ResponseStatus(OK)
   public Map<String, Boolean> restrictEvaluatePost(@Valid @RequestBody AdminRequest.RestrictEvaluatePost request) {
-    adminService.restrictReport(request);
+    adminService.restrict(request);
     return success();
   }
 
@@ -77,7 +77,7 @@ public class AdminController {
   @PostMapping("/restrict/exam-post")
   @ResponseStatus(OK)
   public Map<String, Boolean> restrictExamPost(@Valid @RequestBody AdminRequest.RestrictExamPost request) {
-    adminService.restrictReport(request);
+    adminService.restrict(request);
     return success();
   }
 
@@ -86,7 +86,7 @@ public class AdminController {
   @PostMapping("/blacklist/evaluate-post")
   @ResponseStatus(OK)
   public Map<String, Boolean> banEvaluatePost(@Valid @RequestBody AdminRequest.EvaluatePostBlacklist request) {
-    adminService.blackEvaluatePost(request);
+    adminService.black(request);
     return success();
   }
 
@@ -95,7 +95,7 @@ public class AdminController {
   @PostMapping("/blacklist/exam-post")
   @ResponseStatus(OK)
   public Map<String, Boolean> banExamPost(@Valid @RequestBody AdminRequest.ExamPostBlacklist request) {
-    adminService.blackListExamPost(request);
+    adminService.black(request);
     return success();
   }
 

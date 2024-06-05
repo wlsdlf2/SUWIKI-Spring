@@ -17,7 +17,7 @@ import usw.suwiki.auth.core.annotation.Authorize;
 import usw.suwiki.common.response.ResponseForm;
 import usw.suwiki.domain.user.dto.UserRequest;
 import usw.suwiki.domain.user.dto.UserResponse;
-import usw.suwiki.domain.user.service.UserBusinessService;
+import usw.suwiki.domain.user.service.UserService;
 import usw.suwiki.statistics.annotation.Statistics;
 
 import java.util.HashMap;
@@ -30,13 +30,13 @@ import static usw.suwiki.statistics.log.MonitorTarget.USER;
 @RequestMapping("/v2/user")
 @RequiredArgsConstructor
 public class UserControllerV2 {
-  private final UserBusinessService userBusinessService;
+  private final UserService userService;
 
   @Statistics(USER)
   @PostMapping("/loginId/check")
   @ResponseStatus(OK)
   public UserResponse.Overlap isOverlapId(@Valid @RequestBody UserRequest.CheckLoginId request) {
-    var isDuplicated = userBusinessService.isDuplicatedId(request.loginId());
+    var isDuplicated = userService.isDuplicatedId(request.loginId());
     return new UserResponse.Overlap(isDuplicated);
   }
 
@@ -44,7 +44,7 @@ public class UserControllerV2 {
   @PostMapping("/email/check")
   @ResponseStatus(OK)
   public UserResponse.Overlap isOverlapEmail(@Valid @RequestBody UserRequest.CheckEmail request) {
-    var isDuplicated = userBusinessService.isDuplicatedEmail(request.email());
+    var isDuplicated = userService.isDuplicatedEmail(request.email());
     return new UserResponse.Overlap(isDuplicated);
   }
 
@@ -52,7 +52,7 @@ public class UserControllerV2 {
   @PostMapping
   @ResponseStatus(OK)
   public UserResponse.Success join(@Valid @RequestBody UserRequest.Join join) {
-    userBusinessService.join(join.loginId(), join.password(), join.email());
+    userService.join(join.loginId(), join.password(), join.email());
     return new UserResponse.Success(true);
   }
 
@@ -60,7 +60,7 @@ public class UserControllerV2 {
   @PostMapping("inquiry-loginId")
   @ResponseStatus(OK)
   public UserResponse.Success findId(@Valid @RequestBody UserRequest.FindId findId) {
-    userBusinessService.findId(findId.email());
+    userService.findId(findId.email());
     return new UserResponse.Success(true);
   }
 
@@ -68,7 +68,7 @@ public class UserControllerV2 {
   @PostMapping("inquiry-password")
   @ResponseStatus(OK)
   public UserResponse.Success findPw(@Valid @RequestBody UserRequest.FindPassword findPassword) {
-    userBusinessService.findPw(findPassword.loginId(), findPassword.email());
+    userService.findPw(findPassword.loginId(), findPassword.email());
     return new UserResponse.Success(true);
   }
 
@@ -77,7 +77,7 @@ public class UserControllerV2 {
   @PatchMapping("password")
   @ResponseStatus(OK)
   public UserResponse.Success resetPw(@Authenticated Long userId, @Valid @RequestBody UserRequest.EditPassword request) {
-    userBusinessService.editPassword(userId, request.prePassword(), request.newPassword());
+    userService.changePassword(userId, request.prePassword(), request.newPassword());
     return new UserResponse.Success(true);
   }
 
@@ -85,7 +85,7 @@ public class UserControllerV2 {
   @PostMapping("mobile-login")
   @ResponseStatus(OK)
   public ResponseForm mobileLogin(@Valid @RequestBody UserRequest.Login request) {
-    return ResponseForm.success(userBusinessService.login(request.loginId(), request.password()));
+    return ResponseForm.success(userService.login(request.loginId(), request.password()));
   }
 
   @Statistics(USER)
@@ -95,7 +95,7 @@ public class UserControllerV2 {
     @Valid @RequestBody UserRequest.Login login,
     HttpServletResponse response
   ) {
-    Map<String, String> tokenPair = userBusinessService.login(login.loginId(), login.password());
+    Map<String, String> tokenPair = userService.login(login.loginId(), login.password());
 
     Cookie refreshCookie = new Cookie("refreshToken", tokenPair.get("RefreshToken"));
     refreshCookie.setMaxAge(270 * 24 * 60 * 60);
@@ -127,7 +127,7 @@ public class UserControllerV2 {
   @GetMapping
   @ResponseStatus(OK)
   public ResponseForm myPage(@Authenticated Long userId) {
-    var response = userBusinessService.loadMyPage(userId);
+    var response = userService.loadMyPage(userId);
     return ResponseForm.success(response);
   }
 
@@ -136,7 +136,7 @@ public class UserControllerV2 {
   @DeleteMapping
   @ResponseStatus(OK)
   public UserResponse.Success quit(@Authenticated Long userId, @Valid @RequestBody UserRequest.Quit quit) {
-    userBusinessService.quit(userId, quit.password());
+    userService.quit(userId, quit.password());
     return new UserResponse.Success(true);
   }
 }

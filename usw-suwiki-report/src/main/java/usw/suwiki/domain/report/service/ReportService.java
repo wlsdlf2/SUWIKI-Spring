@@ -53,7 +53,7 @@ public class ReportService {
       .orElseThrow(() -> new ReportedPostException(ExceptionType.REPORTED_POST_NOT_FOUND));
   }
 
-  public void clearReportHistories(Long userId) {
+  public void clean(Long userId) {
     examReportRepository.deleteByReportedUserIdx(userId);
     examReportRepository.deleteByReportingUserIdx(userId);
     evaluateReportRepository.deleteAllByReportedUserIdx(userId);

@@ -32,7 +32,7 @@ public enum ExceptionType {
   LOGIN_REQUIRED("USER007", "로그인이 필요합니다.", FORBIDDEN),
   USER_RESTRICTED("USER008", "접근 권한이 없는 사용자 입니다. 관리자에게 문의하세요.", FORBIDDEN),
   YOU_ARE_IN_BLACKLIST("USER009", "블랙리스트 대상입니다. 이용할 수 없습니다.", FORBIDDEN),
-  LOGIN_ID_OR_EMAIL_OVERLAP("USER010", "아이디 혹은 이메일이 중복됩니다.", BAD_REQUEST),
+  DUPLICATED_ID_OR_EMAIL("USER010", "아이디 혹은 이메일이 중복됩니다.", BAD_REQUEST),
   SAME_PASSWORD_WITH_OLD("USER011", "이전 비밀번호와 동일하게 변경할 수 없습니다.", BAD_REQUEST),
 
   /**

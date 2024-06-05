@@ -9,17 +9,16 @@ import usw.suwiki.auth.token.ConfirmationTokenRepository;
 import usw.suwiki.auth.token.RefreshTokenRepository;
 import usw.suwiki.core.mail.EmailSender;
 import usw.suwiki.domain.evaluatepost.service.EvaluatePostService;
-import usw.suwiki.domain.exampost.service.ExamPostCRUDService;
+import usw.suwiki.domain.exampost.service.ExamPostService;
 import usw.suwiki.domain.report.service.ReportService;
 import usw.suwiki.domain.user.User;
 import usw.suwiki.domain.user.UserRepository;
-import usw.suwiki.domain.user.service.CleanViewExamService;
 import usw.suwiki.domain.user.service.FavoriteMajorService;
 import usw.suwiki.domain.user.service.RestrictService;
-import usw.suwiki.domain.user.service.UserIsolationCRUDService;
+import usw.suwiki.domain.user.service.UserIsolationService;
+import usw.suwiki.domain.viewexam.service.ViewExamService;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 import static usw.suwiki.core.mail.MailType.PRIVACY_POLICY_NOTIFICATION;
 
@@ -29,20 +28,20 @@ import static usw.suwiki.core.mail.MailType.PRIVACY_POLICY_NOTIFICATION;
 @RequiredArgsConstructor
 public class UserSchedulingService {
   private final EmailSender emailSender;
+
   private final UserRepository userRepository;
-  private final CleanViewExamService cleanViewExamService;
+  private final ViewExamService viewExamService;
   private final FavoriteMajorService favoriteMajorService;
   private final RestrictService restrictService;
-  private final UserIsolationCRUDService userIsolationCRUDService;
+  private final UserIsolationService userIsolationService;
 
   private final RefreshTokenRepository refreshTokenRepository;
   private final ConfirmationTokenRepository confirmationTokenRepository;
 
   private final ReportService reportService;
-  private final ExamPostCRUDService examPostCRUDService;
+  private final ExamPostService examPostService;
   private final EvaluatePostService evaluatePostService;
 
-  @Transactional(readOnly = true)
   @Scheduled(cron = "0 1 0 1 3 *")
   public void sendPrivacyPolicyMail() {
     log.info("{} - 개인정보 처리 방침 안내 발송 시작", LocalDateTime.now());
@@ -58,35 +57,23 @@ public class UserSchedulingService {
     log.info("{} - 회원탈퇴 유저 제거 시작", LocalDateTime.now());
 
     LocalDateTime targetTime = LocalDateTime.now().minusDays(30);
-    List<User> targetUser = userRepository.findByRequestedQuitDateBefore(targetTime);
-    List<Long> isolatedUserIds = userIsolationCRUDService.loadAllIsolatedUntilTarget(targetTime);
+    var ids = userRepository.findByRequestedQuitDateBefore(targetTime).stream()
+      .map(User::getId)
+      .toList();
 
-    if (!targetUser.isEmpty()) {
-      for (User user : targetUser) {
-        Long userId = user.getId();
-        cleanViewExamService.clean(userId);
-        refreshTokenRepository.deleteByUserIdx(userId);
-        reportService.clearReportHistories(userId);
-        evaluatePostService.deleteAllByUserId(userId);
-        examPostCRUDService.deleteFromUserIdx(userId);
-        favoriteMajorService.clean(userId);
-        restrictService.release(userId);
-        confirmationTokenRepository.deleteByUserIdx(userId);
-        userRepository.deleteById(userId);
-      }
-    } else {
-      for (Long isolatedUserId : isolatedUserIds) {
-        cleanViewExamService.clean(isolatedUserId);
-        refreshTokenRepository.deleteByUserIdx(isolatedUserId);
-        reportService.clearReportHistories(isolatedUserId);
-        evaluatePostService.deleteAllByUserId(isolatedUserId);
-        examPostCRUDService.deleteFromUserIdx(isolatedUserId);
-        favoriteMajorService.clean(isolatedUserId);
-        restrictService.release(isolatedUserId);
-        confirmationTokenRepository.deleteByUserIdx(isolatedUserId);
-        userIsolationCRUDService.deleteByUserIdx(isolatedUserId);
-      }
-    }
+    var targets = ids.isEmpty() ? userIsolationService.loadAllIsolatedUntil(targetTime) : ids;
+
+    targets.forEach(id -> {
+      viewExamService.clean(id);
+      refreshTokenRepository.deleteByUserIdx(id);
+      reportService.clean(id);
+      evaluatePostService.clean(id);
+      examPostService.clean(id);
+      favoriteMajorService.clean(id);
+      restrictService.release(id);
+      confirmationTokenRepository.deleteByUserIdx(id);
+      userRepository.deleteById(id);
+    });
 
     log.info("{} - 회원탈퇴 유저 제거 종료", LocalDateTime.now());
   }

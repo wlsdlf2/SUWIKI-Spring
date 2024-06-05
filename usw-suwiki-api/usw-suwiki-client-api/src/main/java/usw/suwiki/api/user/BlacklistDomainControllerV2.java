@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import usw.suwiki.auth.core.annotation.Authenticated;
 import usw.suwiki.auth.core.annotation.Authorize;
-import usw.suwiki.domain.user.service.UserBusinessService;
+import usw.suwiki.domain.user.service.UserService;
 import usw.suwiki.statistics.annotation.Statistics;
 
 import java.util.List;
@@ -20,13 +20,13 @@ import static usw.suwiki.statistics.log.MonitorTarget.USER;
 @RequestMapping("/v2/blacklist")
 @RequiredArgsConstructor
 public class BlacklistDomainControllerV2 {
-  private final UserBusinessService userBusinessService;
+  private final UserService userService;
 
   @Authorize
   @Statistics(USER)
   @GetMapping("/logs")
   @ResponseStatus(OK)
   public List<BlackedReason> loadBlacklistReason(@Authenticated Long userId) {
-    return userBusinessService.loadBlackListReason(userId);
+    return userService.loadBlackListReason(userId);
   }
 }

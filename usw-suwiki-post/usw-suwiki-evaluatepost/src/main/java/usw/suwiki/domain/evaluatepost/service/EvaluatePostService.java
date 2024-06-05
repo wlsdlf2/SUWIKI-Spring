@@ -11,11 +11,10 @@ import usw.suwiki.domain.evaluatepost.EvaluatePostQueryRepository;
 import usw.suwiki.domain.evaluatepost.EvaluatePostRepository;
 import usw.suwiki.domain.evaluatepost.dto.EvaluatePostRequest;
 import usw.suwiki.domain.evaluatepost.dto.EvaluatePostResponse;
-import usw.suwiki.domain.lecture.model.Evaluation;
 import usw.suwiki.domain.lecture.service.LectureService;
 import usw.suwiki.domain.report.model.Report;
 import usw.suwiki.domain.report.service.ReportService;
-import usw.suwiki.domain.user.service.UserBusinessService;
+import usw.suwiki.domain.user.service.UserService;
 
 import java.util.List;
 
@@ -26,7 +25,7 @@ public class EvaluatePostService {
   private final EvaluatePostRepository evaluatePostRepository;
   private final EvaluatePostQueryRepository evaluatePostQueryRepository;
 
-  private final UserBusinessService userBusinessService;
+  private final UserService userService;
   private final LectureService lectureService;
 
   private final ReportService reportService;
@@ -44,12 +43,20 @@ public class EvaluatePostService {
     return evaluatePostQueryRepository.findAllByUserIdAndPageOption(userId, option.getOffset());
   }
 
-  public void report(Long reportingUserId, Long evaluateId) {
-    EvaluatePost evaluatePost = loadEvaluatePostById(evaluateId);
-    Long reportedUserId = evaluatePost.getUserIdx();
+  public EvaluatePost loadEvaluatePostById(Long evaluateId) {
+    return evaluatePostRepository.findById(evaluateId)
+      .orElseThrow(() -> new EvaluatePostException(ExceptionType.EVALUATE_POST_NOT_FOUND));
+  }
 
-    Report report = Report.evaluate(evaluateId, reportedUserId, reportingUserId, evaluatePost.getContent(), evaluatePost.getLectureName(), evaluatePost.getProfessor());
+  public void report(Long reportingUserId, Long evaluateId) {
+    var evaluatePost = loadEvaluatePostById(evaluateId);
+    var report = Report.evaluate(evaluateId, evaluatePost.getUserIdx(), reportingUserId, evaluatePost.getContent(), evaluatePost.getLectureName(), evaluatePost.getProfessor());
     reportService.reportEvaluatePost(report);
+  }
+
+  public void reported(Long evaluateId) {
+    var evaluatePost = loadEvaluatePostById(evaluateId);
+    evaluatePostRepository.delete(evaluatePost);
   }
 
   public void write(Long userId, Long lectureId, EvaluatePostRequest.Create request) {
@@ -57,12 +64,12 @@ public class EvaluatePostService {
       throw new EvaluatePostException(ExceptionType.ALREADY_WROTE_EXAM_POST);
     }
 
-    EvaluatePost evaluatePost = EvaluatePostMapper.toEntity(userId, lectureId, request);
-    Evaluation evaluation = EvaluatePostMapper.toEvaluatedData(evaluatePost.getLectureRating());
+    var evaluatePost = EvaluatePostMapper.toEntity(userId, lectureId, request);
+    var evaluation = EvaluatePostMapper.toEvaluatedData(evaluatePost.getLectureRating());
 
     lectureService.evaluate(lectureId, evaluation);
     evaluatePostRepository.save(evaluatePost);
-    userBusinessService.evaluate(userId);
+    userService.evaluate(userId);
   }
 
   private boolean isAlreadyWritten(Long userId, Long lectureId) {
@@ -91,21 +98,12 @@ public class EvaluatePostService {
     var evaluatePost = loadEvaluatePostById(evaluateId);
     evaluatePost.validateAuthor(userId);
 
-    delete(evaluatePost);
-    userBusinessService.eraseEvaluation(userId);
-  }
-
-  public void delete(EvaluatePost evaluatePost) {
     evaluatePostRepository.delete(evaluatePost);
+    userService.eraseEvaluation(userId);
   }
 
-  public void deleteAllByUserId(Long userId) {
+  public void clean(Long userId) {
     List<EvaluatePost> evaluatePosts = evaluatePostRepository.findAllByUserIdx(userId);
     evaluatePostRepository.deleteAllInBatch(evaluatePosts);
-  }
-
-  public EvaluatePost loadEvaluatePostById(Long evaluateId) {
-    return evaluatePostRepository.findById(evaluateId)
-      .orElseThrow(() -> new EvaluatePostException(ExceptionType.EVALUATE_POST_NOT_FOUND));
   }
 }

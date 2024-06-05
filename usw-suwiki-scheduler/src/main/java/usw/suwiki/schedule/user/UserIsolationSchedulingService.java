@@ -9,14 +9,14 @@ import usw.suwiki.auth.token.service.ConfirmationTokenCRUDService;
 import usw.suwiki.auth.token.service.RefreshTokenService;
 import usw.suwiki.core.mail.EmailSender;
 import usw.suwiki.domain.evaluatepost.service.EvaluatePostService;
-import usw.suwiki.domain.exampost.service.ExamPostCRUDService;
+import usw.suwiki.domain.exampost.service.ExamPostService;
 import usw.suwiki.domain.report.service.ReportService;
 import usw.suwiki.domain.user.User;
-import usw.suwiki.domain.user.service.CleanViewExamService;
 import usw.suwiki.domain.user.service.FavoriteMajorService;
 import usw.suwiki.domain.user.service.RestrictService;
-import usw.suwiki.domain.user.service.UserCRUDService;
-import usw.suwiki.domain.user.service.UserIsolationCRUDService;
+import usw.suwiki.domain.user.service.UserIsolationService;
+import usw.suwiki.domain.user.service.UserService;
+import usw.suwiki.domain.viewexam.service.ViewExamService;
 
 import java.time.LocalDateTime;
 
@@ -27,19 +27,20 @@ import static usw.suwiki.core.mail.MailType.DORMANT_NOTIFICATION;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class UserIsolationSchedulingService {
+public class UserIsolationSchedulingService { // todo: (06.05) 스케쥴러 쪽 전부 쿼리로 뽑아오기 (가능하다면)
   private final EmailSender emailSender;
 
-  private final UserCRUDService userCRUDService;
+  private final UserService userService;
   private final RestrictService restrictService;
-  private final UserIsolationCRUDService userIsolationCRUDService;
-  private final CleanViewExamService cleanViewExamService;
+  private final UserIsolationService userIsolationService;
+
+  private final ViewExamService viewExamService;
   private final FavoriteMajorService favoriteMajorService;
 
   private final ReportService reportService;
 
   private final EvaluatePostService evaluatePostService;
-  private final ExamPostCRUDService examPostCRUDService;
+  private final ExamPostService examPostService;
 
   private final RefreshTokenService refreshTokenService;
   private final ConfirmationTokenCRUDService confirmationTokenCRUDService;
@@ -51,7 +52,7 @@ public class UserIsolationSchedulingService {
     LocalDateTime startTime = LocalDateTime.now().minusMonths(11).minusDays(1);
     LocalDateTime endTime = LocalDateTime.now().minusMonths(11);
 
-    for (User user : userCRUDService.loadUsersLastLoginBetween(startTime, endTime)) {
+    for (User user : userService.loadUsersLastLoginBetween(startTime, endTime)) {
       emailSender.send(user.getEmail(), DORMANT_NOTIFICATION);
     }
 
@@ -65,10 +66,10 @@ public class UserIsolationSchedulingService {
     LocalDateTime startTime = LocalDateTime.now().minusMonths(35);
     LocalDateTime endTime = LocalDateTime.now().minusMonths(12);
 
-    for (User user : userCRUDService.loadUsersLastLoginBetween(startTime, endTime)) {
-      if (userIsolationCRUDService.isNotIsolated(user.getId())) {
-        userIsolationCRUDService.saveUserIsolation(user);
-        userCRUDService.sleep(user.getId());
+    for (User user : userService.loadUsersLastLoginBetween(startTime, endTime)) {
+      if (userIsolationService.isNotSleepingByUserId(user.getId())) {
+        userIsolationService.saveFrom(user);
+        userService.sleep(user.getId());
       }
     }
 
@@ -82,7 +83,7 @@ public class UserIsolationSchedulingService {
     LocalDateTime startTime = LocalDateTime.now().minusMonths(36);
     LocalDateTime endTime = LocalDateTime.now().minusMonths(35);
 
-    for (User user : userCRUDService.loadUsersLastLoginBetween(startTime, endTime)) {
+    for (User user : userService.loadUsersLastLoginBetween(startTime, endTime)) {
       emailSender.send(user.getEmail(), DELETE_WARNING);
     }
 
@@ -96,18 +97,18 @@ public class UserIsolationSchedulingService {
     LocalDateTime startTime = LocalDateTime.now().minusMonths(100);
     LocalDateTime endTime = LocalDateTime.now().minusMonths(36);
 
-    for (User user : userCRUDService.loadUsersLastLoginBetween(startTime, endTime)) {
+    for (User user : userService.loadUsersLastLoginBetween(startTime, endTime)) {
       Long userIdx = user.getId();
-      cleanViewExamService.clean(userIdx);
+      viewExamService.clean(userIdx);
       refreshTokenService.deleteByUserId(userIdx);
-      reportService.clearReportHistories(userIdx);
-      evaluatePostService.deleteAllByUserId(userIdx);
-      examPostCRUDService.deleteFromUserIdx(userIdx);
+      reportService.clean(userIdx);
+      evaluatePostService.clean(userIdx);
+      examPostService.clean(userIdx);
       favoriteMajorService.clean(userIdx);
       restrictService.release(userIdx);
       confirmationTokenCRUDService.deleteFromUserIdx(userIdx);
-      userIsolationCRUDService.deleteByUserIdx(userIdx);
-      userCRUDService.deleteById(userIdx);
+      userIsolationService.deleteByUserId(userIdx);
+      userService.deleteById(userIdx);
     }
 
     log.info("{} - 자동 삭제 종료", LocalDateTime.now());

@@ -22,7 +22,7 @@ import usw.suwiki.common.response.ResponseForm;
 import usw.suwiki.domain.user.dto.MajorRequest;
 import usw.suwiki.domain.user.dto.UserRequest;
 import usw.suwiki.domain.user.dto.UserResponse;
-import usw.suwiki.domain.user.service.UserBusinessService;
+import usw.suwiki.domain.user.service.UserService;
 import usw.suwiki.statistics.annotation.Statistics;
 
 import java.util.HashMap;
@@ -38,14 +38,14 @@ import static usw.suwiki.statistics.log.MonitorTarget.USER;
 @RequestMapping("/user")
 @RequiredArgsConstructor
 public class UserController {
-  private final UserBusinessService userBusinessService;
+  private final UserService userService;
   private final ConfirmationTokenBusinessService confirmationTokenBusinessService;
 
   @Statistics(USER)
   @PostMapping("/check-id")
   @ResponseStatus(OK)
   public UserResponse.Overlap isOverlapId(@Valid @RequestBody UserRequest.CheckLoginId request) {
-    var isDuplicated = userBusinessService.isDuplicatedId(request.loginId());
+    var isDuplicated = userService.isDuplicatedId(request.loginId());
     return new UserResponse.Overlap(isDuplicated);
   }
 
@@ -53,7 +53,7 @@ public class UserController {
   @PostMapping("/check-email")
   @ResponseStatus(OK)
   public UserResponse.Overlap isOverlapEmail(@Valid @RequestBody UserRequest.CheckEmail request) {
-    var isDuplicated = userBusinessService.isDuplicatedEmail(request.email());
+    var isDuplicated = userService.isDuplicatedEmail(request.email());
     return new UserResponse.Overlap(isDuplicated);
   }
 
@@ -61,7 +61,7 @@ public class UserController {
   @PostMapping("join")
   @ResponseStatus(OK)
   public UserResponse.Success join(@Valid @RequestBody UserRequest.Join request) {
-    userBusinessService.join(request.loginId(), request.password(), request.email());
+    userService.join(request.loginId(), request.password(), request.email());
     return new UserResponse.Success(true);
   }
 
@@ -77,7 +77,7 @@ public class UserController {
   @PostMapping("find-id")
   @ResponseStatus(OK)
   public UserResponse.Success findId(@Valid @RequestBody UserRequest.FindId request) {
-    userBusinessService.findId(request.email());
+    userService.findId(request.email());
     return new UserResponse.Success(true);
   }
 
@@ -85,7 +85,7 @@ public class UserController {
   @PostMapping("find-pw")
   @ResponseStatus(OK)
   public UserResponse.Success findPw(@Valid @RequestBody UserRequest.FindPassword request) {
-    userBusinessService.findPw(request.loginId(), request.email());
+    userService.findPw(request.loginId(), request.email());
     return new UserResponse.Success(true);
   }
 
@@ -94,7 +94,7 @@ public class UserController {
   @PostMapping("reset-pw") // TODO (05.31) 이름은 초기화 API 인데 그냥 비밀번호 변경 API
   @ResponseStatus(OK)
   public UserResponse.Success editPassword(@Authenticated Long id, @Valid @RequestBody UserRequest.EditPassword request) {
-    userBusinessService.editPassword(id, request.prePassword(), request.newPassword());
+    userService.changePassword(id, request.prePassword(), request.newPassword());
     return new UserResponse.Success(true);
   }
 
@@ -102,14 +102,14 @@ public class UserController {
   @PostMapping("/login")
   @ResponseStatus(OK)
   public Map<String, String> mobileLogin(@Valid @RequestBody UserRequest.Login request) {
-    return userBusinessService.login(request.loginId(), request.password());
+    return userService.login(request.loginId(), request.password());
   }
 
   @Statistics(USER)
   @PostMapping("/client-login")
   @ResponseStatus(OK)
   public Map<String, String> webLogin(@Valid @RequestBody UserRequest.Login request, HttpServletResponse response) {
-    var tokens = userBusinessService.login(request.loginId(), request.password());
+    var tokens = userService.login(request.loginId(), request.password());
 
     var refreshCookie = new Cookie("refreshToken", tokens.get("RefreshToken"));
     refreshCookie.setMaxAge(270 * 24 * 60 * 60);
@@ -140,14 +140,14 @@ public class UserController {
   @GetMapping("/my-page")
   @ResponseStatus(OK)
   public UserResponse.MyPage myPage(@Authenticated Long userId) {
-    return userBusinessService.loadMyPage(userId);
+    return userService.loadMyPage(userId);
   }
 
   @Statistics(USER)
   @PostMapping("/client-refresh")
   @ResponseStatus(OK)
   public Map<String, String> reissueWeb(@CookieValue(value = "refreshToken") Cookie cookie, HttpServletResponse response) {
-    Map<String, String> tokens = userBusinessService.reissue(cookie.getValue());
+    Map<String, String> tokens = userService.reissue(cookie.getValue());
 
     var newCookie = new Cookie("refreshToken", tokens.get("RefreshToken"));
     newCookie.setMaxAge(14 * 24 * 60 * 60);
@@ -164,7 +164,7 @@ public class UserController {
   @PostMapping("/refresh")
   @ResponseStatus(OK)
   public Map<String, String> reissueMobile(@Valid @RequestHeader String Authorization) { // refresh 토큰임
-    return userBusinessService.reissue(Authorization); // todo: (05.31) change to id
+    return userService.reissue(Authorization); // todo: (05.31) change to id
   }
 
   @Authorize
@@ -172,7 +172,7 @@ public class UserController {
   @PostMapping("/favorite-major")
   @ResponseStatus(OK)
   public void saveFavoriteMajor(@Authenticated Long userId, @Valid @RequestBody MajorRequest request) {
-    userBusinessService.saveFavoriteMajor(userId, request.getMajorType());
+    userService.saveFavoriteMajor(userId, request.getMajorType());
   }
 
   @Authorize
@@ -180,7 +180,7 @@ public class UserController {
   @DeleteMapping("/favorite-major")
   @ResponseStatus(OK)
   public void deleteFavoriteMajor(@Authenticated Long userId, @RequestParam String majorType) {
-    userBusinessService.deleteFavoriteMajor(userId, majorType);
+    userService.deleteFavoriteMajor(userId, majorType);
   }
 
   @Authorize
@@ -188,7 +188,7 @@ public class UserController {
   @GetMapping("/favorite-major")
   @ResponseStatus(OK)
   public ResponseForm loadFavoriteMajors(@Authenticated Long userId) {
-    var response = userBusinessService.loadAllFavoriteMajors(userId);
+    var response = userService.loadAllFavoriteMajors(userId);
     return new ResponseForm(response);
   }
 
@@ -211,7 +211,7 @@ public class UserController {
   @GetMapping("/restricted-reason")
   @ResponseStatus(OK) // todo: RestrictingUserControllerV2 동일한 API
   public List<RestrictedReason> loadRestrictedReason(@Authenticated Long userId) {
-    return userBusinessService.loadRestrictedReason(userId);
+    return userService.loadRestrictedReason(userId);
   }
 
   @Authorize
@@ -219,7 +219,7 @@ public class UserController {
   @GetMapping("/blacklist-reason")
   @ResponseStatus(OK) // todo: BlacklistDomainControllerV2 동일한 API
   public List<BlackedReason> loadBlacklistReason(@Authenticated Long userId) {
-    return userBusinessService.loadBlackListReason(userId);
+    return userService.loadBlackListReason(userId);
   }
 
   @Authorize
@@ -227,7 +227,7 @@ public class UserController {
   @DeleteMapping("/quit")
   @ResponseStatus(OK)
   public UserResponse.Success quit(@Authenticated Long userId, @Valid @RequestBody UserRequest.Quit request) {
-    userBusinessService.quit(userId, request.password());
+    userService.quit(userId, request.password());
     return new UserResponse.Success(true);
   }
 }

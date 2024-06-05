@@ -1,23 +1,31 @@
 package usw.suwiki.domain.user.isolated;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
 @Repository
 public interface UserIsolationRepository extends JpaRepository<UserIsolation, Long> {
+  boolean existsByLoginId(String loginId);
 
-    Optional<UserIsolation> findByUserIdx(Long userIdx);
+  boolean existsByEmail(String email);
 
-    Optional<UserIsolation> findByLoginId(String loginId);
+  boolean existsByUserIdx(Long userIdx);
 
-    Optional<UserIsolation> findByEmail(String email);
+  boolean existsByLoginIdAndEmail(String loginId, String email);
 
-    void deleteByLoginId(String loginId);
+  Optional<UserIsolation> findByUserIdx(Long userIdx);
 
-    void deleteByUserIdx(Long userIdx);
+  Optional<UserIsolation> findByLoginId(String loginId);
 
-    List<UserIsolation> findByRequestedQuitDateBefore(LocalDateTime localDateTime);
+  Optional<UserIsolation> findByEmail(String email);
+
+  void deleteByLoginId(String loginId);
+
+  void deleteByUserIdx(Long userIdx);
+
+  List<UserIsolation> findByRequestedQuitDateBefore(LocalDateTime localDateTime);
 }

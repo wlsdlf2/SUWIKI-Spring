@@ -9,8 +9,8 @@ import usw.suwiki.core.secure.Encoder;
 import usw.suwiki.domain.user.User;
 import usw.suwiki.domain.user.isolated.UserIsolation;
 import usw.suwiki.domain.user.isolated.UserIsolationRepository;
-import usw.suwiki.domain.user.service.UserCRUDService;
-import usw.suwiki.domain.user.service.UserIsolationCRUDService;
+import usw.suwiki.domain.user.service.UserIsolationService;
+import usw.suwiki.domain.user.service.UserService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,38 +19,39 @@ import java.util.Optional;
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
-class UserIsolationCRUDServiceImpl implements UserIsolationCRUDService {
+class UserIsolationServiceImpl implements UserIsolationService {
   private final UserIsolationRepository userIsolationRepository;
 
   @Override
-  public List<Long> loadAllIsolatedUntilTarget(LocalDateTime target) {
+  public List<Long> loadAllIsolatedUntil(LocalDateTime target) {
     return userIsolationRepository.findByRequestedQuitDateBefore(target).stream()
       .map(UserIsolation::getUserIdx)
       .toList();
   }
 
   @Override
+  public boolean isNotSleepingByUserId(Long userId) {
+    return !userIsolationRepository.existsByUserIdx(userId);
+  }
+
+  @Override
+  public boolean isSleeping(String loginId, String email) {
+    return userIsolationRepository.existsByLoginIdAndEmail(loginId, email);
+  }
+
+  @Override
   public boolean isIsolatedByEmail(String email) {
-    return userIsolationRepository.findByEmail(email).isPresent();
+    return userIsolationRepository.existsByEmail(email);
   }
 
   @Override
   public boolean isIsolatedByLoginId(String loginId) {
-    return userIsolationRepository.findByLoginId(loginId).isPresent();
+    return userIsolationRepository.existsByLoginId(loginId);
   }
 
   @Override
-  public Optional<String> getIsolatedLoginIdByEmail(String email) {
-    return loadWrappedUserFromEmail(email)
-      .map(UserIsolation::getLoginId);
-  }
-
-  @Override
-  public boolean isRetrievedUserEquals(String email, String loginId) {
-    Optional<UserIsolation> byEmail = userIsolationRepository.findByEmail(email);
-    Optional<UserIsolation> byLoginId = userIsolationRepository.findByLoginId(loginId);
-
-    return byEmail.isPresent() && byLoginId.isPresent() && byEmail.equals(byLoginId);
+  public Optional<String> findIsolatedLoginIdByEmail(String email) {
+    return userIsolationRepository.findByEmail(email).map(UserIsolation::getLoginId);
   }
 
   @Override
@@ -64,17 +65,17 @@ class UserIsolationCRUDServiceImpl implements UserIsolationCRUDService {
   @Override
   public boolean isLoginable(String loginId, String inputPassword, Encoder encoder) {
     return userIsolationRepository.findByLoginId(loginId)
-      .map(it -> it.validatePassword(encoder, inputPassword))
+      .map(it -> it.isPasswordEquals(encoder, inputPassword))
       .orElseThrow(() -> new AccountException(ExceptionType.USER_NOT_FOUND));
   }
 
   @Override
   @Transactional
-  public User wakeIsolated(UserCRUDService userCRUDService, String loginId) {
-    UserIsolation userIsolation = userIsolationRepository.findByLoginId(loginId)
+  public User wake(UserService userService, String loginId) {
+    var userIsolation = userIsolationRepository.findByLoginId(loginId)
       .orElseThrow(() -> new AccountException(ExceptionType.USER_NOT_FOUND));
 
-    User user = userCRUDService.loadUserById(userIsolation.getUserIdx());
+    User user = userService.loadUserById(userIsolation.getUserIdx());
     user.wake(userIsolation.getLoginId(), userIsolation.getPassword(), userIsolation.getEmail());
 
     userIsolationRepository.deleteByLoginId(loginId);
@@ -83,7 +84,7 @@ class UserIsolationCRUDServiceImpl implements UserIsolationCRUDService {
 
   @Override
   @Transactional
-  public void saveUserIsolation(User user) {
+  public void saveFrom(User user) {
     userIsolationRepository.save(UserIsolation.builder()
       .userIdx(user.getId())
       .loginId(user.getLoginId())
@@ -96,21 +97,12 @@ class UserIsolationCRUDServiceImpl implements UserIsolationCRUDService {
 
   @Override
   @Transactional
-  public void deleteByUserIdx(Long userIdx) {
-    userIsolationRepository.deleteByUserIdx(userIdx);
-  }
-
-  @Override
-  public boolean isNotIsolated(Long userId) {
-    return userIsolationRepository.findByUserIdx(userId).isEmpty();
+  public void deleteByUserId(Long userId) {
+    userIsolationRepository.deleteByUserIdx(userId);
   }
 
   @Override
   public long countAllIsolatedUsers() {
     return userIsolationRepository.count();
-  }
-
-  public Optional<UserIsolation> loadWrappedUserFromEmail(String email) {
-    return userIsolationRepository.findByEmail(email);
   }
 }

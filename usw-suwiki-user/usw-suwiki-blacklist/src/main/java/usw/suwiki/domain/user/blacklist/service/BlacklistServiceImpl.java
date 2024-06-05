@@ -6,12 +6,10 @@ import org.springframework.transaction.annotation.Transactional;
 import usw.suwiki.core.exception.AccountException;
 import usw.suwiki.core.exception.ExceptionType;
 import usw.suwiki.core.secure.Encoder;
-import usw.suwiki.domain.user.User;
 import usw.suwiki.domain.user.blacklist.BlacklistDomain;
 import usw.suwiki.domain.user.blacklist.BlacklistRepository;
 import usw.suwiki.domain.user.dto.UserResponse;
 import usw.suwiki.domain.user.service.BlacklistService;
-import usw.suwiki.domain.user.service.UserCRUDService;
 
 import java.util.Collections;
 import java.util.List;
@@ -21,7 +19,6 @@ import java.util.List;
 @RequiredArgsConstructor
 class BlacklistServiceImpl implements BlacklistService {
   private final BlacklistRepository blacklistRepository;
-  private final UserCRUDService userCRUDService;
 
   private final Encoder encoder;
 
@@ -33,12 +30,12 @@ class BlacklistServiceImpl implements BlacklistService {
   }
 
   private List<UserResponse.BlackedReason> convert(BlacklistDomain blacklistDomain) {
-    return List.of(UserResponse.BlackedReason.builder()
-      .blackListReason(blacklistDomain.getReason())
-      .judgement(blacklistDomain.getJudgement())
-      .createdAt(blacklistDomain.getCreateDate())
-      .expiredAt(blacklistDomain.getExpiredAt())
-      .build());
+    return List.of(new UserResponse.BlackedReason(
+      blacklistDomain.getReason(),
+      blacklistDomain.getJudgement(),
+      blacklistDomain.getCreateDate(),
+      blacklistDomain.getExpiredAt()
+    ));
   }
 
   @Override
@@ -51,11 +48,8 @@ class BlacklistServiceImpl implements BlacklistService {
   }
 
   @Override
-  public void black(Long userId, String reason, String judgement) {
-    User user = userCRUDService.loadUserById(userId);
-    user.reported();
-
-    var blacklist = BlacklistDomain.permanent(userId, encoder.encode(user.getEmail()), reason, judgement);
+  public void black(Long userId, String email, String reason, String judgement) {
+    var blacklist = BlacklistDomain.permanent(userId, encoder.encode(email), reason, judgement);
     blacklistRepository.save(blacklist);
   }
 

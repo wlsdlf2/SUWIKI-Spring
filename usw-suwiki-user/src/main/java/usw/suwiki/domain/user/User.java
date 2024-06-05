@@ -182,12 +182,12 @@ public class User extends BaseEntity {
     this.lastLogin = LocalDateTime.now();
   }
 
-  public void writeEvaluatePost() {
+  public void evaluate() {
     this.point += WRITE_EVALUATION_POINT;
     this.writtenEvaluation++;
   }
 
-  public void deleteEvaluatePost() {
+  public void eraseEvaluation() {
     validatePointLimit(PURCHASE_POINT_LIMIT);
     this.point -= DELETE_POINT_LIMIT;
     this.writtenEvaluation--;

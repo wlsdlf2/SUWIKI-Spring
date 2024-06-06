@@ -34,7 +34,7 @@ class RestrictServiceImpl implements RestrictService {
 
   @Transactional(readOnly = true)
   @Override
-  public List<Long> loadAllRestrictedUntilNow() {
+  public List<Long> loadAllRestrictEnded() {
     return restrictingUserRepository.findByRestrictingDateBefore(LocalDateTime.now()).stream()
       .map(RestrictingUser::getUserIdx)
       .toList();

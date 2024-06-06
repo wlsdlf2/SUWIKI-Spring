@@ -21,4 +21,9 @@ class DefaultEncoder implements Encoder {
   public boolean matches(CharSequence rawInput, String encoded) {
     return passwordEncoder.matches(rawInput, encoded);
   }
+
+  @Override
+  public boolean nonMatches(CharSequence rawInput, String encoded) {
+    return !matches(rawInput, encoded);
+  }
 }

@@ -12,6 +12,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import usw.suwiki.core.exception.AccountException;
+import usw.suwiki.core.exception.ExceptionCode;
 import usw.suwiki.core.secure.Encoder;
 import usw.suwiki.core.secure.RandomPasswordGenerator;
 import usw.suwiki.domain.user.model.UserAdapter;
@@ -19,12 +20,11 @@ import usw.suwiki.domain.user.model.UserClaim;
 import usw.suwiki.infra.jpa.BaseEntity;
 
 import java.time.LocalDateTime;
-import java.util.Objects;
 
+import static usw.suwiki.core.exception.ExceptionCode.LOGIN_FAIL;
 import static usw.suwiki.core.exception.ExceptionCode.OUT_OF_POINT;
 import static usw.suwiki.core.exception.ExceptionCode.PASSWORD_ERROR;
 import static usw.suwiki.core.exception.ExceptionCode.SAME_PASSWORD_WITH_OLD;
-import static usw.suwiki.core.exception.ExceptionCode.USER_NOT_FOUND;
 
 @Entity
 @Getter
@@ -35,10 +35,10 @@ import static usw.suwiki.core.exception.ExceptionCode.USER_NOT_FOUND;
 @AttributeOverride(name = "createDate", column = @Column(name = "created_at"))
 @AttributeOverride(name = "modifiedDate", column = @Column(name = "updated_at"))
 public class User extends BaseEntity {
-  private static final int DELETE_POINT_LIMIT = 30;
-  private static final int PURCHASE_POINT_LIMIT = 20;
-  private static final int WRITE_EXAM_POST_POINT = 20;
   private static final int WRITE_EVALUATION_POINT = 10;
+  private static final int WRITE_EXAM_POST_POINT = 20;
+  private static final int PURCHASE_POINT_LIMIT = 20;
+  private static final int DELETE_POINT_LIMIT = 30;
   private static final int ARREST_LIMIT = 2;
 
   // todo: 로그인 아이디와 이메일은 고유값임에도 불구하고 db에 unique가 빠져있다.
@@ -96,7 +96,7 @@ public class User extends BaseEntity {
     this.restricted = true;
   }
 
-  public void released() {
+  public void release() {
     this.restricted = false;
   }
 
@@ -122,7 +122,6 @@ public class User extends BaseEntity {
     this.loginId = loginId;
     this.password = password;
     this.email = email;
-    login();
   }
 
   public User activate() {
@@ -140,28 +139,28 @@ public class User extends BaseEntity {
     return new UserClaim(this.loginId, this.role.name(), this.restricted);
   }
 
-  public boolean isAdmin() {
-    return this.role.isAdmin();
-  }
-
-  public void validateEmail(String email) {
-    if (!Objects.equals(this.email, email)) {
-      throw new AccountException(USER_NOT_FOUND);
+  public void validateAdmin() {
+    if (!this.role.isAdmin()) {
+      throw new AccountException(ExceptionCode.USER_RESTRICTED);
     }
   }
 
-  public boolean isPasswordEquals(Encoder encoder, String rawPassword) {
-    return encoder.matches(rawPassword, this.password);
+  public void validateLoginable(Encoder encoder, String rawPassword) {
+    if (encoder.nonMatches(rawPassword, this.password)) {
+      throw new AccountException(LOGIN_FAIL);
+    }
+
+    this.lastLogin = LocalDateTime.now(); // login
   }
 
   public void validatePassword(Encoder encoder, String rawPassword) {
-    if (!isPasswordEquals(encoder, rawPassword)) {
+    if (encoder.nonMatches(rawPassword, this.password)) {
       throw new AccountException(PASSWORD_ERROR);
     }
   }
 
   private void validateDuplicatedPassword(Encoder encoder, String newPassword) {
-    if (isPasswordEquals(encoder, newPassword)) {
+    if (encoder.matches(newPassword, this.password)) {
       throw new AccountException(SAME_PASSWORD_WITH_OLD);
     }
   }
@@ -175,11 +174,7 @@ public class User extends BaseEntity {
   public String resetPassword(Encoder encoder) {
     String newPassword = RandomPasswordGenerator.generate();
     this.password = encoder.encode(newPassword);
-    return password;
-  }
-
-  public void login() {
-    this.lastLogin = LocalDateTime.now();
+    return newPassword;
   }
 
   public void evaluate() {

@@ -2,29 +2,24 @@ package usw.suwiki.domain.user.isolated;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import usw.suwiki.core.exception.AccountException;
 import usw.suwiki.core.secure.Encoder;
-import usw.suwiki.core.secure.RandomPasswordGenerator;
+import usw.suwiki.domain.user.User;
+import usw.suwiki.infra.jpa.BaseEntity;
 
 import java.time.LocalDateTime;
 
+import static usw.suwiki.core.exception.ExceptionCode.LOGIN_FAIL;
+
 @Entity
 @Getter
-@Builder
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class UserIsolation {
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
-
+public class UserIsolation extends BaseEntity {
   @Column
   private Long userIdx;
 
@@ -43,13 +38,13 @@ public class UserIsolation {
   @Column
   private LocalDateTime lastLogin;
 
-  public boolean isPasswordEquals(Encoder encoder, String inputPassword) {
-    return encoder.matches(inputPassword, password);
+  public static UserIsolation from(User user) {
+    return new UserIsolation(user.getId(), user.getLoginId(), user.getPassword(), user.getEmail(), user.getLastLogin(), user.getRequestedQuitDate());
   }
 
-  public String updateRandomPassword(Encoder encoder) {
-    String newPassword = RandomPasswordGenerator.generate();
-    this.password = encoder.encode(newPassword);
-    return newPassword;
+  public void validateLoginable(Encoder encoder, String inputPassword) {
+    if (encoder.nonMatches(inputPassword, password)) {
+      throw new AccountException(LOGIN_FAIL);
+    }
   }
 }

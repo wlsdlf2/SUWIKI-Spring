@@ -7,7 +7,7 @@ import java.util.List;
 public interface RestrictService {
   List<UserResponse.RestrictedReason> loadRestrictedLog(Long userId);
 
-  List<Long> loadAllRestrictedUntilNow();
+  List<Long> loadAllRestrictEnded();
 
   void release(Long userId);
 

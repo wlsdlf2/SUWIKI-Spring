@@ -3,8 +3,6 @@ package usw.suwiki.domain.user.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import usw.suwiki.core.exception.AccountException;
-import usw.suwiki.core.exception.ExceptionCode;
 import usw.suwiki.core.secure.Encoder;
 import usw.suwiki.core.secure.TokenAgent;
 import usw.suwiki.domain.evaluatepost.service.EvaluatePostService;
@@ -12,7 +10,6 @@ import usw.suwiki.domain.exampost.service.ExamPostService;
 import usw.suwiki.domain.report.EvaluatePostReport;
 import usw.suwiki.domain.report.ExamPostReport;
 import usw.suwiki.domain.report.service.ReportService;
-import usw.suwiki.domain.user.User;
 import usw.suwiki.domain.user.dto.AdminResponse;
 
 import static usw.suwiki.domain.user.dto.AdminRequest.EvaluatePostBlacklist;
@@ -35,17 +32,10 @@ public class AdminService {
   private final TokenAgent tokenAgent;
 
   public AdminResponse.Login adminLogin(String loginId, String password) {
-    User user = userService.loadByLoginId(loginId);
-
-    if (!user.isPasswordEquals(encoder, password)) {
-      throw new AccountException(ExceptionCode.LOGIN_FAIL);
-    }
-
-    if (!user.isAdmin()) {
-      throw new AccountException(ExceptionCode.USER_RESTRICTED);
-    }
-
-    return new AdminResponse.Login(tokenAgent.createAccessToken(user.getId(), user.toClaim()), userService.countAllUsers());
+    var admin = userService.loadByLoginId(loginId);
+    admin.validateAdmin();
+    admin.validateLoginable(encoder, password);
+    return new AdminResponse.Login(tokenAgent.createAccessToken(admin.getId(), admin.toClaim()), userService.countAllUsers());
   }
 
   public LoadAllReportedPost loadAllReportedPosts() {

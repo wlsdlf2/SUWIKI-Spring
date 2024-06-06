@@ -32,6 +32,7 @@ import usw.suwiki.domain.user.dto.UserRequest.EditPassword;
 import usw.suwiki.domain.user.dto.UserRequest.FindId;
 import usw.suwiki.domain.user.dto.UserRequest.FindPassword;
 import usw.suwiki.domain.user.dto.UserRequest.Join;
+import usw.suwiki.domain.user.isolated.UserIsolationRepository;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -70,6 +71,8 @@ class UserAcceptanceTest extends AcceptanceTestSupport {
 
   @Autowired
   private UserRepository userRepository;
+  @Autowired
+  private UserIsolationRepository userIsolationRepository;
   @Autowired
   private FavoriteMajorRepository favoriteMajorRepository;
 
@@ -440,6 +443,38 @@ class UserAcceptanceTest extends AcceptanceTestSupport {
       );
     }
 
+    @Test
+    void 아이디_찾기_성공_휴면_계졍() throws Exception {
+      // given
+      fixtures.휴면_전환(user);
+
+      var request = new FindId(email);
+
+      // when
+      var result = post(Uri.of(endpoint), request);
+
+      // then
+      validate(result, status().isOk(), Pair.of("$.success", true));
+
+      var saved = userRepository.findById(user.getId()).orElseThrow();
+      var isolations = userIsolationRepository.findAll();
+
+      assertAll(
+        () -> assertThat(saved.getLoginId()).isEqualTo(loginId),
+        () -> assertThat(encoder.matches(password, saved.getPassword())).isTrue(),
+        () -> assertThat(saved.getEmail()).isEqualTo(email),
+        () -> assertThat(isolations).isEmpty()
+      );
+
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .tag(USER)
+          .result(result)
+          .generateDocs()
+      );
+    }
+
     @ParameterizedTest
     @NullAndEmptySource
     void 아이디_찾기_실페_잘못된_파라미터(String email) throws Exception {
@@ -477,11 +512,21 @@ class UserAcceptanceTest extends AcceptanceTestSupport {
       // result validation
       validate(result, status().isOk(), Pair.of("$.success", true));
 
+      var saved = userRepository.findById(user.getId()).orElseThrow();
+      assertAll(
+        () -> assertThat(saved.getLoginId()).isEqualTo(loginId),
+        () -> assertThat(encoder.matches(password, saved.getPassword())).isFalse(), // 비밀번호는 새롭게 바뀐다.
+        () -> assertThat(saved.getEmail()).isEqualTo(email)
+      );
+
       // docs
       result.andDo(
         RestDocument.builder()
           .summary("비밀번호 찾기 API")
-          .description("비밀번호 찾기 API입니다.")
+          .description("""
+            비밀번호 찾기 API 입니다.
+            아이디와 이메일로 정확하게 검색될 시에 새로운 비밀번호를 생성해서 메일을 발송합니다.
+            """)
           .tag(USER)
           .result(result)
           .generateDocs()
@@ -489,7 +534,39 @@ class UserAcceptanceTest extends AcceptanceTestSupport {
     }
 
     @Test
-    void 비밀번호_찾기_실패_이메일_아이디_불일치로_유저_조회_불가() throws Exception {
+    void 비밀번호_찾기_성공_휴면_계정() throws Exception {
+      // given
+      fixtures.휴면_전환(user);
+
+      var request = new FindPassword(loginId, email);
+
+      // when
+      var result = post(Uri.of(endpoint), request);
+
+      // then
+      validate(result, status().isOk(), Pair.of("$.success", true));
+
+      var saved = userRepository.findById(user.getId()).orElseThrow();
+      var isolations = userIsolationRepository.findAll();
+
+      assertAll(
+        () -> assertThat(saved.getLoginId()).isEqualTo(loginId),
+        () -> assertThat(encoder.matches(password, saved.getPassword())).isFalse(), // 비밀번호는 새롭게 바뀐다.
+        () -> assertThat(saved.getEmail()).isEqualTo(email),
+        () -> assertThat(isolations).isEmpty()
+      );
+
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .tag(USER)
+          .result(result)
+          .generateDocs()
+      );
+    }
+
+    @Test
+    void 비밀번호_찾기_실패_이메일과_아이디로_조회_불가() throws Exception {
       // setup
       var request = new FindPassword(loginId, "wrongEaml@suwon.ac.kr");
 
@@ -659,6 +736,41 @@ class UserAcceptanceTest extends AcceptanceTestSupport {
     }
 
     @Test
+    void 웹_로그인_성공_휴면_계정() throws Exception {
+      // given
+      fixtures.휴면_전환(user);
+      fixtures.가입_인증된_토큰_생성(user.getId());
+      var request = new UserRequest.Login(loginId, password);
+
+      // when
+      var result = post(Uri.of(webEndpoint), request);
+
+      // then
+      result.andExpect(status().isOk());
+
+      var saved = userRepository.findById(user.getId()).orElseThrow();
+      var isolations = userIsolationRepository.findAll();
+
+      var cookies = result.andReturn().getResponse().getCookies();
+
+      assertAll(
+        () -> assertThat(cookies).isNotNull().allMatch(cookie -> cookie.getMaxAge() != 0),
+        () -> assertThat(saved.getLoginId()).isEqualTo(loginId),
+        () -> assertThat(encoder.matches(password, saved.getPassword())).isTrue(),
+        () -> assertThat(saved.getEmail()).isEqualTo(email),
+        () -> assertThat(isolations).isEmpty()
+      );
+
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .tag(USER)
+          .result(result)
+          .generateDocs()
+      );
+    }
+
+    @Test
     void 웹_로그인_실패_이메일_미인증_유저() throws Exception {
       // given
       var request = new UserRequest.Login(loginId, password);
@@ -723,9 +835,44 @@ class UserAcceptanceTest extends AcceptanceTestSupport {
     }
 
     @Test
+    void 모바일_로그인_성공_휴면_계정() throws Exception {
+      // given
+      fixtures.휴면_전환(user);
+      fixtures.가입_인증된_토큰_생성(user.getId());
+      var request = new UserRequest.Login(loginId, password);
+
+      // when
+      var result = post(Uri.of(mobileEndpoint), request);
+
+      // then
+      result.andExpect(status().isOk());
+
+      var saved = userRepository.findById(user.getId()).orElseThrow();
+      var isolations = userIsolationRepository.findAll();
+
+      var cookies = result.andReturn().getResponse().getCookies();
+
+      assertAll(
+        () -> assertThat(cookies).isNotNull().allMatch(cookie -> cookie.getMaxAge() != 0),
+        () -> assertThat(saved.getLoginId()).isEqualTo(loginId),
+        () -> assertThat(encoder.matches(password, saved.getPassword())).isTrue(),
+        () -> assertThat(saved.getEmail()).isEqualTo(email),
+        () -> assertThat(isolations).isEmpty()
+      );
+
+      // docs
+      result.andDo(
+        RestDocument.builder()
+          .tag(USER)
+          .result(result)
+          .generateDocs()
+      );
+    }
+
+    @Test
     void 모바일_로그인_실패_이메일_미인증_유저() throws Exception {
       // given
-      var request = new UserRequest.Login(loginId, "wrongPassword");
+      var request = new UserRequest.Login(loginId, password);
 
       // when
       var result = post(Uri.of(mobileEndpoint), request);

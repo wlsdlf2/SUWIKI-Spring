@@ -4,25 +4,30 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import usw.suwiki.core.exception.AccountException;
-import usw.suwiki.core.exception.ExceptionCode;
 import usw.suwiki.core.secure.Encoder;
 import usw.suwiki.domain.user.User;
+import usw.suwiki.domain.user.UserRepository;
 import usw.suwiki.domain.user.isolated.UserIsolation;
 import usw.suwiki.domain.user.isolated.UserIsolationRepository;
 import usw.suwiki.domain.user.service.UserIsolationService;
-import usw.suwiki.domain.user.service.UserService;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
+import static usw.suwiki.core.exception.ExceptionCode.USER_NOT_FOUND;
 
 @Service
-@Transactional(readOnly = true)
+@Transactional
 @RequiredArgsConstructor
 class UserIsolationServiceImpl implements UserIsolationService {
   private final UserIsolationRepository userIsolationRepository;
+  private final UserRepository userRepository; // todo: (06.06) 처치 고민하기, 다른 객체로 분리 or 현상 유지
 
   @Override
+  @Transactional(readOnly = true)
   public List<Long> loadAllIsolatedUntil(LocalDateTime target) {
     return userIsolationRepository.findByRequestedQuitDateBefore(target).stream()
       .map(UserIsolation::getUserIdx)
@@ -30,13 +35,44 @@ class UserIsolationServiceImpl implements UserIsolationService {
   }
 
   @Override
-  public boolean isNotSleepingByUserId(Long userId) {
-    return !userIsolationRepository.existsByUserIdx(userId);
+  public long countAllIsolatedUsers() {
+    return userIsolationRepository.count();
   }
 
   @Override
-  public boolean isSleeping(String loginId, String email) {
-    return userIsolationRepository.existsByLoginIdAndEmail(loginId, email);
+  public void wakeIfSleeping(String email) {
+    wake(() -> userIsolationRepository.findByEmail(email), isolation -> {});
+  }
+
+  @Override
+  public void wakeIfSleeping(String loginId, String email) {
+    wake(() -> userIsolationRepository.findByLoginIdAndEmail(loginId, email), isolation -> {});
+  }
+
+  @Override
+  public void wakeIfSleeping(String loginId, Encoder encoder, String password) {
+    wake(() -> userIsolationRepository.findByLoginId(loginId), isolation -> isolation.validateLoginable(encoder, password));
+  }
+
+  private void wake(Supplier<Optional<UserIsolation>> query, Consumer<UserIsolation> option) {
+    query.get().ifPresent(isolation -> {
+      option.accept(isolation);
+      var user = findUserById(isolation.getUserIdx());
+      user.wake(isolation.getLoginId(), isolation.getPassword(), isolation.getEmail());
+      userIsolationRepository.delete(isolation);
+    });
+  }
+
+  @Override
+  public void isolate(Long userId) {
+    if (!userIsolationRepository.existsByUserIdx(userId)) {
+      return;
+    }
+
+    var user = findUserById(userId);
+    user.sleep();
+
+    userIsolationRepository.save(UserIsolation.from(user));
   }
 
   @Override
@@ -50,59 +86,12 @@ class UserIsolationServiceImpl implements UserIsolationService {
   }
 
   @Override
-  public Optional<String> findIsolatedLoginIdByEmail(String email) {
-    return userIsolationRepository.findByEmail(email).map(UserIsolation::getLoginId);
-  }
-
-  @Override
-  @Transactional
-  public String updateIsolatedUserPassword(Encoder encoder, String email) {
-    return userIsolationRepository.findByEmail(email)
-      .map(it -> it.updateRandomPassword(encoder))
-      .orElseThrow(() -> new AccountException(ExceptionCode.USER_NOT_FOUND));
-  }
-
-  @Override
-  public boolean isLoginable(String loginId, String inputPassword, Encoder encoder) {
-    return userIsolationRepository.findByLoginId(loginId)
-      .map(it -> it.isPasswordEquals(encoder, inputPassword))
-      .orElseThrow(() -> new AccountException(ExceptionCode.USER_NOT_FOUND));
-  }
-
-  @Override
-  @Transactional
-  public User wake(UserService userService, String loginId) {
-    var userIsolation = userIsolationRepository.findByLoginId(loginId)
-      .orElseThrow(() -> new AccountException(ExceptionCode.USER_NOT_FOUND));
-
-    User user = userService.loadUserById(userIsolation.getUserIdx());
-    user.wake(userIsolation.getLoginId(), userIsolation.getPassword(), userIsolation.getEmail());
-
-    userIsolationRepository.deleteByLoginId(loginId);
-    return user;
-  }
-
-  @Override
-  @Transactional
-  public void saveFrom(User user) {
-    userIsolationRepository.save(UserIsolation.builder()
-      .userIdx(user.getId())
-      .loginId(user.getLoginId())
-      .password(user.getPassword())
-      .email(user.getEmail())
-      .lastLogin(user.getLastLogin())
-      .requestedQuitDate(user.getRequestedQuitDate())
-      .build());
-  }
-
-  @Override
-  @Transactional
   public void deleteByUserId(Long userId) {
     userIsolationRepository.deleteByUserIdx(userId);
   }
 
-  @Override
-  public long countAllIsolatedUsers() {
-    return userIsolationRepository.count();
+  private User findUserById(Long userId) {
+    return userRepository.findById(userId)
+      .orElseThrow(() -> new AccountException(USER_NOT_FOUND));
   }
 }

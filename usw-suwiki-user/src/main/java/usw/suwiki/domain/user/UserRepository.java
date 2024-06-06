@@ -17,6 +17,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
   Optional<User> findByEmail(String email);
 
+  Optional<User> findByLoginIdAndEmail(String loginId, String email);
+
   List<User> findByLastLoginBetween(LocalDateTime startTime, LocalDateTime endTime);
 
   List<User> findByRequestedQuitDateBefore(LocalDateTime localDateTime);

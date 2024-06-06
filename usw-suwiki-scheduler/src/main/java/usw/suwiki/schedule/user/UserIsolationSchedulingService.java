@@ -67,10 +67,7 @@ public class UserIsolationSchedulingService { // todo: (06.05) 스케쥴러 쪽 
     LocalDateTime endTime = LocalDateTime.now().minusMonths(12);
 
     for (User user : userService.loadUsersLastLoginBetween(startTime, endTime)) {
-      if (userIsolationService.isNotSleepingByUserId(user.getId())) {
-        userIsolationService.saveFrom(user);
-        userService.sleep(user.getId());
-      }
+      userIsolationService.isolate(user.getId());
     }
 
     log.info("{} - 휴면 계정 전환 종료", LocalDateTime.now());

@@ -8,12 +8,12 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @RequiredArgsConstructor
 @ConfigurationProperties(prefix = "server")
 class ServerProperties {
-  private static final String CONFIRMATION_TOKEN_URL = "/v2/confirmation-token/verify/?token=";
+  private static final String CONFIRM_URL_TEMPLATE = "%s/v2/confirmation-token/verify?token=%s";
 
   private final int port;
   private final String domain;
 
   String redirectUrl(String token) {
-    return domain + CONFIRMATION_TOKEN_URL + token;
+    return CONFIRM_URL_TEMPLATE.formatted(domain, token);
   }
 }

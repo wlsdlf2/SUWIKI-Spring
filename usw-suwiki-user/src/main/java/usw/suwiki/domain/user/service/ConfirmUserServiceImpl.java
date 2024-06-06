@@ -12,7 +12,7 @@ import static usw.suwiki.core.exception.ExceptionCode.USER_NOT_FOUND;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class ConfirmUserServiceImpl implements ConfirmUserService {
+class ConfirmUserServiceImpl implements ConfirmUserService {
   private final UserRepository userRepository;
 
   @Override

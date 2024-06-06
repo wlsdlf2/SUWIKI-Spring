@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import usw.suwiki.core.exception.BaseException;
+import usw.suwiki.core.exception.MailException;
 
 @Slf4j
 @RestControllerAdvice
@@ -23,7 +24,10 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(exception.getHttpStatus()).body(ErrorResponse.from(exception));
   }
 
-  @ExceptionHandler(Exception.class)
+  @ExceptionHandler({
+    Exception.class,
+    MailException.class
+  })
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
   public ErrorResponse handleException(Exception exception) {
     log.error("[Unexpected Exception] exception : {}, message : {}", exception.getClass().getName(), exception.getMessage());

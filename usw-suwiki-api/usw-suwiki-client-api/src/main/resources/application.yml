@@ -1,7 +1,7 @@
 spring:
   config:
     import:
-      - classpath:application-smtp.yml
+      - classpath:application-mail.yml
       - classpath:application-secrets.yml
       - classpath:application-datasource.yml
       - classpath:application-statistics.yml

@@ -17,7 +17,8 @@ import static usw.suwiki.core.exception.ExceptionCode.EMAIL_NOT_AUTHED;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AttributeOverride(name = "createDate", column = @Column(name = "createdAt", nullable = false))
+@AttributeOverride(name = "createDate", column = @Column(name = "createdAt"))
+@AttributeOverride(name = "modifiedDate", column = @Column(name = "updated_at"))
 public class ConfirmationToken extends BaseEntity {
   private static final long CONFIRM_PERIOD = 15;
 

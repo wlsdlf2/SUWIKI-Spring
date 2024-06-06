@@ -65,7 +65,8 @@ public enum ExceptionCode {
   // application
   SERVER_ERROR("SERVER01", "서버 오류 입니다. 관리자에게 문의해주세요", INTERNAL_SERVER_ERROR),
   SEND_MAIL_FAILED("SERVER02", "메일 전송에 실패했습니다.", INTERNAL_SERVER_ERROR),
-  AUTHORIZATION_NOT_PROCESSED("SERVER03", "인증이 요청하지 않은 API에서 잘못된 파싱을 시도하고 있습니다.", INTERNAL_SERVER_ERROR),
+  BAD_MAIL_REQUEST("SERVER03", "잘못된 메일 발송 요청입니다.", INTERNAL_SERVER_ERROR),
+  AUTHORIZATION_NOT_PROCESSED("SERVER04", "인증이 요청하지 않은 API에서 잘못된 파싱을 시도하고 있습니다.", INTERNAL_SERVER_ERROR),
 
   COMMON_CLIENT_ERROR("CLIENT01", "기타 클라이언트 에러입니다.", BAD_REQUEST), // ..?
   INVALID_CLIENT_OS("CLIENT02", "유효하지 않은 클라이언트 OS 입니다.", BAD_REQUEST),

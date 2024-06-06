@@ -1,10 +1,12 @@
 package usw.suwiki.core.mail;
 
 import lombok.RequiredArgsConstructor;
+import usw.suwiki.core.exception.MailException;
 
 import java.util.List;
 
 import static java.util.Collections.emptyList;
+import static usw.suwiki.core.exception.ExceptionCode.BAD_MAIL_REQUEST;
 
 @RequiredArgsConstructor
 public enum MailType {
@@ -12,30 +14,26 @@ public enum MailType {
   EMAIL_AUTH(List.of("redirectUrl")),
   FIND_PASSWORD(List.of("password")),
 
-  ERROR(emptyList()),
-  USED_LINK(emptyList()),
-  EXPIRED_LINK(emptyList()),
-  AUTH_SUCCESS(emptyList()),
   DELETE_WARNING(emptyList()),
   DORMANT_NOTIFICATION(emptyList()),
   PRIVACY_POLICY_NOTIFICATION(emptyList()),
   ;
 
-  private final List<String> parameters;
+  private final List<String> keys;
 
   public String template() {
     return this.name().replace("_", "-");
   }
 
-  public String parameter() {
-    if (parameters.isEmpty()) {
-      throw new IllegalArgumentException("no parameter required!!");
+  public String key() {
+    if (keys.isEmpty()) {
+      throw new MailException(BAD_MAIL_REQUEST);
     }
 
-    return parameters.get(0);
+    return keys.get(0);
   }
 
   public boolean isEmailAuth() {
-    return this.equals(EMAIL_AUTH);
+    return this == EMAIL_AUTH;
   }
 }

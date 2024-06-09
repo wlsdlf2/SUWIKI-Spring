@@ -18,7 +18,7 @@ public enum ExceptionCode {
   // user
   INVALID_EMAIL_FORMAT("USER01", "올바른 이메일 형식이 아닙니다.", BAD_REQUEST),
   USER_NOT_FOUND("USER02", "사용자가 존재하지 않습니다.", NOT_FOUND),
-  LOGIN_FAIL("USER03", "비밀번호 혹은 아이디를 확인해주세요.", BAD_REQUEST),
+  LOGIN_FAIL("USER03", "아이디 혹은 비밀번호를 확인해주세요.", BAD_REQUEST),
   PASSWORD_ERROR("USER04", "비밀번호를 확인해주세요.", BAD_REQUEST),
   OUT_OF_POINT("USER05", "포인트가 부족합니다.", BAD_REQUEST),
   LOGIN_REQUIRED("USER06", "로그인이 필요합니다.", FORBIDDEN),

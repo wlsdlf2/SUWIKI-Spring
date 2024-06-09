@@ -1,9 +1,8 @@
-package usw.suwiki.auth.core.jwt;
+package usw.suwiki.auth.token.jwt;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jws;
-import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.security.SignatureException;
@@ -15,12 +14,10 @@ import static usw.suwiki.core.exception.ExceptionCode.INVALID_TOKEN;
 import static usw.suwiki.core.exception.ExceptionCode.LOGIN_REQUIRED;
 
 @Component
-class RawParser {
-  enum Content {
-    ID, LOGIN_ID, ROLE, RESTRICTED;
-  }
+public class RawParser {
+  enum Content { ID, LOGIN_ID, ROLE, RESTRICTED }
 
-  private final JwtParser parser;
+  private final io.jsonwebtoken.JwtParser parser;
 
   RawParser(JwtSecretProvider jwtSecretProvider) {
     this.parser = Jwts.parserBuilder()
@@ -45,7 +42,7 @@ class RawParser {
       .get(content.name(), type);
   }
 
-  boolean isExpired(String jwt) {
+  public boolean isExpired(String jwt) {
     try {
       parser.parseClaimsJws(jwt).getBody().getExpiration();
     } catch (ExpiredJwtException expiredJwtException) {

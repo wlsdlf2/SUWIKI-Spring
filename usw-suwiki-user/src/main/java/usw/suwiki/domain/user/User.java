@@ -12,10 +12,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import usw.suwiki.core.exception.AccountException;
-import usw.suwiki.core.exception.ExceptionCode;
 import usw.suwiki.core.secure.Encoder;
 import usw.suwiki.core.secure.RandomPasswordGenerator;
-import usw.suwiki.domain.user.model.UserAdapter;
 import usw.suwiki.domain.user.model.UserClaim;
 import usw.suwiki.infra.jpa.BaseEntity;
 
@@ -25,6 +23,7 @@ import static usw.suwiki.core.exception.ExceptionCode.LOGIN_FAIL;
 import static usw.suwiki.core.exception.ExceptionCode.OUT_OF_POINT;
 import static usw.suwiki.core.exception.ExceptionCode.PASSWORD_ERROR;
 import static usw.suwiki.core.exception.ExceptionCode.SAME_PASSWORD_WITH_OLD;
+import static usw.suwiki.core.exception.ExceptionCode.USER_RESTRICTED;
 
 @Entity
 @Getter
@@ -131,17 +130,13 @@ public class User extends BaseEntity {
     return this;
   }
 
-  public UserAdapter toAdapter() { // todo: 네이밍 수정하기 (Adapter가 용도를 잘 드러내지 않음)
-    return new UserAdapter(this.getId(), this.loginId, this.role);
-  }
-
   public UserClaim toClaim() { // 토큰을 생성하기 위한 유저 정보, 강하게 결합되어있어 User 에게 위임
     return new UserClaim(this.loginId, this.role.name(), this.restricted);
   }
 
   public void validateAdmin() {
     if (!this.role.isAdmin()) {
-      throw new AccountException(ExceptionCode.USER_RESTRICTED);
+      throw new AccountException(USER_RESTRICTED);
     }
   }
 
@@ -216,7 +211,7 @@ public class User extends BaseEntity {
     restrict();
   }
 
-  public void report() {
+  public void rewardReport() {
     this.point++;
   }
 

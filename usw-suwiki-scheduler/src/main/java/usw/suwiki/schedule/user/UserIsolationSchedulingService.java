@@ -5,13 +5,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import usw.suwiki.auth.token.service.ConfirmationTokenService;
-import usw.suwiki.auth.token.service.RefreshTokenService;
+import usw.suwiki.auth.service.RefreshTokenService;
 import usw.suwiki.core.mail.EmailSender;
 import usw.suwiki.domain.evaluatepost.service.EvaluatePostService;
 import usw.suwiki.domain.exampost.service.ExamPostService;
 import usw.suwiki.domain.report.service.ReportService;
 import usw.suwiki.domain.user.User;
+import usw.suwiki.domain.user.service.ConfirmationTokenService;
 import usw.suwiki.domain.user.service.FavoriteMajorService;
 import usw.suwiki.domain.user.service.RestrictService;
 import usw.suwiki.domain.user.service.UserIsolationService;
@@ -102,7 +102,7 @@ public class UserIsolationSchedulingService { // todo: (06.05) 스케쥴러 쪽 
       examPostService.clean(userId);
       favoriteMajorService.clean(userId);
       restrictService.release(userId);
-      confirmationTokenService.deleteByUserIdx(userId);
+      confirmationTokenService.deleteByUserId(userId);
       userIsolationService.deleteByUserId(userId);
       userService.deleteById(userId);
     }

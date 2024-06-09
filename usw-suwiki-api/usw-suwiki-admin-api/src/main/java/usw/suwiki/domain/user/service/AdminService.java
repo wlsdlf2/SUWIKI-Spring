@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import usw.suwiki.core.secure.Encoder;
-import usw.suwiki.core.secure.TokenAgent;
+import usw.suwiki.core.secure.TokenGenerator;
 import usw.suwiki.domain.evaluatepost.service.EvaluatePostService;
 import usw.suwiki.domain.exampost.service.ExamPostService;
 import usw.suwiki.domain.report.EvaluatePostReport;
@@ -22,6 +22,7 @@ import static usw.suwiki.domain.user.dto.AdminResponse.LoadAllReportedPost;
 @Transactional
 @RequiredArgsConstructor
 public class AdminService {
+  private final AuthService authService;
   private final UserService userService;
 
   private final ReportService reportService;
@@ -29,13 +30,14 @@ public class AdminService {
   private final EvaluatePostService evaluatePostService;
 
   private final Encoder encoder;
-  private final TokenAgent tokenAgent;
+  private final TokenGenerator tokenGenerator;
 
   public AdminResponse.Login adminLogin(String loginId, String password) {
-    var admin = userService.loadByLoginId(loginId);
+    var admin = authService.loadForLogin(loginId);
     admin.validateAdmin();
     admin.validateLoginable(encoder, password);
-    return new AdminResponse.Login(tokenAgent.createAccessToken(admin.getId(), admin.toClaim()), userService.countAllUsers());
+    var tokens = tokenGenerator.login(admin.getId(), admin.toClaim());
+    return new AdminResponse.Login(tokens.getAccessToken(), userService.countAllUsers());
   }
 
   public LoadAllReportedPost loadAllReportedPosts() {

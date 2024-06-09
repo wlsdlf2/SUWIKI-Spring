@@ -3,7 +3,6 @@ apply plugin: 'java-test-fixtures'
 dependencies {
   implementation('org.springframework.data:spring-data-commons')
 
-  implementation('org.apache.commons:commons-text:1.10.0')
   implementation('com.fasterxml.jackson.core:jackson-annotations')
   implementation('com.github.ulisesbocchio:jasypt-spring-boot-starter:3.0.4')
 

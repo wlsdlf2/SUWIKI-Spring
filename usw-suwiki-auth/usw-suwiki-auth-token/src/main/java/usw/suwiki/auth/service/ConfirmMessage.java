@@ -1,11 +1,11 @@
-package usw.suwiki.auth.token.response;
+package usw.suwiki.auth.service;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum ConfirmResponse {
+public enum ConfirmMessage {
   SUCCESS("""
       <center>
         <img class="suwikilogo" src="https://avatars.githubusercontent.com/u/96416159?s=200&v=4" style="display:block; " alt="SUWIKILOGO">
@@ -38,5 +38,5 @@ public enum ConfirmResponse {
     """),
   ;
 
-  private final String content;
+  final String content;
 }

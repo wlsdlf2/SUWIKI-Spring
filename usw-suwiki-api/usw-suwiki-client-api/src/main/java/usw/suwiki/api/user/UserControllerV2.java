@@ -17,11 +17,11 @@ import usw.suwiki.auth.core.annotation.Authorize;
 import usw.suwiki.common.response.ResponseForm;
 import usw.suwiki.domain.user.dto.UserRequest;
 import usw.suwiki.domain.user.dto.UserResponse;
+import usw.suwiki.domain.user.service.AuthService;
 import usw.suwiki.domain.user.service.UserService;
 import usw.suwiki.statistics.annotation.Statistics;
 
 import java.util.HashMap;
-import java.util.Map;
 
 import static org.springframework.http.HttpStatus.OK;
 import static usw.suwiki.statistics.log.MonitorTarget.USER;
@@ -31,12 +31,13 @@ import static usw.suwiki.statistics.log.MonitorTarget.USER;
 @RequiredArgsConstructor
 public class UserControllerV2 {
   private final UserService userService;
+  private final AuthService authService;
 
   @Statistics(USER)
   @PostMapping("/loginId/check")
   @ResponseStatus(OK)
   public UserResponse.Overlap isOverlapId(@Valid @RequestBody UserRequest.CheckLoginId request) {
-    var isDuplicated = userService.isDuplicatedId(request.loginId());
+    var isDuplicated = authService.isDuplicatedId(request.loginId());
     return new UserResponse.Overlap(isDuplicated);
   }
 
@@ -44,7 +45,7 @@ public class UserControllerV2 {
   @PostMapping("/email/check")
   @ResponseStatus(OK)
   public UserResponse.Overlap isOverlapEmail(@Valid @RequestBody UserRequest.CheckEmail request) {
-    var isDuplicated = userService.isDuplicatedEmail(request.email());
+    var isDuplicated = authService.isDuplicatedEmail(request.email());
     return new UserResponse.Overlap(isDuplicated);
   }
 
@@ -52,7 +53,7 @@ public class UserControllerV2 {
   @PostMapping
   @ResponseStatus(OK)
   public UserResponse.Success join(@Valid @RequestBody UserRequest.Join join) {
-    userService.join(join.loginId(), join.password(), join.email());
+    authService.join(join.loginId(), join.password(), join.email());
     return new UserResponse.Success(true);
   }
 
@@ -60,7 +61,7 @@ public class UserControllerV2 {
   @PostMapping("inquiry-loginId")
   @ResponseStatus(OK)
   public UserResponse.Success findId(@Valid @RequestBody UserRequest.FindId findId) {
-    userService.findId(findId.email());
+    authService.findId(findId.email());
     return new UserResponse.Success(true);
   }
 
@@ -68,7 +69,7 @@ public class UserControllerV2 {
   @PostMapping("inquiry-password")
   @ResponseStatus(OK)
   public UserResponse.Success findPw(@Valid @RequestBody UserRequest.FindPassword findPassword) {
-    userService.findPw(findPassword.loginId(), findPassword.email());
+    authService.findPw(findPassword.loginId(), findPassword.email());
     return new UserResponse.Success(true);
   }
 
@@ -85,7 +86,7 @@ public class UserControllerV2 {
   @PostMapping("mobile-login")
   @ResponseStatus(OK)
   public ResponseForm mobileLogin(@Valid @RequestBody UserRequest.Login request) {
-    return ResponseForm.success(userService.login(request.loginId(), request.password()));
+    return ResponseForm.success(authService.login(request.loginId(), request.password()));
   }
 
   @Statistics(USER)
@@ -95,16 +96,16 @@ public class UserControllerV2 {
     @Valid @RequestBody UserRequest.Login login,
     HttpServletResponse response
   ) {
-    Map<String, String> tokenPair = userService.login(login.loginId(), login.password());
+    var token = authService.login(login.loginId(), login.password());
 
-    Cookie refreshCookie = new Cookie("refreshToken", tokenPair.get("RefreshToken"));
+    Cookie refreshCookie = new Cookie("refreshToken", token.getRefreshToken());
     refreshCookie.setMaxAge(270 * 24 * 60 * 60);
     refreshCookie.setSecure(true);
     refreshCookie.setHttpOnly(true);
     response.addCookie(refreshCookie);
 
     return ResponseForm.success(new HashMap<>() {{
-      put("AccessToken", tokenPair.get("AccessToken"));
+      put("AccessToken", token.getAccessToken());
     }});
   }
 

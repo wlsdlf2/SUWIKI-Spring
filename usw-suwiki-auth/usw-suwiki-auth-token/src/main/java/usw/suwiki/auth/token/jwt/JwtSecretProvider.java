@@ -1,4 +1,4 @@
-package usw.suwiki.auth.core.jwt;
+package usw.suwiki.auth.token.jwt;
 
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;

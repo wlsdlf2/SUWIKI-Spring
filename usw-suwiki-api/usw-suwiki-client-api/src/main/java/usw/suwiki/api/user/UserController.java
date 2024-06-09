@@ -17,11 +17,13 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import usw.suwiki.auth.core.annotation.Authenticated;
 import usw.suwiki.auth.core.annotation.Authorize;
-import usw.suwiki.auth.token.service.ConfirmationTokenService;
 import usw.suwiki.common.response.ResponseForm;
+import usw.suwiki.core.secure.model.Tokens;
 import usw.suwiki.domain.user.dto.MajorRequest;
 import usw.suwiki.domain.user.dto.UserRequest;
 import usw.suwiki.domain.user.dto.UserResponse;
+import usw.suwiki.domain.user.service.AuthService;
+import usw.suwiki.domain.user.service.ConfirmationTokenService;
 import usw.suwiki.domain.user.service.UserService;
 import usw.suwiki.statistics.annotation.Statistics;
 
@@ -39,13 +41,14 @@ import static usw.suwiki.statistics.log.MonitorTarget.USER;
 @RequiredArgsConstructor
 public class UserController {
   private final UserService userService;
+  private final AuthService authService;
   private final ConfirmationTokenService confirmationTokenService;
 
   @Statistics(USER)
   @PostMapping("/check-id")
   @ResponseStatus(OK)
   public UserResponse.Overlap isOverlapId(@Valid @RequestBody UserRequest.CheckLoginId request) {
-    var isDuplicated = userService.isDuplicatedId(request.loginId());
+    var isDuplicated = authService.isDuplicatedId(request.loginId());
     return new UserResponse.Overlap(isDuplicated);
   }
 
@@ -53,7 +56,7 @@ public class UserController {
   @PostMapping("/check-email")
   @ResponseStatus(OK)
   public UserResponse.Overlap isOverlapEmail(@Valid @RequestBody UserRequest.CheckEmail request) {
-    var isDuplicated = userService.isDuplicatedEmail(request.email());
+    var isDuplicated = authService.isDuplicatedEmail(request.email());
     return new UserResponse.Overlap(isDuplicated);
   }
 
@@ -61,7 +64,7 @@ public class UserController {
   @PostMapping("join")
   @ResponseStatus(OK)
   public UserResponse.Success join(@Valid @RequestBody UserRequest.Join request) {
-    userService.join(request.loginId(), request.password(), request.email());
+    authService.join(request.loginId(), request.password(), request.email());
     return new UserResponse.Success(true);
   }
 
@@ -77,7 +80,7 @@ public class UserController {
   @PostMapping("find-id")
   @ResponseStatus(OK)
   public UserResponse.Success findId(@Valid @RequestBody UserRequest.FindId request) {
-    userService.findId(request.email());
+    authService.findId(request.email());
     return new UserResponse.Success(true);
   }
 
@@ -85,7 +88,7 @@ public class UserController {
   @PostMapping("find-pw")
   @ResponseStatus(OK)
   public UserResponse.Success findPw(@Valid @RequestBody UserRequest.FindPassword request) {
-    userService.findPw(request.loginId(), request.email());
+    authService.findPw(request.loginId(), request.email());
     return new UserResponse.Success(true);
   }
 
@@ -101,24 +104,24 @@ public class UserController {
   @Statistics(USER)
   @PostMapping("/login")
   @ResponseStatus(OK)
-  public Map<String, String> mobileLogin(@Valid @RequestBody UserRequest.Login request) {
-    return userService.login(request.loginId(), request.password());
+  public Tokens mobileLogin(@Valid @RequestBody UserRequest.Login request) {
+    return authService.login(request.loginId(), request.password());
   }
 
   @Statistics(USER)
   @PostMapping("/client-login")
   @ResponseStatus(OK)
   public Map<String, String> webLogin(@Valid @RequestBody UserRequest.Login request, HttpServletResponse response) {
-    var tokens = userService.login(request.loginId(), request.password());
+    var tokens = authService.login(request.loginId(), request.password());
 
-    var refreshCookie = new Cookie("refreshToken", tokens.get("RefreshToken"));
+    var refreshCookie = new Cookie("refreshToken", tokens.getRefreshToken());
     refreshCookie.setMaxAge(270 * 24 * 60 * 60);
     refreshCookie.setSecure(true);
     refreshCookie.setHttpOnly(true);
     response.addCookie(refreshCookie);
 
     return new HashMap<>() {{
-      put("AccessToken", tokens.get("AccessToken"));
+      put("AccessToken", tokens.getAccessToken());
     }};
   }
 
@@ -147,24 +150,24 @@ public class UserController {
   @PostMapping("/client-refresh")
   @ResponseStatus(OK)
   public Map<String, String> reissueWeb(@CookieValue(value = "refreshToken") Cookie cookie, HttpServletResponse response) {
-    Map<String, String> tokens = userService.reissue(cookie.getValue());
+    var token = authService.reissue(cookie.getValue());
 
-    var newCookie = new Cookie("refreshToken", tokens.get("RefreshToken"));
+    var newCookie = new Cookie("refreshToken", token.getRefreshToken());
     newCookie.setMaxAge(14 * 24 * 60 * 60);
     newCookie.setSecure(true);
     newCookie.setHttpOnly(true);
     response.addCookie(newCookie);
 
     return new HashMap<>() {{
-      put("AccessToken", tokens.get("AccessToken"));
+      put("AccessToken", token.getAccessToken());
     }};
   }
 
   @Statistics(USER)
   @PostMapping("/refresh")
   @ResponseStatus(OK)
-  public Map<String, String> reissueMobile(@Valid @RequestHeader String Authorization) { // refresh 토큰임
-    return userService.reissue(Authorization); // todo: (05.31) change to id
+  public Tokens reissueMobile(@Valid @RequestHeader String Authorization) { // refresh 토큰임
+    return authService.reissue(Authorization); // todo: (05.31) change to id
   }
 
   @Authorize

@@ -10,11 +10,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import usw.suwiki.common.response.ResponseForm;
-import usw.suwiki.domain.user.service.UserService;
+import usw.suwiki.domain.user.service.AuthService;
 import usw.suwiki.statistics.annotation.Statistics;
 
 import java.util.HashMap;
-import java.util.Map;
 
 import static org.springframework.http.HttpStatus.OK;
 import static usw.suwiki.statistics.log.MonitorTarget.USER;
@@ -23,7 +22,7 @@ import static usw.suwiki.statistics.log.MonitorTarget.USER;
 @RequestMapping("/v2/refreshtoken")
 @RequiredArgsConstructor
 public class RefreshTokenControllerV2 {
-  private final UserService userService;
+  private final AuthService authService;
 
   @Statistics(USER)
   @PostMapping("/web-client/refresh")
@@ -32,16 +31,16 @@ public class RefreshTokenControllerV2 {
     @CookieValue(value = "refreshToken") Cookie cookie,
     HttpServletResponse response
   ) {
-    Map<String, String> tokenPair = userService.reissue(cookie.getValue());
+    var token = authService.reissue(cookie.getValue());
 
-    Cookie refreshCookie = new Cookie("refreshToken", tokenPair.get("RefreshToken"));
+    Cookie refreshCookie = new Cookie("refreshToken", token.getRefreshToken());
     refreshCookie.setMaxAge(14 * 24 * 60 * 60);
     refreshCookie.setSecure(true);
     refreshCookie.setHttpOnly(true);
     response.addCookie(refreshCookie);
 
     return ResponseForm.success(new HashMap<>() {{
-      put("AccessToken", tokenPair.get("AccessToken"));
+      put("AccessToken", token.getAccessToken());
     }});
   }
 
@@ -49,6 +48,6 @@ public class RefreshTokenControllerV2 {
   @PostMapping("/mobile-client/refresh")
   @ResponseStatus(OK)
   public ResponseForm tokenRefresh(@RequestHeader String Authorization) {
-    return ResponseForm.success(userService.reissue(Authorization));
+    return ResponseForm.success(authService.reissue(Authorization));
   }
 }

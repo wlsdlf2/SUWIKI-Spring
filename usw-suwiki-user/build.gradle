@@ -18,7 +18,6 @@ subprojects {
 
 project(':usw-suwiki-user') {
   dependencies {
-    implementation project(':usw-suwiki-auth:usw-suwiki-auth-token')
     implementation project(':usw-suwiki-core:usw-suwiki-mail-starter')
   }
 }

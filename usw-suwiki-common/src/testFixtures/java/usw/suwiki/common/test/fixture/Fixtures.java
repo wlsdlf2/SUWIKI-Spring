@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import usw.suwiki.auth.token.ConfirmationToken;
 import usw.suwiki.auth.token.ConfirmationTokenRepository;
-import usw.suwiki.core.secure.TokenAgent;
+import usw.suwiki.core.secure.TokenGenerator;
 import usw.suwiki.domain.evaluatepost.EvaluatePost;
 import usw.suwiki.domain.evaluatepost.EvaluatePostRepository;
 import usw.suwiki.domain.exampost.ExamPost;
@@ -78,7 +78,7 @@ public final class Fixtures {
   private ExamReportRepository examReportRepository;
 
   @Autowired
-  private TokenAgent tokenAgent;
+  private TokenGenerator tokenGenerator;
 
   // 토큰
 
@@ -88,20 +88,20 @@ public final class Fixtures {
   }
 
   public String 토큰_생성(User user) {
-    return tokenAgent.createAccessToken(user.getId(), user.toClaim());
+    return tokenGenerator.login(user.getId(), user.toClaim()).getAccessToken();
   }
 
   public String 제한된_사용자_토큰_생성() {
-    return tokenAgent.createAccessToken(-1L, new UserClaim("loginId", "USER", true));
+    return tokenGenerator.login(-1L, new UserClaim("loginId", "USER", true)).getAccessToken();
   }
 
   public String 다른_사용자_토큰_생성() {
     var another = 다른_유저_생성();
-    return tokenAgent.createAccessToken(another.getId(), another.toClaim());
+    return tokenGenerator.login(another.getId(), another.toClaim()).getAccessToken();
   }
 
-  public String 리프레시_토큰_생성(Long userId) {
-    return tokenAgent.login(userId);
+  public String 리프레시_토큰_생성(User user) {
+    return tokenGenerator.login(user.getId(), user.toClaim()).getRefreshToken();
   }
 
   public ConfirmationToken 가입_인증_토큰_생성(Long userId) {

@@ -46,9 +46,9 @@ import static org.mockito.BDDMockito.given;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static usw.suwiki.auth.token.response.ConfirmResponse.ERROR;
-import static usw.suwiki.auth.token.response.ConfirmResponse.EXPIRED;
-import static usw.suwiki.auth.token.response.ConfirmResponse.SUCCESS;
+import static usw.suwiki.auth.service.ConfirmMessage.ERROR;
+import static usw.suwiki.auth.service.ConfirmMessage.EXPIRED;
+import static usw.suwiki.auth.service.ConfirmMessage.SUCCESS;
 import static usw.suwiki.common.test.Tag.USER;
 import static usw.suwiki.common.test.support.Pair.parameter;
 import static usw.suwiki.common.test.support.ResponseValidator.validate;
@@ -917,7 +917,7 @@ class UserAcceptanceTest extends AcceptanceTestSupport {
     @Test
     void 로그아웃_성공() throws Exception {
       // given
-      var payload = fixtures.리프레시_토큰_생성(user.getId());
+      var payload = fixtures.리프레시_토큰_생성(user);
 
       // when
       var result = post(Uri.of("/user/client-logout"), new Cookie("refreshToken", payload));
@@ -983,7 +983,7 @@ class UserAcceptanceTest extends AcceptanceTestSupport {
     @Test
     void 웹_재발급_성공() throws Exception {
       // given
-      var refreshToken = fixtures.리프레시_토큰_생성(user.getId());
+      var refreshToken = fixtures.리프레시_토큰_생성(user);
 
       // when
       var result = post(Uri.of(webEndpoint), new Cookie("refreshToken", refreshToken));
@@ -1028,7 +1028,7 @@ class UserAcceptanceTest extends AcceptanceTestSupport {
     @Test
     void 모바일_재발급_성공() throws Exception {
       // given
-      var refreshToken = fixtures.리프레시_토큰_생성(user.getId());
+      var refreshToken = fixtures.리프레시_토큰_생성(user);
 
       // when
       var result = post(Uri.of(mobileEndpoint), refreshToken);
@@ -1036,15 +1036,15 @@ class UserAcceptanceTest extends AcceptanceTestSupport {
       // then
       result.andExpectAll(
         status().isOk(),
-        jsonPath("$.AccessToken").exists(),
-        jsonPath("$.RefreshToken").exists()
+        jsonPath("$.accessToken").exists(),
+        jsonPath("$.refreshToken").exists()
       );
 
       // docs
       result.andDo(
         RestDocument.builder()
-          .summary("[쿠키 필요] 웹 토큰 재발급 API")
-          .description("토큰 재발급 API 웹 버전입니다. 쿠키에 저장된 리프레시 토큰의 시간을 갱신합니다.")
+          .summary("[리프레시 토큰 필요] 모바일 토큰 재발급 API")
+          .description("토큰 재발급 API 모바일 버전입니다. 쿠키에 저장된 리프레시 토큰의 시간을 갱신합니다.")
           .tag(USER)
           .result(result)
           .generateDocs()

@@ -14,7 +14,6 @@ import lombok.NoArgsConstructor;
 import usw.suwiki.core.exception.AccountException;
 import usw.suwiki.core.secure.Encoder;
 import usw.suwiki.core.secure.RandomPasswordGenerator;
-import usw.suwiki.domain.user.model.UserClaim;
 import usw.suwiki.infra.jpa.BaseEntity;
 
 import java.time.LocalDateTime;

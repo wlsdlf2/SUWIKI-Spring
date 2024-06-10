@@ -1,7 +1,9 @@
 dependencies {
+  implementation project(':usw-suwiki-common')
   implementation project(':usw-suwiki-infra:usw-suwiki-db')
+  implementation project(':usw-suwiki-core:usw-suwiki-exception')
 
-  implementation('jakarta.servlet:jakarta.servlet-api')
   implementation('org.springframework.boot:spring-boot-starter-web')
+  implementation 'org.springframework.boot:spring-boot-starter-webflux'
   implementation('org.springframework.boot:spring-boot-starter-actuator')
 }

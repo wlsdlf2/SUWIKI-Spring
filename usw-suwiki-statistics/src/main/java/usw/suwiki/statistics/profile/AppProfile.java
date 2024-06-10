@@ -1,4 +1,4 @@
-package usw.suwiki.statistics.annotation;
+package usw.suwiki.statistics.profile;
 
 import org.springframework.context.annotation.Profile;
 

@@ -23,3 +23,8 @@ logging:
   level:
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+webhook:
+  discord:
+    general: ENC(O5P7exMklClD/qJwdw6NuIMiGJCEMhJzBuImeZnPfXgplSaVyk7eI0bzETzLxFYMz3KZCoiGyYY9HJlA/CsLhq8F/wdbUQ5/0n+L3CeSb+MLEljJ46SWBP1gkeAsRAOTyB/ZERycy9pCbgGEgRUwmqFh6IobN/iOMxMkKFBfCJMF6f+uHnVDGA==)
+    error: ENC(ZIjwMHFWMYls7hlOa75ZjEt8OwhDh141xvvyqivcOd8lBhYY47n3UQs2tMA3HwKOg0/DK8mT5yKsROXH5Qe1ko/NeBsGvS67V/NdG74vk4iaPd5UwnKXXGjL/b4lrOwU+mkGvjdrpewYLVhuFEC/yTECT7AboxbaDT5smcRUSMxmZ1w5e6mDsQ==)

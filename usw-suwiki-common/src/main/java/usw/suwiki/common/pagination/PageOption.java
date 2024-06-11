@@ -1,33 +1,23 @@
 package usw.suwiki.common.pagination;
 
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import java.util.Optional;
 
 @Getter
-@NoArgsConstructor
 public class PageOption {
 
-    private Optional<Integer> pageNumber;
+  private final int page;
 
-    public PageOption(Optional<Integer> pageNumber) {
-        initPageNumber(pageNumber);
-    }
+  private PageOption(Optional<Integer> page) {
+    this.page = page.orElse(1);
+  }
 
-    public Optional<Integer> getPageNumber() {
-        return Optional.of(pageNumber.get() - 1);
-    }
+  public static int offset(Optional<Integer> page) {
+    return new PageOption(page).getOffset();
+  }
 
-    public Integer getOffset() {
-        return getPageNumber().get() * 10;
-    }
-
-    private void initPageNumber(Optional<Integer> pageNumber) {
-        if (pageNumber.isEmpty()) {
-            this.pageNumber = Optional.of(1);
-            return;
-        }
-        this.pageNumber = pageNumber;
-    }
+  private int getOffset() {
+    return (page - 1) * 10;
+  }
 }

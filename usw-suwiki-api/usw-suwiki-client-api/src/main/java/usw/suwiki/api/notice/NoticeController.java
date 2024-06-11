@@ -36,7 +36,7 @@ public class NoticeController {
   @GetMapping("/all")
   @ResponseStatus(OK)
   public ResponseForm getNotices(@RequestParam(required = false) Optional<Integer> page) {
-    List<NoticeResponse.Simple> response = noticeService.getAllNotices(new PageOption(page));
+    List<NoticeResponse.Simple> response = noticeService.getAllNotices(PageOption.offset(page));
     return new ResponseForm(response);
   }
 

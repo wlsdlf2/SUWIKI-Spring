@@ -28,7 +28,7 @@ public class NoticeControllerV2 {
   @GetMapping("/v2")
   @ResponseStatus(OK)
   public ResponseForm getAllNoticesV2(@RequestParam(required = false) Optional<Integer> page) {
-    var response = noticeService.getAllNotices(new PageOption(page));
+    var response = noticeService.getAllNotices(PageOption.offset(page));
     return new ResponseForm(response);
   }
 

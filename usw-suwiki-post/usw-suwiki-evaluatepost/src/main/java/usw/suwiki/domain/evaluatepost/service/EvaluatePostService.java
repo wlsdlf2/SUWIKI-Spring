@@ -3,7 +3,6 @@ package usw.suwiki.domain.evaluatepost.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import usw.suwiki.common.pagination.PageOption;
 import usw.suwiki.core.exception.EvaluatePostException;
 import usw.suwiki.domain.evaluatepost.EvaluatePost;
 import usw.suwiki.domain.evaluatepost.EvaluatePostQueryRepository;
@@ -33,16 +32,16 @@ public class EvaluatePostService {
   private final ReportService reportService;
 
   @Transactional(readOnly = true)
-  public EvaluatePostResponse.Details loadAllEvaluatePostsByLectureId(PageOption option, Long userId, Long lectureId) {
+  public EvaluatePostResponse.Details loadAllEvaluatePostsByLectureId(Long userId, Long lectureId, int offset) {
     return new EvaluatePostResponse.Details(
-      evaluatePostQueryRepository.findAllByLectureIdAndPageOption(lectureId, option.getOffset()),
+      evaluatePostQueryRepository.findAllByLectureIdAndPageOption(lectureId, offset),
       isAlreadyWritten(userId, lectureId)
     );
   }
 
   @Transactional(readOnly = true)
-  public List<EvaluatePostResponse.MyPost> loadAllEvaluatePostsByUserId(PageOption option, Long userId) {
-    return evaluatePostQueryRepository.findAllByUserIdAndPageOption(userId, option.getOffset());
+  public List<EvaluatePostResponse.MyPost> loadAllEvaluatePostsByUserId(Long userId, int offset) {
+    return evaluatePostQueryRepository.findAllByUserIdAndPageOption(userId, offset);
   }
 
   public EvaluatePost loadEvaluatePostById(Long evaluateId) {

@@ -40,7 +40,7 @@ public class ExamPostsController {
     @RequestParam Long lectureId,
     @RequestParam(required = false) Optional<Integer> page
   ) {
-    return examPostService.loadAllExamPosts(userId, lectureId, new PageOption(page));
+    return examPostService.loadAllExamPosts(userId, lectureId, PageOption.offset(page));
   }
 
   @Authorize
@@ -60,7 +60,7 @@ public class ExamPostsController {
     @Authenticated Long userId,
     @RequestParam(required = false) Optional<Integer> page
   ) {
-    var response = examPostService.loadAllMyExamPosts(new PageOption(page), userId);
+    var response = examPostService.loadAllMyExamPosts(userId, PageOption.offset(page));
     return new ResponseForm(response);
   }
 

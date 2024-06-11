@@ -5,7 +5,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import usw.suwiki.common.pagination.PageOption;
 import usw.suwiki.common.test.annotation.AcceptanceTest;
 import usw.suwiki.common.test.support.AcceptanceTestSupport;
 import usw.suwiki.common.test.support.Uri;
@@ -13,7 +12,6 @@ import usw.suwiki.domain.notice.NoticeRepository;
 import usw.suwiki.domain.notice.dto.NoticeRequest;
 
 import java.time.format.DateTimeFormatter;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -51,7 +49,7 @@ public class NoticeAcceptanceTest extends AcceptanceTestSupport {
       var result = post(Uri.of(endpoint), accessToken, request);
 
       // then
-      var notices = noticeRepository.findByNoticeList(new PageOption(Optional.of(1)));
+      var notices = noticeRepository.findByNoticeList(0);
       assertAll(
         () -> assertThat(notices.get(0)).isNotNull(),
         () -> assertThat(notices.get(0).getTitle()).isEqualTo(request.getTitle()),
@@ -111,7 +109,7 @@ public class NoticeAcceptanceTest extends AcceptanceTestSupport {
       var result = put(Uri.of(endpoint), accessToken, request, parameter(paramKey, notice.getId()));
 
       // then
-      var evaluatePosts = noticeRepository.findByNoticeList(new PageOption(Optional.of(1)));
+      var evaluatePosts = noticeRepository.findByNoticeList(0);
       assertAll(
         () -> assertThat(evaluatePosts.get(0)).isNotNull(),
         () -> assertThat(evaluatePosts.get(0).getTitle()).isEqualTo(request.getTitle()),
@@ -197,7 +195,7 @@ public class NoticeAcceptanceTest extends AcceptanceTestSupport {
       // then
       result.andExpect(status().isOk());
 
-      var notices = noticeRepository.findByNoticeList(new PageOption(Optional.of(1)));
+      var notices = noticeRepository.findByNoticeList(1);
       assertThat(notices).isEmpty();
 
       // docs

@@ -3,7 +3,6 @@ package usw.suwiki.domain.exampost.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import usw.suwiki.common.pagination.PageOption;
 import usw.suwiki.core.exception.AccountException;
 import usw.suwiki.core.exception.ExamPostException;
 import usw.suwiki.core.exception.ExceptionCode;
@@ -49,10 +48,10 @@ public class ExamPostService {
   }
 
   @Transactional(readOnly = true)
-  public Details loadAllExamPosts(Long userId, Long lectureId, PageOption option) {
+  public Details loadAllExamPosts(Long userId, Long lectureId, int offset) {
     boolean isWritten = isAlreadyWritten(userId, lectureId);
 
-    List<Detail> data = examPostRepository.findAllByLectureIdAndPageOption(lectureId, option.getOffset(), PAGE_LIMIT).stream()
+    List<Detail> data = examPostRepository.findAllByLectureIdAndPageOption(lectureId, offset, PAGE_LIMIT).stream()
       .map(ExamPostMapper::toDetail)
       .toList(); // todo: to query repository
 
@@ -66,8 +65,8 @@ public class ExamPostService {
   }
 
   @Transactional(readOnly = true)
-  public List<MyPost> loadAllMyExamPosts(PageOption option, Long userId) {
-    return examPostQueryRepository.findAllByUserIdAndPageOption(userId, option.getOffset());
+  public List<MyPost> loadAllMyExamPosts(Long userId, int offset) {
+    return examPostQueryRepository.findAllByUserIdAndPageOption(userId, offset);
   }
 
   public ExamPost loadExamPostById(Long examId) {

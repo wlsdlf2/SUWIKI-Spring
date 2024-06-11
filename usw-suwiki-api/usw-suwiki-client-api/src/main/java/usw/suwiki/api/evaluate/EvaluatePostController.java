@@ -40,7 +40,7 @@ public class EvaluatePostController {
     @RequestParam Long lectureId,
     @RequestParam(required = false) Optional<Integer> page
   ) {
-    return evaluatePostService.loadAllEvaluatePostsByLectureId(new PageOption(page), userId, lectureId);
+    return evaluatePostService.loadAllEvaluatePostsByLectureId(userId, lectureId, PageOption.offset(page));
   }
 
   @Authorize
@@ -72,7 +72,7 @@ public class EvaluatePostController {
   @GetMapping("/written")
   @ResponseStatus(OK)
   public ResponseForm findByUser(@Authenticated Long userId, @RequestParam(required = false) Optional<Integer> page) {
-    var response = evaluatePostService.loadAllEvaluatePostsByUserId(new PageOption(page), userId);
+    var response = evaluatePostService.loadAllEvaluatePostsByUserId(userId, PageOption.offset(page));
     return new ResponseForm(response);
   }
 

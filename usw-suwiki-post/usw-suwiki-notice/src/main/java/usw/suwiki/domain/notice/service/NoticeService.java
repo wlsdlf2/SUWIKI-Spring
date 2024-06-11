@@ -3,7 +3,6 @@ package usw.suwiki.domain.notice.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import usw.suwiki.common.pagination.PageOption;
 import usw.suwiki.core.exception.NoticeException;
 import usw.suwiki.domain.notice.Notice;
 import usw.suwiki.domain.notice.NoticeRepository;
@@ -24,8 +23,8 @@ public class NoticeService {
     noticeRepository.save(new Notice(title, content));
   }
 
-  public List<NoticeResponse.Simple> getAllNotices(PageOption option) {
-    return noticeRepository.findByNoticeList(option).stream()
+  public List<NoticeResponse.Simple> getAllNotices(int offset) {
+    return noticeRepository.findByNoticeList(offset).stream()
       .map(notice -> new NoticeResponse.Simple(notice.getId(), notice.getTitle(), notice.getModifiedDate()))
       .toList();
   }

@@ -4,16 +4,20 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.Map;
 
-import static usw.suwiki.common.event.Event.Webhook;
-
-public sealed interface Event permits Webhook {
+public sealed interface Event permits Event.Webhook {
 
   @RequiredArgsConstructor
-  non-sealed class Webhook implements Event {
+  sealed class Webhook implements Event {
     private final String message;
 
     public Map<String, String> getMessage() {
       return Map.of("content", this.message);
+    }
+  }
+
+  non-sealed class Error extends Webhook {
+    public Error(String message) {
+      super(message);
     }
   }
 }

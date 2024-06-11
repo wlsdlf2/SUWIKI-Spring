@@ -17,7 +17,7 @@ public class SuwikiClientApplication {
 
   @EventListener(ApplicationReadyEvent.class)
   private void start() {
-    eventPublisher.publishEvent(new Event.Webhook("Client Application Started"));
+    eventPublisher.publishEvent(new Event.Webhook("[Client] Application Started"));
   }
 
   public static void main(String[] args) {

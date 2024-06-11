@@ -13,9 +13,9 @@ class WebhookEventListener {
   private final WebClient webClient;
 
   @EventListener
-  public void onWebhookGeneralEvent(Event.Webhook event) {
+  public void onWebhookEvent(Event.Webhook event) {
     webClient.post()
-      .uri(webhookProperties.getGeneralUri())
+      .uri(event instanceof Event.Error ? webhookProperties.getErrorUri() : webhookProperties.getGeneralUri())
       .bodyValue(event.getMessage())
       .retrieve()
       .bodyToMono(Void.class)

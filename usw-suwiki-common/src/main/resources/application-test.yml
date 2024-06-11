@@ -27,5 +27,10 @@ semester:
   current: 2024-1
 
 server:
-  port: 8081
+  port: 1234
   domain: http://localhost:8081
+
+webhook:
+  discord:
+    general: testtesttesttesttesttesttesttesttesttesttesttest
+    error: testtesttesttesttesttesttesttesttesttesttesttest

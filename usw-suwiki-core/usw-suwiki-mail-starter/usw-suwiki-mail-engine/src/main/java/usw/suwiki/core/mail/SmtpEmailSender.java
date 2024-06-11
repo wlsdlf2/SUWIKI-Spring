@@ -53,7 +53,7 @@ class SmtpEmailSender implements EmailSender {
     try {
       mailSender.send(message);
       log.info("[Send Email] to : {}, type : {}", to, mailType.name());
-    } catch (MailException e) {
+    } catch (org.springframework.mail.MailException e) {
       throw new MailException(SEND_MAIL_FAILED);
     }
   }

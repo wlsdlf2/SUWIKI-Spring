@@ -1,6 +1,6 @@
 package usw.suwiki.domain.lecture;
 
-import com.querydsl.core.QueryResults;
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -19,9 +19,7 @@ import static usw.suwiki.domain.lecture.QLecture.lecture;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class LectureQueryRepository {
-  private static final String DEFAULT_ORDER = "modifiedDate";
   private static final Integer DEFAULT_LIMIT = 10;
-  private static final Integer DEFAULT_PAGE = 1;
 
   private final JPAQueryFactory queryFactory;
 
@@ -34,82 +32,26 @@ public class LectureQueryRepository {
       .fetchOne());
   }
 
-  public Lectures findAllLecturesByOption(String searchValue, LectureSearchOption option) {
-    QueryResults<Lecture> queryResults = queryFactory
-      .selectFrom(lecture)
-      .where(lecture.name.likeIgnoreCase("%" + searchValue + "%")
-        .or(lecture.professor.likeIgnoreCase("%" + searchValue + "%")))
+  public Lectures findAllLectures(String keyword, LectureSearchOption option) {
+    var whereCondition = new BooleanBuilder()
+      .and(option.getMajor() == null ? null : lecture.majorType.eq(option.getMajor()))
+      .and(keyword == null ? null : lecture.name.likeIgnoreCase("%" + keyword + "%").or(lecture.professor.likeIgnoreCase("%" + keyword + "%")));
+
+    var result = queryFactory.selectFrom(lecture)
+      .where(whereCondition)
       .orderBy(
-        createPostCountOption(),
+        countOption(),
         orderSpecifier(option.getOrder())
       )
-      .offset((page(option.getPage()) - 1) * DEFAULT_LIMIT)
+      .offset(option.getPage() * DEFAULT_LIMIT)
       .limit(DEFAULT_LIMIT)
-      .fetchResults();
+      .fetch();
 
-    return new Lectures(queryResults.getResults(), queryResults.getTotal());
-  }
+    long count = queryFactory.selectFrom(lecture)
+      .where(whereCondition)
+      .fetch().size();
 
-  public Lectures findAllLecturesByOption(LectureSearchOption option) {
-    QueryResults<Lecture> queryResults = queryFactory
-      .selectFrom(lecture)
-      .orderBy(
-        createPostCountOption(),
-        orderSpecifier(option.getOrder())
-      )
-      .offset((page(option.getPage()) - 1) * DEFAULT_LIMIT)
-      .limit(DEFAULT_LIMIT)
-      .fetchResults();
-
-    long count = queryFactory
-      .selectFrom(lecture)
-      .fetchCount();
-
-    return new Lectures(queryResults.getResults(), count);
-  }
-
-  public Lectures findAllLecturesByMajorType(LectureSearchOption option) {
-    QueryResults<Lecture> queryResults = queryFactory
-      .selectFrom(lecture)
-      .where(option.getMajor() == null ? null : lecture.majorType.eq(option.getMajor()))
-      .orderBy(
-        createPostCountOption(),
-        orderSpecifier(option.getOrder())
-      )
-      .offset((page(option.getPage()) - 1) * DEFAULT_LIMIT)
-      .limit(DEFAULT_LIMIT)
-      .fetchResults();
-
-    long count = queryFactory
-      .selectFrom(lecture)
-      .where(option.getMajor() == null ? null : lecture.majorType.eq(option.getMajor()))
-      .fetchCount();
-
-    return new Lectures(queryResults.getResults(), count);
-  }
-
-  public Lectures findAllLecturesByMajorType(String keyword, LectureSearchOption option) {
-    var condition = option.getMajor() == null ? null : lecture.majorType.eq(option.getMajor())
-      .and(lecture.name.likeIgnoreCase("%" + keyword + "%")
-        .or(lecture.professor.likeIgnoreCase("%" + keyword + "%")));
-
-    QueryResults<Lecture> queryResults = queryFactory
-      .selectFrom(lecture)
-      .where(condition)
-      .orderBy(
-        createPostCountOption(),
-        orderSpecifier(option.getOrder())
-      )
-      .offset((page(option.getPage()) - 1) * DEFAULT_LIMIT)
-      .limit(DEFAULT_LIMIT)
-      .fetchResults();
-
-    long count = queryFactory
-      .selectFrom(lecture)
-      .where(condition)
-      .fetchCount();
-
-    return new Lectures(queryResults.getResults(), count);
+    return new Lectures(result, count);
   }
 
   public List<String> findAllMajorTypes() {
@@ -119,29 +61,16 @@ public class LectureQueryRepository {
   }
 
   private OrderSpecifier<?> orderSpecifier(String option) {
-    return switch (orderOption(option)) {
-      case "lectureEvaluationInfo.lectureSatisfactionAvg" ->
-        lecture.lectureEvaluationInfo.lectureSatisfactionAvg.desc();
-      case "lectureEvaluationInfo.lectureHoneyAvg" -> lecture.lectureEvaluationInfo.lectureHoneyAvg.desc();
-      case "lectureEvaluationInfo.lectureLearningAvg" -> lecture.lectureEvaluationInfo.lectureLearningAvg.desc();
-      case "lectureEvaluationInfo.lectureTotalAvg" -> lecture.lectureEvaluationInfo.lectureTotalAvg.desc();
-      default -> lecture.modifiedDate.desc(); // Default order
+    return switch (option) {
+      case "satisfaction" -> lecture.lectureEvaluationInfo.lectureSatisfactionAvg.desc();
+      case "honey" -> lecture.lectureEvaluationInfo.lectureHoneyAvg.desc();
+      case "learning" -> lecture.lectureEvaluationInfo.lectureLearningAvg.desc();
+      case "average" -> lecture.lectureEvaluationInfo.lectureTotalAvg.desc();
+      default -> lecture.modifiedDate.desc();
     };
   }
 
-  private String orderOption(String option) {
-    if (option == null) {
-      return DEFAULT_ORDER;
-    }
-
-    return option.equals(DEFAULT_ORDER) ? option : "lectureEvaluationInfo." + option;
-  }
-
-  private OrderSpecifier<Integer> createPostCountOption() {
+  private OrderSpecifier<Integer> countOption() {
     return new CaseBuilder().when(lecture.postsCount.gt(0)).then(1).otherwise(2).asc();
-  }
-
-  private long page(Long page) {
-    return page == null ? DEFAULT_PAGE : page;
   }
 }

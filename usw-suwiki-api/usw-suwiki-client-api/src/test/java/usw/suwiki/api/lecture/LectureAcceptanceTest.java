@@ -31,7 +31,7 @@ class LectureAcceptanceTest extends AcceptanceTestSupport {
 
       // when
       var result = get(Uri.of("/lecture/search"),
-        parameter("searchValue", "교수"),
+        parameter("keyword", "교수"),
         parameter("option", "modifiedDate"),
         parameter("page", 1),
         parameter("majorType", "전체")
@@ -59,10 +59,10 @@ class LectureAcceptanceTest extends AcceptanceTestSupport {
           .summary("강의 통합 검색 API")
           .description("""
             강의 통합 검색 API 입니다. 검색에 사용되는 값은 다음과 같습니다.
-            searchValue : '교수 이름' or '강의 이름'
-            option : 'modifiedDate', 'lectureSatisfactionAvg', 'lectureHoneyAvg', 'lectureLearningAvg' 중 택 1
+            keyword : '교수 이름' or '강의 이름'
+            option : 'date','satisfaction', 'honey', 'learning', 'average' 중 택 1
             page : 정수,
-            majorType : 전공
+            major : 전공
             기본 값은 최근 올라온 강의 순으로 10개를 가져옵니다.
             """)
           .tag(Tag.LECTURE)
@@ -82,7 +82,7 @@ class LectureAcceptanceTest extends AcceptanceTestSupport {
 
       // when
       var result = get(Uri.of("/lecture/search"),
-        parameter("searchValue", "교수"),
+        parameter("keyword", "교수"),
         parameter("option", "modifiedDate"),
         parameter("page", page),
         parameter("majorType", "전체")
@@ -124,7 +124,6 @@ class LectureAcceptanceTest extends AcceptanceTestSupport {
 
     // when
     var result = get(Uri.of("/lecture/all"),
-      parameter("searchValue", "교수"),
       parameter("option", "modifiedDate"),
       parameter("page", 1),
       parameter("majorType", "전체")
@@ -152,9 +151,9 @@ class LectureAcceptanceTest extends AcceptanceTestSupport {
         .summary("메인 페이지 강의 조회 API")
         .description("""
           메인 페이지에 사용되는 강의 조회 API 입니다. 검색에 사용되는 값은 다음과 같습니다.
-          option : 'modifiedDate', 'lectureSatisfactionAvg', 'lectureHoneyAvg', 'lectureLearningAvg' 중 택 1
+          option : 'date','satisfaction', 'honey', 'learning', 'average' 중 택 1
           page : 정수,
-          majorType : 전공
+          major : 전공
           기본 값은 최근 올라온 강의 순으로 10개를 가져옵니다.
           """)
         .tag(Tag.LECTURE)

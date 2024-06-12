@@ -44,10 +44,10 @@ public class LectureController {
   @GetMapping("/search")
   @ResponseStatus(HttpStatus.OK)
   public LectureResponse.Simples search(
-    @RequestParam String searchValue,
+    @RequestParam String keyword,
     @ModelAttribute LectureSearchOption option
   ) {
-    return lectureService.loadAllLecturesByKeyword(searchValue, option);
+    return lectureService.loadAllLecturesByKeyword(keyword, option);
   }
 
   @CacheStatics

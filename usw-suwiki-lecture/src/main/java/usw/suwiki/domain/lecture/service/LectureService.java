@@ -38,17 +38,11 @@ public class LectureService {
   }
 
   public LectureResponse.Simples loadAllLecturesByKeyword(String keyword, LectureSearchOption option) {
-    return toResponse(option.isAllMajor()
-      ? lectureQueryRepository.findAllLecturesByOption(keyword, option)
-      : lectureQueryRepository.findAllLecturesByMajorType(keyword, option)
-    );
+    return toResponse(lectureQueryRepository.findAllLectures(keyword, option));
   }
 
   public LectureResponse.Simples loadAllLectures(LectureSearchOption option) {
-    return toResponse(option.isAllMajor()
-      ? lectureQueryRepository.findAllLecturesByOption(option)
-      : lectureQueryRepository.findAllLecturesByMajorType(option)
-    );
+    return toResponse(lectureQueryRepository.findAllLectures(null, option));
   }
 
   private LectureResponse.Simples toResponse(Lectures lectures) {

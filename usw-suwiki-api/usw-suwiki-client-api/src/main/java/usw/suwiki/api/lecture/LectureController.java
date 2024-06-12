@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -44,12 +45,9 @@ public class LectureController {
   @ResponseStatus(HttpStatus.OK)
   public LectureResponse.Simples search(
     @RequestParam String searchValue,
-    @RequestParam(required = false) String option,
-    @RequestParam(required = false) Integer page,
-    @RequestParam(required = false) String majorType
+    @ModelAttribute LectureSearchOption option
   ) {
-    LectureSearchOption findOption = new LectureSearchOption(option, page, majorType);
-    return lectureService.loadAllLecturesByKeyword(searchValue, findOption);
+    return lectureService.loadAllLecturesByKeyword(searchValue, option);
   }
 
   @CacheStatics
@@ -57,13 +55,8 @@ public class LectureController {
   @Statistics(LECTURE)
   @GetMapping("/all")
   @ResponseStatus(HttpStatus.OK)
-  public LectureResponse.Simples getMainPageLectures(
-    @RequestParam(required = false) String option,
-    @RequestParam(required = false) Integer page,
-    @RequestParam(required = false) String majorType
-  ) {
-    LectureSearchOption findOption = new LectureSearchOption(option, page, majorType);
-    return lectureService.loadAllLectures(findOption);
+  public LectureResponse.Simples getMainPageLectures(@ModelAttribute LectureSearchOption option) {
+    return lectureService.loadAllLectures(option);
   }
 
   @Authorize

@@ -38,14 +38,14 @@ public class LectureService {
   }
 
   public LectureResponse.Simples loadAllLecturesByKeyword(String keyword, LectureSearchOption option) {
-    return toResponse(option.passMajorFiltering()
+    return toResponse(option.isAllMajor()
       ? lectureQueryRepository.findAllLecturesByOption(keyword, option)
       : lectureQueryRepository.findAllLecturesByMajorType(keyword, option)
     );
   }
 
   public LectureResponse.Simples loadAllLectures(LectureSearchOption option) {
-    return toResponse(option.passMajorFiltering()
+    return toResponse(option.isAllMajor()
       ? lectureQueryRepository.findAllLecturesByOption(option)
       : lectureQueryRepository.findAllLecturesByMajorType(option)
     );
